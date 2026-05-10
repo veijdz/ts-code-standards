@@ -62,5 +62,5 @@ function parse(input: any): User {
 
 ## Notes
 
-- Reference the canonical template at `docs/_templates/rules.md` in the first line of the file (HTML comment is fine).
+- Reference the canonical template at `docs/_templates/rules.md` immediately after the frontmatter (HTML comment is fine).
 - Keep the section order stable across stacks so consumers can diff easily.
