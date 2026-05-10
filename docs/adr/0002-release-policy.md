@@ -1,5 +1,5 @@
 ---
-title: Release policy — no version, stack-tagged releases for notable changes
+title: Release policy
 status: accepted
 date: 2026-05-10
 supersedes:
