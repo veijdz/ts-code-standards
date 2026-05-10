@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json.schemastore.org/extensions",
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "editorconfig.editorconfig"
+  ]
+}
