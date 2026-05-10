@@ -15,6 +15,16 @@ npx degit veijdz/ts-code-standards/stacks/base/config .standards
 
 Then install the dev dependencies listed in each stack's `README.md` and point your project's configs at `.standards/*` (or copy them to the root — your call).
 
+## Staying up to date
+
+Templates are not versioned — once copied, they belong to your repo. To find out when something changes:
+
+- **Watch this repo** with "Releases only" — notable and breaking changes are cut as [GitHub Releases](https://github.com/veijdz/ts-code-standards/releases).
+- Or subscribe to the [Atom feed](https://github.com/veijdz/ts-code-standards/releases.atom).
+- Or audit explicitly: `git log -- stacks/<stack>/` against your last `degit` date.
+
+Breaking changes use a `YYYY-MM-DD-BREAKING-<stack>` tag and list the migration steps in the release body. See [ADR 0002 — Release policy](docs/adr/0002-release-policy.md) for the full rationale.
+
 ## Stacks
 
 | Stack | Extends | Status |
