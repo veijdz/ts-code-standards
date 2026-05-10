@@ -14,7 +14,7 @@ superseded-by:
 
 This repo ships multiple stacks (`base`, `node`, `nestjs`, `expo`, `tanstack-start`) where each downstream stack extends the conventions and configs of one upstream stack. A consumer copies a single stack's `config/` directory via `npx degit` — there is no install step, no published package, and therefore no shared runtime to centralize logic in.
 
-That raises a recurring question for every config file in every stack: **does a downstream stack reference the upstream, or does it carry a full copy?** Each of the five formats we ship (`eslint.config.ts`, `tsconfig.json`, `.prettierrc.json`, `lefthook.yml`, `commitlint.config.ts`, `knip.config.ts`) handles inheritance differently — some natively, some not at all. A single answer per format is needed so the repo stays predictable and the consumer can reason about their `.standards/` directory without surprises.
+That raises a recurring question for every config file in every stack: **does a downstream stack reference the upstream, or does it carry a full copy?** Each of the six formats we ship (`eslint.config.ts`, `tsconfig.json`, `.prettierrc.json`, `lefthook.yml`, `commitlint.config.ts`, `knip.config.ts`) handles inheritance differently — some natively, some not at all. A single answer per format is needed so the repo stays predictable and the consumer can reason about their `.standards/` directory without surprises.
 
 The constraints are:
 
