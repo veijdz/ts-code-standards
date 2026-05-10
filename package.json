@@ -5,7 +5,7 @@
   "description": "Documentation and copyable templates for Node/TypeScript projects",
   "license": "MIT",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.22.2"
   },
   "packageManager": "pnpm@11.0.9",
   "scripts": {}
