@@ -93,7 +93,7 @@ The following are not allowed anywhere in the dependency tree. CI must fail when
 
 - **Why ban `lodash` outright instead of a curated allowlist?** A blanket ban is enforceable in tooling and easy to reason about. A per-function allowlist invites endless edge-case debates and drifts in practice.
 - **Why patch auto-merge?** Most patches really are safe, and the friction of manually merging every Renovate PR causes them to pile up — at which point the team turns off Renovate and the dependency tree rots. Asymmetric automation keeps the signal high.
-- **Why `pnpm` specifically?** Disk-efficient (content-addressable store), strict by default (hoists nothing implicit), and the workspace primitives are the cleanest of the three majors. See [ADR 0002 (lands in VEI-446)](../adr/) if a release-policy ADR cites the choice.
+- **Why `pnpm` specifically?** Disk-efficient (content-addressable store), strict by default (hoists nothing implicit), and the workspace primitives are the cleanest of the three majors. See [ADR 0002 — Release policy](../adr/0002-release-policy.md) if a release-policy ADR cites the choice.
 
 ## Out of scope
 
