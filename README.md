@@ -27,7 +27,7 @@ Then install the dev dependencies listed in each stack's `README.md` and point y
 
 ## Documentation
 
-- [Foundational principles](docs/principles.md) — lands in VEI-411
+- [Foundational principles](docs/principles.md) — the eleven foundations every rule, convention, and ADR derives from
 - [Conventions](docs/conventions/) — dependencies, git, testing, GitHub
 - [ADRs](docs/adr/) — architectural decision records
 - [Documentation templates](docs/_templates/) — canonical anatomy for [rules](docs/_templates/rules.md), [ADRs](docs/_templates/adr.md), [conventions](docs/_templates/convention.md), and [principles](docs/_templates/principles.md), plus a [filled rules example](docs/_templates/example-rules.md)
