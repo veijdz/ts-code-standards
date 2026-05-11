@@ -50,7 +50,7 @@ These tools are per-repo, not per-stack — they govern commit-time behavior of 
 
 ### Live reference
 
-The pattern is demonstrated end-to-end when the `node` stack lands in M2 (epic VEI-401). At that point, `stacks/node/config/eslint.config.ts` will read:
+The pattern is demonstrated end-to-end when the `node` stack lands in M2. At that point, `stacks/node/config/eslint.config.ts` will read:
 
 ```ts
 import baseConfig from '../../base/config/eslint.config'

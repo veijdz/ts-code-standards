@@ -7,7 +7,7 @@ last-reviewed: 2026-05-10
 
 # Conventions — Testing
 
-> Test taxonomy, layout, naming, and the parts that are non-negotiable (no DB mocks, coverage as diagnostic). Derives from [Principle 7 — Tests cover behavior, not implementation](../principles.md). Stack-specific runner and tooling rules live in the stack's `rules.md` (base lands in VEI-422).
+> Test taxonomy, layout, naming, and the parts that are non-negotiable (no DB mocks, coverage as diagnostic). Derives from [Principle 7 — Tests cover behavior, not implementation](../principles.md). Stack-specific runner and tooling rules live in the stack's `rules.md` (base in `stacks/base/docs/rules.md`, Cat 7 — not yet published).
 
 ## Scope
 
@@ -99,7 +99,7 @@ Applies to every test file in any project that adopts these standards, regardles
 
 ## Out of scope
 
-- The choice of test runner (Vitest, Node test runner, Jest) — that is stack-specific; the `base` choice lands in VEI-422.
+- The choice of test runner (Vitest, Node test runner, Jest) — that is stack-specific; the `base` choice will live in `stacks/base/docs/rules.md` (Cat 7).
 - Snapshot testing policy — separate convention, not yet defined.
 - Performance / load testing — separate concern, lives outside this convention.
 
