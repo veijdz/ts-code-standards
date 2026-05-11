@@ -44,7 +44,7 @@ Breaking changes use a `YYYY-MM-DD-BREAKING-<stack>` tag and list the migration 
 
 Every doc under `docs/` and `stacks/*/docs/` is built from one of those templates. New docs must reference the template they extend immediately after the frontmatter.
 
-> The `base` stack's `rules.md` and the GitHub-settings convention are still landing; stacks beyond `base` have not started. See [the Linear roadmap](https://linear.app/veijdz/project/ts-code-standards-65dfe8d58d48) for progress.
+> The `base` stack's `rules.md` and the GitHub-settings convention are still landing; stacks beyond `base` have not started. See the [Stacks table](#stacks) above for per-stack status.
 
 ## For AI agents
 
