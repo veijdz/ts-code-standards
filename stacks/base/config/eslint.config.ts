@@ -13,6 +13,10 @@ export default tseslint.config(
     },
   },
   // === Cat 1 — TypeScript / Type system ===
+  // The `naming-convention` rule for `typeParameter` (sub-block 1.4) is intentionally
+  // not declared here — it will be consolidated into the Cat 2 (Naming) block when that
+  // category lands. ESLint resolves a rule to the last block that defines it, so the
+  // entry must live wherever the broader naming policy lives.
   {
     files: ['**/*.{ts,tsx,cts,mts}'],
     rules: {
@@ -42,14 +46,6 @@ export default tseslint.config(
         },
       ],
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
-      '@typescript-eslint/naming-convention': [
-        'error',
-        {
-          selector: 'typeParameter',
-          format: ['PascalCase'],
-          prefix: ['T'],
-        },
-      ],
     },
   },
   // `interface` is required for module augmentation, so allow it inside `.d.ts`.
