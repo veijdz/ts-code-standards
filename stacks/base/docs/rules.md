@@ -1,0 +1,612 @@
+---
+title: Base — rules
+stack: base
+last-reviewed: 2026-05-11
+---
+
+<!-- Based on docs/_templates/rules.md -->
+
+# Base stack — rules
+
+> Catalog of enforceable rules for the `base` stack. Built progressively, one category per issue. See [`docs/principles.md`](../../../docs/principles.md) for the why behind every rule and [`stacks/base/config/`](../config) for the tools that enforce them.
+
+## Cat 1 — TypeScript / Type system
+
+### Required dependencies
+
+| Package | Min version | Role in this Cat |
+|---|---|---|
+| `typescript` | `^5.0.0` | Compiler that enforces the flags in sub-block 1.1. |
+| `typescript-eslint` | `^8.0.0` | Provides the rules in sub-blocks 1.2 – 1.5. |
+
+### 1.1 — Compiler flags
+
+The compiler is the first line of defense. Every flag below is non-negotiable: each closes a class of bug that no lint rule can catch as cheaply.
+
+#### Rule: enable the strict-by-default compiler flags
+
+**Why.** TypeScript without `strict: true` is a different language with a different set of guarantees. The flags beyond `strict` close gaps `strict` itself leaves open — index access, optional vs `undefined`, switch fallthrough, dead code. Enabling them later is exponentially more expensive than enabling them now.
+
+The full set, configured in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json):
+
+| Flag | What it adds beyond `strict` |
+|---|---|
+| `strict` | Enables `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `alwaysStrict`. |
+| `noUncheckedIndexedAccess` | Treats `arr[i]` and `obj[key]` as `T \| undefined`. Forces narrowing before use. |
+| `exactOptionalPropertyTypes` | Distinguishes "property absent" from "property set to `undefined`". Critical for API contracts. |
+| `noImplicitOverride` | Requires the `override` keyword when subclassing — catches stale overrides after a base-class rename. |
+| `noImplicitReturns` | Every code path in a function must return (or none). Catches missing branches. |
+| `noFallthroughCasesInSwitch` | Forces `break` / `return` / `throw` between non-empty cases. |
+| `noUnusedLocals` | Errors on unused local bindings. |
+| `noUnusedParameters` | Errors on unused parameters (prefix with `_` to opt out). |
+| `noPropertyAccessFromIndexSignature` | Requires `obj['unknownKey']` instead of `obj.unknownKey` when the key is not declared on the type. Surfaces typos. |
+| `isolatedModules` | Each file must be transpilable in isolation — required by `tsc --build`, esbuild, swc, and Vite. |
+| `verbatimModuleSyntax` | Imports/exports are emitted exactly as written. Forces `import type` for type-only imports. |
+| `skipLibCheck` | Skips type-checking of declaration files in `node_modules`. Speeds up `tsc` significantly with no real loss — third-party types fail at consumption sites anyway. |
+
+**Exceptions.** _None._ A project that needs to relax any of these flags has a deeper problem (legacy migration, generated code) and should isolate the relaxation in a separate `tsconfig.<scope>.json`, not weaken the base.
+
+### 1.2 — Disallow `any`
+
+`any` opts out of every guarantee TypeScript provides at the exact place a bug is most likely to live. The base stack bans `any` in every form — direct annotation, cross-boundary leakage, and silent inference from untyped libraries.
+
+#### Rule: no explicit `any`, anywhere
+
+**Why.** A single `any` poisons every value derived from it: the result is `any`, the result of an operation on the result is `any`, and so on. The fix is `unknown` plus a narrowing step (a type guard, a schema, or `@ts-expect-error` if narrowing is impossible).
+
+**✓ Example.**
+
+```ts
+function parseUser(input: unknown): User {
+  if (!isUser(input)) throw new Error('invalid user payload')
+  return input
+}
+```
+
+**✗ Example.**
+
+```ts
+function parseUser(input: any): User {
+  return input
+}
+```
+
+**Exceptions.** _None_ for first-party code. Third-party types that are demonstrably wrong may be widened or narrowed via a localized `as` plus a comment pointing at the upstream issue (see [Principle 1 — Type safety is non-negotiable](../../../docs/principles.md)).
+
+#### Rule: no implicit `any` from unsafe operations
+
+**Why.** Even with `no-explicit-any` on, `any` still creeps in: `JSON.parse`, untyped libraries, `Function` parameters, dynamic property access. The `no-unsafe-*` family closes those routes one by one.
+
+| Rule | What it catches |
+|---|---|
+| `no-unsafe-argument` | Passing `any` as an argument to a typed function. |
+| `no-unsafe-assignment` | Assigning `any` to a typed binding. |
+| `no-unsafe-call` | Calling a value typed as `any`. |
+| `no-unsafe-member-access` | Reading a property off `any`. |
+| `no-unsafe-return` | Returning `any` from a function with a non-`any` return type. |
+
+**Exceptions.** _None._ Use `unknown` and narrow.
+
+### 1.3 — Assertions and escape hatches
+
+Type assertions and `@ts-*` comments turn the compiler off. They are sometimes necessary, but the base stack forces them to leave a written trail.
+
+#### Rule: no non-null assertions (`!`)
+
+**Why.** `value!` silently asserts the compiler is wrong about `null` / `undefined`. When it _is_ wrong, the failure is a runtime crash with no breadcrumb. Replace with a real check (`if (!value) throw …`) or a narrowing helper (`assertDefined`).
+
+**✓ Example.**
+
+```ts
+const user = users.find((u) => u.id === id)
+if (!user) throw new Error(`user ${id} not found`)
+return user.email
+```
+
+**✗ Example.**
+
+```ts
+return users.find((u) => u.id === id)!.email
+```
+
+**Exceptions.** _None._ If the value is "obviously" defined, write the check anyway — the cost is one line.
+
+#### Rule: no `@ts-ignore`, no `@ts-nocheck`; `@ts-expect-error` only with a description
+
+**Why.** `@ts-ignore` silently swallows errors and stays put forever. `@ts-expect-error` does the opposite: if the underlying error ever resolves, the directive itself becomes the error. The required description forces an explanation that survives the next reader.
+
+**✓ Example.**
+
+```ts
+// @ts-expect-error upstream typings missing for `Foo.bar`; tracked in upstream/123
+foo.bar()
+```
+
+**✗ Example.**
+
+```ts
+// @ts-ignore
+foo.bar()
+```
+
+**Exceptions.** _None._ If a description shorter than 10 characters seems sufficient, the directive is wrong.
+
+#### Rule: no unnecessary type assertions
+
+**Why.** `value as T` where `value` is already `T` is dead code that lies — when the type around it changes, the assertion silently masks the new error.
+
+**✓ Example.**
+
+```ts
+const id: string = getId()
+return id.toUpperCase()
+```
+
+**✗ Example.**
+
+```ts
+const id: string = getId()
+return (id as string).toUpperCase()
+```
+
+#### Rule: assertions use `as`, not angle brackets; never on object literals
+
+**Why.** `<T>value` collides with TSX syntax and cannot be used in `.tsx` files; the codebase should not have two assertion forms. Object literal assertions (`{ a: 1 } as User`) are a code smell — they bypass excess-property checking, which is the one safety net for typo'd keys; declare the variable with the type instead.
+
+**✓ Example.**
+
+```ts
+const user: User = { id: '1', email: 'a@b.c' }
+const value = readJson() as Config
+```
+
+**✗ Example.**
+
+```ts
+const user = { id: '1', email: 'a@b.c' } as User
+const value = <Config>readJson()
+```
+
+### 1.4 — Generic type parameters
+
+Generic type parameters in this stack always start with `T`. The convention matches TanStack and most modern TypeScript libraries, and makes type parameters visually distinguishable from concrete types at the point of use.
+
+#### Rule: type parameters are PascalCase and prefixed with `T`
+
+**Why.** Without a prefix, `Key extends keyof T` and a top-level `type Key = …` look identical at the use site, and renaming one accidentally captures the other. The `T` prefix makes the binding obvious. Single-letter `T` remains valid for the trivial 1-parameter case where there is no ambiguity.
+
+**✓ Example.**
+
+```ts
+function pick<TObject, TKey extends keyof TObject>(obj: TObject, key: TKey): TObject[TKey] {
+  return obj[key]
+}
+
+function identity<T>(value: T): T {
+  return value
+}
+```
+
+**✗ Example.**
+
+```ts
+function pick<O, K extends keyof O>(obj: O, key: K): O[K] {
+  return obj[key]
+}
+```
+
+**Exceptions.** _None._ Even single-letter `T` follows the rule (it _is_ the prefix).
+
+### 1.5 — `type` vs `interface`
+
+The two are nearly equivalent for object shapes — but only one is allowed per stack to avoid bikeshedding in review.
+
+#### Rule: define types with `type`, not `interface`
+
+**Why.** `type` covers everything `interface` covers, plus unions, intersections, mapped types, and conditional types. `interface` adds declaration merging, which is a footgun in application code (a re-declaration in another file silently extends the type) and is only genuinely useful for module augmentation in `.d.ts` files. One default eliminates the question entirely.
+
+**✓ Example.**
+
+```ts
+type User = {
+  id: string
+  email: string
+}
+
+type Result<TValue> = { ok: true; value: TValue } | { ok: false; error: Error }
+```
+
+**✗ Example.**
+
+```ts
+interface User {
+  id: string
+  email: string
+}
+```
+
+**Exceptions.** Allowed inside `.d.ts` files only — module augmentation (`declare module '…' { interface X { … } }`) requires `interface`.
+
+## Cat 2 — Naming
+
+This category is the concrete enforcement of [Principle 11 — Clarity over brevity](../../../docs/principles.md): names that read in one second beat names that need a context lookup. Where a rule cannot be expressed in lint (function-as-verb, array-as-plural, "one concept per file"), the convention is documented as reviewer guidance per [Principle 6 — Tools enforce, humans decide](../../../docs/principles.md).
+
+### Required dependencies
+
+| Package | Min version | Role in this Cat |
+|---|---|---|
+| `eslint-plugin-unicorn` | `^56.0.0` | Provides `filename-case` (sub-block 2.4) and `prevent-abbreviations` (applies to identifier shape across the whole Cat). |
+
+The `@typescript-eslint/naming-convention` rule from sub-blocks 2.1–2.3 is provided by `typescript-eslint` (already required by Cat 1).
+
+> **Note on `prevent-abbreviations`.** The configured `allowList` matches **bare identifiers only** — `req: true` allows a binding literally named `req`, but `parseReq`, `httpReq`, `pageProps`, etc., are still flagged because the rule splits compound names on word boundaries. To exempt an abbreviation everywhere it appears (compound or bare), use `replacements: { req: false }` instead — the base stack errs on the conservative side and accepts the false-positive cost.
+
+### 2.1 — Case per element
+
+Three cases, applied consistently per element kind. The compiler does not police identifier shape — `naming-convention` does, and the policy is uniform across the stack so reviews never argue about it.
+
+#### Rule: variables, functions, and parameters are camelCase
+
+**Why.** Mixed casing inside a file makes it hard to scan; a single default for runtime values keeps the eye moving. PascalCase is reserved for compile-time names (types) so the two zones are visually separable at a glance.
+
+**✓ Example.**
+
+```ts
+const userCount = 42
+function fetchUser(userId: string) { /* … */ }
+```
+
+**✗ Example.**
+
+```ts
+const UserCount = 42
+function FetchUser(user_id: string) { /* … */ }
+```
+
+**Exceptions.** Default and namespace imports keep their source name (the `import` selector allows both `camelCase` and `PascalCase`); named imports (`import { foo } from '…'`) are not constrained by this rule because the library picks the binding shape. A leading underscore is permitted to mark a deliberately unused binding (`_unused`).
+
+#### Rule: types, classes, interfaces, and enums are PascalCase
+
+**Why.** These names exist only at compile time; PascalCase makes that obvious next to camelCase runtime values. Type and class names also tend to map to nouns (`User`, `OrderRepository`), which read better in PascalCase.
+
+**✓ Example.**
+
+```ts
+type User = { id: string }
+class OrderRepository { /* … */ }
+enum OrderStatus { Pending, Shipped }
+```
+
+**✗ Example.**
+
+```ts
+type user = { id: string }
+class orderRepository { /* … */ }
+```
+
+#### Rule: global `const` may be `UPPER_CASE` only when bound to an external, immutable value
+
+**Why.** `UPPER_CASE` is a strong visual signal — it should mean "this value is set outside the program and never changes" (an environment variable, a protocol constant, a magic number from a spec). Using it for ordinary tunables drains the signal: every reader has to ask "is this actually external?"
+
+**✓ Example.**
+
+```ts
+const MAX_RETRY_COUNT = 5         // protocol-level cap, written once, read everywhere
+const DATABASE_URL = process.env.DATABASE_URL ?? ''   // external, immutable
+
+const defaultPageSize = 20        // tunable, app-internal — camelCase
+const cacheTtlMs = 30_000         // ditto
+```
+
+**✗ Example.**
+
+```ts
+const DEFAULT_PAGE_SIZE = 20      // app-level config, not external — should be camelCase
+const FETCH_USER_URL = '/api/u'   // app-level route, not external
+```
+
+**Exceptions.** _The rule itself is reviewer-side; the lint configuration accepts both shapes._ The choice between `camelCase` and `UPPER_CASE` for a global `const` is a code-review judgment that follows the principle above — lint cannot tell whether a value is bound to an external source.
+
+### 2.2 — Semantic identifiers
+
+A name should describe what the value _means_, not how it is implemented. Two patterns are enforced; the rest are guidance the reader will internalize.
+
+#### Rule: boolean variables are prefixed with `is`, `has`, `should`, or `can`
+
+**Why.** `user.active` could be a string, a count, an enum, or a boolean — the reader has to look. `user.isActive` ends the question. The four prefixes cover the natural shapes (state, possession, prescription, capability) without sprawling into synonyms.
+
+**✓ Example.**
+
+```ts
+const isAuthenticated = checkSession()
+const hasPermission = role === 'admin'
+const shouldRetry = attemptCount < maxAttempts
+const canEdit = user.role === 'editor'
+```
+
+**✗ Example.**
+
+```ts
+const authenticated = checkSession()  // is it bool, status string, or session object?
+const permission = role === 'admin'   // same question
+```
+
+**Exceptions.** _None._ Other tense prefixes (`will`, `did`, `was`) are not in the allowlist; if the meaning truly is past or future, restructure as a noun (`lastLoginAt`, `nextRunAt`).
+
+#### Rule: functions are imperative verbs; arrays are plural
+
+**Why.** `fetchUser` says what calling the function will do; `userFetcher` says what _kind of thing_ the function is, which is rarely the question at the call site. Plural array names (`users` vs `user`) prevent the off-by-one read where `user[0]` is mistaken for the only user.
+
+**✓ Example.**
+
+```ts
+function fetchUser(id: string): Promise<User> { /* … */ }
+const users: User[] = await fetchAllUsers()
+```
+
+**✗ Example.**
+
+```ts
+function userFetcher(id: string): Promise<User> { /* … */ }
+const user: User[] = await fetchAllUsers()  // plural collection, singular name
+```
+
+**Exceptions.** _Not lint-enforced._ This is reviewer guidance — the false-positive rate of a verb-detector lint rule is too high to be worth running.
+
+### 2.3 — Generic type parameters
+
+The rule lives in [Cat 1.4 — Generic type parameters](#14--generic-type-parameters); this sub-block is preserved for parity with the issue numbering. Type parameters are PascalCase with the `T` prefix (`T`, `TKey`, `TValue`).
+
+### 2.4 — File names
+
+A predictable filename shape matters more than which shape is picked, but a stack still has to pick one. The base stack picks kebab-case for portability (no case-sensitivity surprises across macOS / Linux / Windows) and matches the dominant convention in the Node ecosystem.
+
+#### Rule: file names are kebab-case
+
+**Why.** Mixed-case filenames silently break on case-insensitive filesystems (macOS default, Windows): a file `userService.ts` resolves the same as `UserService.ts` locally but not in CI. Kebab-case avoids the class entirely.
+
+**✓ Example.**
+
+```text
+src/users/user-service.ts
+src/orders/order-repository.ts
+src/lib/parse-currency.ts
+```
+
+**✗ Example.**
+
+```text
+src/users/UserService.ts
+src/users/userService.ts
+src/users/user_service.ts
+```
+
+**Exceptions.** Stacks built on top of `base` may legitimately need different cases for framework reasons (e.g., `app/[id]/page.tsx`, file-router conventions). When that happens, the downstream stack overrides this rule in its own ESLint block; the base rule remains kebab-case.
+
+#### Rule: one concept per file
+
+**Why.** A file named `user-service.ts` should export the user service and nothing else (helpers it uses internally are private, not co-exports). Files that bundle unrelated exports force the reader to scan the whole file to find the binding they came for, and they make the import line at the call site lie about its dependency.
+
+**Reviewer guidance.** _Not lint-enforced._ Tightly coupled types alongside the value they describe (`type User` next to `function isUser`) are fine; unrelated utilities crammed together are not.
+
+### 2.5 — No barrel files
+
+A barrel file (`index.ts` that re-exports from siblings) trades a tiny ergonomic gain for two real costs: it defeats tree-shaking (bundlers walk the whole barrel before deciding what to drop) and it creates subtle import cycles that are hard to debug.
+
+#### Rule: `export *` is forbidden
+
+**Why.** `export * from './x'` is the construct that turns `index.ts` into a barrel. Banning the construct is more precise than banning the filename — it allows `index.ts` to exist as a real module (containing actual code) while ruling out the re-export-only pattern. The fix at the call site is one extra path segment: `import { foo } from './module/foo'` instead of `import { foo } from './module'`.
+
+**✓ Example.**
+
+```ts
+// in user-service.ts
+export function fetchUser(id: string) { /* … */ }
+export function deleteUser(id: string) { /* … */ }
+
+// at the call site
+import { fetchUser } from './users/user-service'
+```
+
+**✗ Example.**
+
+```ts
+// in users/index.ts
+export * from './user-service'
+export * from './user-repository'
+
+// at the call site
+import { fetchUser } from './users'   // bundler can't drop the unused exports
+```
+
+**Exceptions.** _None._ The lint rule (`no-restricted-syntax` on `ExportAllDeclaration`) bans every `export *` regardless of source — first-party or third-party. To re-export from a library, list the symbols explicitly: `export { foo, bar } from 'some-lib'`.
+
+## Cat 3 — Imports / Exports
+
+This category enforces a single, predictable shape for module boundaries: how a module exposes its API (sub-block 3.1), how a consumer pulls it in (sub-blocks 3.2–3.4), and what it is forbidden from importing (sub-blocks 3.5–3.6). Together with [Cat 2.5 — No barrel files](#25--no-barrel-files), the rules eliminate the recurring import-noise debates from review.
+
+### Required dependencies
+
+| Package | Min version | Role in this Cat |
+|---|---|---|
+| `eslint-plugin-import-x` | `^4.0.0` | Provides `no-default-export` (sub-block 3.1), `order` (sub-block 3.2), and `no-cycle` (sub-block 3.5). |
+
+`@typescript-eslint/consistent-type-imports` (sub-blocks 3.3 and 3.4) is provided by `typescript-eslint` (already required by Cat 1). `no-restricted-imports` (sub-block 3.6) is a core ESLint rule.
+
+> **Note on resolvers.** `import-x/no-cycle` and `import-x/order` resolve module paths via the default Node resolver. Projects that use TypeScript path aliases (`paths` in `tsconfig.json`) must add `eslint-import-resolver-typescript` and wire it into `settings['import-x/resolver-next']` themselves — the base config does not assume aliases exist. Minimum wiring:
+>
+> ```ts
+> import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript'
+>
+> // in eslint.config.ts, alongside the Cat 3 block:
+> { settings: { 'import-x/resolver-next': [createTypeScriptImportResolver({ alwaysTryTypes: true })] } }
+> ```
+
+### 3.1 — No default exports
+
+Default exports look ergonomic and cost nothing at first; the price shows up the first time someone renames the symbol or tries to tree-shake the file. Named exports avoid both costs without losing anything.
+
+#### Rule: `export default` is forbidden
+
+**Why.** Three concrete failure modes: (1) **rename does not propagate** — an IDE rename touches the source but not the call sites, because each call site picked its own binding name (`import Foo from './foo'`, `import Bar from './foo'`); (2) **tree-shaking is weaker** — the default becomes the module's namespace value, so bundlers cannot drop adjacent named exports as confidently; (3) **inconsistent naming at call sites is permitted by design**, which makes `git grep` for usages unreliable. Named exports avoid all three.
+
+**✓ Example.**
+
+```ts
+// in user-service.ts
+export function fetchUser(id: string) { /* … */ }
+
+// at the call site
+import { fetchUser } from './user-service'
+```
+
+**✗ Example.**
+
+```ts
+// in user-service.ts
+export default function fetchUser(id: string) { /* … */ }
+
+// at the call sites — both legal, both different
+import fetchUser from './user-service'
+import getUser from './user-service'
+```
+
+**Exceptions.** Root-level config files (`vite.config.ts`, `next.config.ts`, `playwright.config.ts`, etc.) match the glob `**/*.config.{ts,mts,cts,js,mjs,cjs}` and are exempted in the base config — most build tools load the file via `import('./tool.config').then((m) => m.default)` and have no way to consume a named export. Stacks that wrap frameworks with file-based routing (Next.js page/layout files, TanStack Start route files) own their own override on top of the base.
+
+### 3.2 — Import order
+
+Diff churn from import-order changes is pure noise — humans should not review or write it. The rule sorts imports into four groups, alphabetizes within each group, and inserts a blank line between groups. ESLint auto-fix does the work.
+
+#### Rule: imports are grouped, alphabetized, and separated by blank lines
+
+**Why.** A single canonical order means (1) the group a module belongs to is visible from its position alone (built-in vs npm vs first-party vs local), (2) review never argues about ordering, and (3) merges inside the import block are conflict-free more often, because both sides converge on the same order. Alphabetization removes the last bit of human judgement from the block.
+
+The four groups, in order:
+
+1. `builtin` — Node built-ins (`node:fs`, `node:path`, `crypto`).
+2. `external` — npm packages (`react`, `zod`, `typescript-eslint`).
+3. `internal` — first-party modules referenced by alias (`@/lib/users`). The `internal` group is empty unless a path resolver is wired up — see the resolver note above.
+4. `parent` + `sibling` + `index` — relative imports (`../config`, `./helpers`, `./`), collapsed into one group.
+
+Type imports are placed inside their physical group (a type import from `'react'` lives in `external`, not in a separate trailing group); the split between value and type imports is enforced by sub-block 3.4, which puts them in their own statement.
+
+**✓ Example.**
+
+```ts
+import { readFile } from 'node:fs/promises'
+
+import { z } from 'zod'
+
+import { parseConfig } from '@/lib/config'
+
+import { logger } from '../logger'
+import { format } from './format'
+```
+
+**✗ Example.**
+
+```ts
+import { format } from './format'
+import { z } from 'zod'
+import { readFile } from 'node:fs/promises'
+import { parseConfig } from '@/lib/config'
+import { logger } from '../logger'
+```
+
+**Exceptions.** _None._ The rule is auto-fixable; running ESLint with `--fix` produces the canonical order.
+
+### 3.3 — Type-only imports use `import type`
+
+The compiler can elide imports that are used only as types — but only if they are written as `import type`. `verbatimModuleSyntax` (Cat 1.1) makes this mandatory at the compiler level; the ESLint rule auto-fixes existing code to match.
+
+#### Rule: type-only imports are written as `import type` (or `import { type X }`)
+
+**Why.** Without `import type`, the compiler keeps the import in the emitted JS even when the symbol is used only in a type position, which (a) breaks tree-shaking around the consumed module and (b) can cause runtime side-effect imports the author did not intend. Marking the intent at the import site lets the compiler elide cleanly.
+
+**On layering with `verbatimModuleSyntax`.** Cat 1.1 already turns `verbatimModuleSyntax` on, which is the compiler-level enforcement of this rule — and the [typescript-eslint docs explicitly recommend not running both `consistent-type-imports` and `verbatimModuleSyntax`](https://typescript-eslint.io/rules/consistent-type-imports/). The base stack runs both anyway, deliberately: the compiler errors but does not auto-fix, and `verbatimModuleSyntax` does not enforce the statement-split from sub-block 3.4 below. The known overlap modes (decorator metadata, `--isolatedDeclarations`) produce duplicate errors but no incorrect behaviour. The auto-fix and the split are the price of keeping the import block clean.
+
+**✓ Example.**
+
+```ts
+import type { User } from './user-types'
+
+import { fetchUser } from './user-service'
+```
+
+**✗ Example.**
+
+```ts
+import { User } from './user-types'   // value import, but used only as a type — kept in the emit
+
+import { fetchUser } from './user-service'
+```
+
+**Exceptions.** _None._ The compiler-level enforcement (`verbatimModuleSyntax`) leaves no slack here. See [sub-block 3.4](#34--type-imports-stay-in-their-own-statement) for the companion rule that prevents value and type imports from sharing a single statement.
+
+### 3.4 — Type imports stay in their own statement
+
+When a module exposes both runtime values and types, mixing them in one `import` statement (`import { fetchUser, type User } from './user'`) is legal but loses the visual signal that part of the import is type-only. The auto-fix splits them into two statements.
+
+#### Rule: `consistent-type-imports` with `fixStyle: 'separate-type-imports'`
+
+**Why.** Two single-purpose statements scan faster than one mixed statement: the eye sees the `import type` keyword and skips the line if it is looking for runtime usages. The cost is one extra line of imports per mixed module — paid back the first time a reader is hunting for value imports in a long block.
+
+**✓ Example.**
+
+```ts
+import type { User } from './user-types'
+
+import { fetchUser } from './user-service'
+```
+
+**✗ Example.**
+
+```ts
+import { fetchUser, type User } from './user-service'
+```
+
+**Exceptions.** _None._ The rule auto-fixes; nothing has to be done by hand.
+
+### 3.5 — No import cycles
+
+Two modules importing each other is almost always an accident. When it is intentional, the design is wrong: the shared piece should be extracted into a third module. Cycles also defeat tree-shaking and produce undefined-at-import-time bugs that only fire on the first call.
+
+#### Rule: `import-x/no-cycle` is enabled (`maxDepth: Infinity`, `ignoreExternal: true`)
+
+**Why.** A cycle through `n` modules turns into a `null` reference for the side that is loaded second — because the other side has not finished initializing when the first reference is taken. The bug is invisible until the import order changes (a new module is added, the bundler re-orders), at which point a previously-fine call site throws `TypeError: x is not a function`. The rule catches the cycle at lint time, before the runtime even loads. `ignoreExternal: true` skips cycles that pass through `node_modules` — those are the library author's problem and produce noisy false positives in apps.
+
+**Fix.** Extract the shared piece. If `a.ts` and `b.ts` both need `Foo`, move `Foo` into `foo.ts` and have both import from there.
+
+**Exceptions.** _None._ Cycles are extracted, not annotated.
+
+### 3.6 — Restricted imports
+
+A short denylist for libraries the platform now obsoletes. The error message points at the modern replacement so the fix is one search away.
+
+#### Rule: `lodash`, `lodash-es`, `moment`, `querystring`, `node:querystring` are forbidden
+
+**Why.** Each entry has a native or modern replacement that is smaller, faster, and already present in the runtime: `lodash` and `lodash-es` are obsoleted by ES2019+ array/object methods, `structuredClone`, and `Object.entries` / `Object.fromEntries`; `moment` is obsoleted by `Temporal`, `date-fns`, or `dayjs` (and is itself in maintenance mode); `querystring` is a deprecated Node built-in obsoleted by `URLSearchParams`. Reaching for the legacy library wastes bundle size and ties new code to an aging ecosystem.
+
+**✗ Example.**
+
+```ts
+import _ from 'lodash'
+import moment from 'moment'
+import qs from 'querystring'
+```
+
+**✓ Example.**
+
+```ts
+const unique = [...new Set(items)]
+const now = Temporal.Now.plainDateTimeISO()
+const params = new URLSearchParams({ q: 'search' })
+```
+
+**Exceptions.** _None for new code._ Migrating away from an existing dependency is a separate, scoped PR — the lint failure is the prompt.
+
+## Notes
+
+- Cross-references to specific principles use the form [Principle N — title](../../../docs/principles.md).
+- The ESLint config that enforces these Cats lives in [`stacks/base/config/eslint.config.ts`](../config/eslint.config.ts); the compiler flags live in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json).
+- Future Cats (4 — Errors & Async, 5 — Functions, 6 — Comments, 7 — Testing) will append sections below this one.
