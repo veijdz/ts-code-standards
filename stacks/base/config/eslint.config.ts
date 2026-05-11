@@ -1,7 +1,7 @@
-import tseslint from 'typescript-eslint'
-import unicorn from 'eslint-plugin-unicorn'
-import importX from 'eslint-plugin-import-x'
 import eslintComments from '@eslint-community/eslint-plugin-eslint-comments'
+import importX from 'eslint-plugin-import-x'
+import unicorn from 'eslint-plugin-unicorn'
+import tseslint from 'typescript-eslint'
 
 // Each rule category (Cat 1–7) appends its own config block here as it is written.
 // Rule rationale and exceptions are documented in stacks/base/docs/rules.md.
@@ -10,11 +10,15 @@ const nativeEsReplacementMessage =
   'Use native ES (Array.prototype, structuredClone, Object.entries, etc.).'
 
 export default tseslint.config(
+  // Registers the @typescript-eslint parser and plugin so the rules below resolve.
+  tseslint.configs.base,
   {
+    files: ['**/*.{ts,tsx,cts,mts}'],
     languageOptions: {
       parserOptions: {
         projectService: true,
-        tsconfigRootDir: import.meta.dirname,
+        // String at runtime (Node ≥20.11); cast satisfies type-aware lint when no @types/node is loaded.
+        tsconfigRootDir: import.meta.dirname as string,
       },
     },
   },
@@ -59,6 +63,12 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/naming-convention': [
         'error',
+        {
+          // Quoted property keys (eslint rule names, package names) are not identifiers.
+          selector: 'objectLiteralProperty',
+          format: null,
+          modifiers: ['requiresQuotes'],
+        },
         {
           selector: 'default',
           format: ['camelCase'],
@@ -135,8 +145,7 @@ export default tseslint.config(
         'error',
         {
           selector: 'ExportAllDeclaration',
-          message:
-            'Barrel files (export *) are banned. Import from the source module directly.',
+          message: 'Barrel files (export *) are banned. Import from the source module directly.',
         },
       ],
     },
@@ -226,10 +235,7 @@ export default tseslint.config(
   {
     files: ['**/*.{ts,tsx,cts,mts,js,jsx,cjs,mjs}'],
     rules: {
-      'max-lines-per-function': [
-        'error',
-        { max: 30, skipBlankLines: true, skipComments: true },
-      ],
+      'max-lines-per-function': ['error', { max: 30, skipBlankLines: true, skipComments: true }],
       'max-params': ['error', 3],
       complexity: ['error', 10],
       'max-depth': ['error', 3],
@@ -279,10 +285,7 @@ export default tseslint.config(
   {
     files: ['**/*.{test,spec}.{ts,tsx,cts,mts}'],
     rules: {
-      'max-lines-per-function': [
-        'error',
-        { max: 100, skipBlankLines: true, skipComments: true },
-      ],
+      'max-lines-per-function': ['error', { max: 100, skipBlankLines: true, skipComments: true }],
       'max-lines': ['error', 500],
     },
   },
