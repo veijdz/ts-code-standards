@@ -805,8 +805,243 @@ throw new Error('user not found') // forces callers to string-match
 
 **Exceptions.** Names are convention, not lint-enforced — the rule only checks structure. A project that needs different categories (`RateLimitedError`, `OutOfStockError`) is free to add them; the constraint is "names describe the category, not the symptom".
 
+## Cat 5 — Functions & Structure
+
+This category turns "how big a unit can be" into a hard ceiling. Functions stay short (sub-block 5.1), take few parameters (5.2), branch shallowly (5.3) and nest shallowly (5.4); files stay under a working-set ceiling (5.5). Module-level functions are named declarations so they hoist and surface in stack traces (5.6); arrow functions stay where they read best — inline at the call site (5.7).
+
+### Required dependencies
+
+All rules in this Cat are core ESLint — no additional packages required.
+
+### 5.1 — Functions stay under 30 effective lines
+
+Long functions accumulate responsibilities by accretion: each new branch lands in the same body because there is no friction to splitting. Capping the function at 30 lines of executable code (blank lines and comments do not count) makes the cost of "one more thing" visible — extracting a helper becomes cheaper than growing the body.
+
+#### Rule: `max-lines-per-function` set to `30` with `skipBlankLines` and `skipComments`
+
+**Why.** 30 is aggressive but still the median window a reader can hold on one screen without scrolling. Beyond that, the function stops being a unit and becomes a script: callers cannot predict its scope, edits cannot be reasoned about locally, and stack traces lose their narrative. The skip options are load-bearing — counting JSDoc and blank lines would punish the very habits (documentation, breathing room) that make a 30-line function readable.
+
+**✓ Example.**
+
+```ts
+function applyDiscount(order: Order, code: string): Order {
+  const rule = lookupRule(code)
+  if (!rule) return order
+  if (!isEligible(order, rule)) return order
+  return { ...order, total: order.total * (1 - rule.percent) }
+}
+```
+
+**✗ Example.**
+
+```ts
+function applyDiscount(order: Order, code: string): Order {
+  const rule = lookupRule(code)
+  if (!rule) {
+    log.warn('unknown discount code', { code })
+    return order
+  }
+  if (rule.expiresAt < Date.now()) {
+    log.info('discount code expired', { code, expiresAt: rule.expiresAt })
+    return order
+  }
+  if (rule.minimumTotal > order.total) {
+    log.info('order below minimum', { code, total: order.total, minimum: rule.minimumTotal })
+    return order
+  }
+  // …another 18 lines of stacked conditions
+}
+```
+
+**Exceptions.** Test files (`**/*.{test,spec}.{ts,tsx,cts,mts}`) raise the cap to 100. The `describe(name, () => { ... })` callback aggregates cohesive scenarios that read better as one suite than as fragmented sibling files; the 100-line ceiling still flags suites that should split into nested describes.
+
+### 5.2 — Functions take three parameters or fewer
+
+Beyond three positional arguments, call sites stop being self-documenting. `createUser(name, email, role, true, null)` is unreadable; `createUser({ name, email, role, isAdmin: true, parent: null })` reads itself. The fourth parameter is the trigger to convert to an options object.
+
+#### Rule: `max-params` set to `3`
+
+**Why.** Positional arguments rely on the reader knowing the parameter order, and that knowledge degrades as functions evolve. Three is the empirical threshold where the call site still parses (`fetch(url, options, signal)`); at four it requires opening the signature. An options object also gives every argument a name at the call site, makes optional arguments truly optional, and absorbs new parameters without breaking existing callers.
+
+**✓ Example.**
+
+```ts
+type CreateOrderInput = {
+  customerId: string
+  items: Item[]
+  coupon?: string
+  metadata?: Record<string, unknown>
+}
+
+function createOrder(input: CreateOrderInput): Order {
+  // …
+}
+
+createOrder({ customerId, items, coupon: 'SUMMER25' })
+```
+
+**✗ Example.**
+
+```ts
+function createOrder(
+  customerId: string,
+  items: Item[],
+  coupon: string | undefined,
+  metadata: Record<string, unknown>,
+): Order {
+  // …
+}
+
+createOrder(customerId, items, undefined, {}) // what is each arg again?
+```
+
+**Exceptions.** _None._ Class constructors, route handlers, and library callbacks all respect the three-arg ceiling — when a DI container or framework signature needs more, the destructured options object replaces them.
+
+### 5.3 — Cyclomatic complexity stays at or below 10
+
+Complexity counts independent paths through a function — every `if`, `case`, `&&`, `||`, ternary, and loop adds one. A function with complexity above 10 has more execution paths than a reader can track while editing. The fix is the same as 5.1: extract.
+
+#### Rule: `complexity` set to `10`
+
+**Why.** 10 is the McCabe number — empirically the threshold above which functions become testing liabilities (you need more than ten test cases to cover every branch) and review liabilities (reviewers can no longer reason about what an edit broke). Below 10, branches still parse linearly; above, the function is a state machine that should either be split or reified as a typed state object. The rule catches the case where path count grows incrementally — each new branch looks small, but the cumulative complexity is what matters.
+
+**✓ Example.**
+
+```ts
+function classify(score: number): Tier {
+  if (score >= 90) return 'gold'
+  if (score >= 70) return 'silver'
+  if (score >= 50) return 'bronze'
+  return 'none'
+}
+```
+
+**✗ Example.**
+
+```ts
+function classify(input: Input): Tier {
+  if (input.kind === 'paid' && input.score >= 90 && !input.flagged) return 'gold'
+  else if (input.kind === 'paid' && input.score >= 70) return 'silver'
+  else if (input.kind === 'free' && input.score >= 50 && input.referrals > 0) return 'silver'
+  else if (input.kind === 'paid' && input.score >= 50) return 'bronze'
+  else if (input.score >= 30 || input.referrals > 5) return 'bronze'
+  // …each new branch silently raises the count
+  return 'none'
+}
+```
+
+**Exceptions.** _None._ Reducers and parsers that genuinely have many cases belong in a lookup table or a typed state machine, not a stacked conditional.
+
+### 5.4 — Block nesting stays at or below three
+
+Three levels of `if`/`for`/`try` nesting is the practical maximum for a reader to track "where am I, and how did I get here". Beyond that, the indentation alone obscures what is executing.
+
+#### Rule: `max-depth` set to `3`
+
+**Why.** Nested blocks compound: at depth 4, a reader has to hold four simultaneous predicates to interpret the inner code. Early returns, guard clauses, and extracted helpers flatten the same logic to depth 1–2. Most depth-4 nests indicate one of: (a) a guard that was not extracted, (b) a loop body that should be its own function, or (c) a ternary chain disguised as nested ifs. Catching the violation while writing is cheap; refactoring a depth-5 monstrosity later is not.
+
+**✓ Example.**
+
+```ts
+function process(items: Item[]): Result[] {
+  if (items.length === 0) return []
+  return items.filter(isActive).map(toResult)
+}
+```
+
+**✗ Example.**
+
+```ts
+function process(items: Item[]): Result[] {
+  const out: Result[] = []
+  if (items.length > 0) {
+    for (const item of items) {
+      if (item.active) {
+        if (item.score > 0) {
+          out.push(toResult(item)) // depth 4 — reader has lost the predicates
+        }
+      }
+    }
+  }
+  return out
+}
+```
+
+**Exceptions.** _None._
+
+### 5.5 — Files stay under 300 lines
+
+A file is a working-set boundary: everything in it loads into the reader's head at once. 300 lines is the threshold beyond which navigation (open file → find symbol → understand context) starts costing more than splitting.
+
+#### Rule: `max-lines` set to `300`
+
+**Why.** 300 is not about file load time — it is about cognitive load. Beyond 300 lines, IDE "jump to symbol" becomes faster than scrolling, which means the file has stopped being a unit. The rule fires during writing, not after the 800-line monolith already exists; that is when the split decision is cheap. Paired with sub-block 5.1, a healthy file holds roughly 5–10 functions plus their types and a small amount of module-scope setup — the natural density of one cohesive concept.
+
+**Exceptions.** Test files (`**/*.{test,spec}.{ts,tsx,cts,mts}`) raise the cap to 500. Integration suites benefit from grouping many scenarios in one file (shared fixtures, shared setup, shared narrative); the 500 ceiling still flags suites that should split by feature or scenario family.
+
+### 5.6 — Module-level functions are declarations
+
+Functions exported or used at module scope are declared with `function`, not assigned from arrow expressions. The two have meaningful runtime differences: declarations hoist (so the order of definitions in the file becomes editorial, not load-bearing), and they carry a name at runtime (so the stack trace says `at applyDiscount` instead of `at <anonymous>`).
+
+#### Rule: `func-style` set to `'declaration'`
+
+**Why.** Hoisting lets the file read top-down (public surface first, helpers below) without forcing every helper to be defined before its first caller. The named-function-trace property is what makes errors actionable — every minute spent debugging an `<anonymous>` frame is a minute lost to a style choice. The rule's strict mode (no `allowArrowFunctions`) is intentional: an exported `const handleClick = () => { ... }` defeats both properties at once.
+
+**✓ Example.**
+
+```ts
+export function applyDiscount(order: Order, code: string): Order {
+  return computeNewTotal(order, lookupRule(code))
+}
+
+function lookupRule(code: string): Rule | undefined {
+  // declared below the public function — hoisting makes the order editorial
+}
+
+function computeNewTotal(order: Order, rule: Rule | undefined): Order {
+  // …
+}
+```
+
+**✗ Example.**
+
+```ts
+// arrow assigned to const at module top — fails on hoisting and on stack-trace name
+export const applyDiscount = (order: Order, code: string): Order => {
+  // …
+}
+```
+
+**Exceptions.** Inline arrows passed as arguments are not affected by this rule — they are not assigned to a variable. See [sub-block 5.7](#57--arrow-functions-stay-inline-at-the-call-site).
+
+### 5.7 — Arrow functions stay inline at the call site
+
+`func-style: 'declaration'` only flags arrows assigned to variables; arrows passed inline as arguments are unaffected. That asymmetry is intentional — inline arrows are how callbacks and JSX handlers should look, and a named function would add ceremony with no readability gain.
+
+#### Convention: arrows for inline callbacks and JSX handlers; declarations for everything else
+
+**Why.** Naming costs context. A 5-character `x => x.id` body, when promoted to a named helper, becomes a three-line declaration that adds no information; the reader of `arr.map(extractId)` then has to jump to the definition to learn what `extractId` does — a worse outcome than the inline lambda. The convention works because the boundary is sharp: if the function has a second caller it earns a name (and a `function` declaration); if it has one caller the inline expression _is_ the call-site documentation.
+
+**✓ Example.**
+
+```ts
+const ids = users.map(user => user.id)
+const active = users.filter(user => user.status === 'active')
+
+return <Button onClick={() => handleSubmit(form)}>Submit</Button>
+```
+
+**✗ Example.**
+
+```ts
+const extractId = (user: User) => user.id // module-top arrow assignment — flagged by 5.6
+const ids = users.map(extractId)
+```
+
+**Exceptions.** _None._ A named single-use helper indicates either (a) the call site needs explanation, in which case prefer a comment at the call site, or (b) the helper has multiple callers, in which case it earns a `function` declaration per [sub-block 5.6](#56--module-level-functions-are-declarations).
+
 ## Notes
 
 - Cross-references to specific principles use the form [Principle N — title](../../../docs/principles.md).
 - The ESLint config that enforces these Cats lives in [`stacks/base/config/eslint.config.ts`](../config/eslint.config.ts); the compiler flags live in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json).
-- Future Cats (5 — Functions, 6 — Comments, 7 — Testing) will append sections below this one.
+- Future Cats (6 — Comments, 7 — Testing) will append sections below this one.
