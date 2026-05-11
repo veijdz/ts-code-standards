@@ -8,10 +8,22 @@
     "node": ">=22.22.2"
   },
   "packageManager": "pnpm@11.0.9",
+  "prettier": "./stacks/base/config/.prettierrc.json",
   "pnpm": {
-    "onlyBuiltDependencies": ["lefthook", "unrs-resolver"]
+    "onlyBuiltDependencies": [
+      "lefthook",
+      "unrs-resolver"
+    ]
   },
-  "scripts": {},
+  "scripts": {
+    "prepare": "lefthook install",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "knip": "knip"
+  },
   "devDependencies": {
     "@commitlint/cli": "21.0.0",
     "@commitlint/config-conventional": "21.0.0",
