@@ -217,6 +217,25 @@ export default tseslint.config(
       'unicorn/prefer-type-error': 'error',
     },
   },
+  // === Cat 5 — Functions & Structure ===
+  // All rules in this Cat are core ESLint AST-only, so they span JS as well —
+  // a 200-line `vite.config.js` or a deeply-nested `.eslintrc.cjs` is a smell
+  // for the same reasons as in TS. The test-file override at the bottom raises
+  // the size caps for `**/*.{test,spec}.*`.
+  {
+    files: ['**/*.{ts,tsx,cts,mts,js,jsx,cjs,mjs}'],
+    rules: {
+      'max-lines-per-function': [
+        'error',
+        { max: 30, skipBlankLines: true, skipComments: true },
+      ],
+      'max-params': ['error', 3],
+      complexity: ['error', 10],
+      'max-depth': ['error', 3],
+      'max-lines': ['error', 300],
+      'func-style': ['error', 'declaration'],
+    },
+  },
   // Default exports are required by most config files (vite, next, playwright, etc.).
   {
     files: ['**/*.config.{ts,mts,cts,js,mjs,cjs}'],
@@ -229,6 +248,19 @@ export default tseslint.config(
     files: ['**/*.d.ts'],
     rules: {
       '@typescript-eslint/consistent-type-definitions': 'off',
+    },
+  },
+  // Test files have long `describe()` callbacks and many cohesive scenarios per
+  // file; raise the size caps from 30/300 to 100/500 so the rules still flag
+  // truly bloated specs without forcing fragmentation of normal suites.
+  {
+    files: ['**/*.{test,spec}.{ts,tsx,cts,mts}'],
+    rules: {
+      'max-lines-per-function': [
+        'error',
+        { max: 100, skipBlankLines: true, skipComments: true },
+      ],
+      'max-lines': ['error', 500],
     },
   },
 )
