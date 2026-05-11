@@ -421,8 +421,192 @@ import { fetchUser } from './users'   // bundler can't drop the unused exports
 
 **Exceptions.** _None._ The lint rule (`no-restricted-syntax` on `ExportAllDeclaration`) bans every `export *` regardless of source — first-party or third-party. To re-export from a library, list the symbols explicitly: `export { foo, bar } from 'some-lib'`.
 
+## Cat 3 — Imports / Exports
+
+This category enforces a single, predictable shape for module boundaries: how a module exposes its API (sub-block 3.1), how a consumer pulls it in (sub-blocks 3.2–3.4), and what it is forbidden from importing (sub-blocks 3.5–3.6). Together with [Cat 2.5 — No barrel files](#25--no-barrel-files), the rules eliminate the recurring import-noise debates from review.
+
+### Required dependencies
+
+| Package | Min version | Role in this Cat |
+|---|---|---|
+| `eslint-plugin-import-x` | `^4.0.0` | Provides `no-default-export` (sub-block 3.1), `order` (sub-block 3.2), and `no-cycle` (sub-block 3.5). |
+
+`@typescript-eslint/consistent-type-imports` (sub-blocks 3.3 and 3.4) is provided by `typescript-eslint` (already required by Cat 1). `no-restricted-imports` (sub-block 3.6) is a core ESLint rule.
+
+> **Note on resolvers.** `import-x/no-cycle` and `import-x/order` resolve module paths via the default Node resolver. Projects that use TypeScript path aliases (`paths` in `tsconfig.json`) must add `eslint-import-resolver-typescript` and wire it into `settings['import-x/resolver-next']` themselves — the base config does not assume aliases exist. Minimum wiring:
+>
+> ```ts
+> import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript'
+>
+> // in eslint.config.ts, alongside the Cat 3 block:
+> { settings: { 'import-x/resolver-next': [createTypeScriptImportResolver({ alwaysTryTypes: true })] } }
+> ```
+
+### 3.1 — No default exports
+
+Default exports look ergonomic and cost nothing at first; the price shows up the first time someone renames the symbol or tries to tree-shake the file. Named exports avoid both costs without losing anything.
+
+#### Rule: `export default` is forbidden
+
+**Why.** Three concrete failure modes: (1) **rename does not propagate** — an IDE rename touches the source but not the call sites, because each call site picked its own binding name (`import Foo from './foo'`, `import Bar from './foo'`); (2) **tree-shaking is weaker** — the default becomes the module's namespace value, so bundlers cannot drop adjacent named exports as confidently; (3) **inconsistent naming at call sites is permitted by design**, which makes `git grep` for usages unreliable. Named exports avoid all three.
+
+**✓ Example.**
+
+```ts
+// in user-service.ts
+export function fetchUser(id: string) { /* … */ }
+
+// at the call site
+import { fetchUser } from './user-service'
+```
+
+**✗ Example.**
+
+```ts
+// in user-service.ts
+export default function fetchUser(id: string) { /* … */ }
+
+// at the call sites — both legal, both different
+import fetchUser from './user-service'
+import getUser from './user-service'
+```
+
+**Exceptions.** Root-level config files (`vite.config.ts`, `next.config.ts`, `playwright.config.ts`, etc.) match the glob `**/*.config.{ts,mts,cts,js,mjs,cjs}` and are exempted in the base config — most build tools load the file via `import('./tool.config').then((m) => m.default)` and have no way to consume a named export. Stacks that wrap frameworks with file-based routing (Next.js page/layout files, TanStack Start route files) own their own override on top of the base.
+
+### 3.2 — Import order
+
+Diff churn from import-order changes is pure noise — humans should not review or write it. The rule sorts imports into four groups, alphabetizes within each group, and inserts a blank line between groups. ESLint auto-fix does the work.
+
+#### Rule: imports are grouped, alphabetized, and separated by blank lines
+
+**Why.** A single canonical order means (1) the group a module belongs to is visible from its position alone (built-in vs npm vs first-party vs local), (2) review never argues about ordering, and (3) merges inside the import block are conflict-free more often, because both sides converge on the same order. Alphabetization removes the last bit of human judgement from the block.
+
+The four groups, in order:
+
+1. `builtin` — Node built-ins (`node:fs`, `node:path`, `crypto`).
+2. `external` — npm packages (`react`, `zod`, `typescript-eslint`).
+3. `internal` — first-party modules referenced by alias (`@/lib/users`). The `internal` group is empty unless a path resolver is wired up — see the resolver note above.
+4. `parent` + `sibling` + `index` — relative imports (`../config`, `./helpers`, `./`), collapsed into one group.
+
+Type imports are placed inside their physical group (a type import from `'react'` lives in `external`, not in a separate trailing group); the split between value and type imports is enforced by sub-block 3.4, which puts them in their own statement.
+
+**✓ Example.**
+
+```ts
+import { readFile } from 'node:fs/promises'
+
+import { z } from 'zod'
+
+import { parseConfig } from '@/lib/config'
+
+import { logger } from '../logger'
+import { format } from './format'
+```
+
+**✗ Example.**
+
+```ts
+import { format } from './format'
+import { z } from 'zod'
+import { readFile } from 'node:fs/promises'
+import { parseConfig } from '@/lib/config'
+import { logger } from '../logger'
+```
+
+**Exceptions.** _None._ The rule is auto-fixable; running ESLint with `--fix` produces the canonical order.
+
+### 3.3 — Type-only imports use `import type`
+
+The compiler can elide imports that are used only as types — but only if they are written as `import type`. `verbatimModuleSyntax` (Cat 1.1) makes this mandatory at the compiler level; the ESLint rule auto-fixes existing code to match.
+
+#### Rule: type-only imports are written as `import type` (or `import { type X }`)
+
+**Why.** Without `import type`, the compiler keeps the import in the emitted JS even when the symbol is used only in a type position, which (a) breaks tree-shaking around the consumed module and (b) can cause runtime side-effect imports the author did not intend. Marking the intent at the import site lets the compiler elide cleanly.
+
+**On layering with `verbatimModuleSyntax`.** Cat 1.1 already turns `verbatimModuleSyntax` on, which is the compiler-level enforcement of this rule — and the [typescript-eslint docs explicitly recommend not running both `consistent-type-imports` and `verbatimModuleSyntax`](https://typescript-eslint.io/rules/consistent-type-imports/). The base stack runs both anyway, deliberately: the compiler errors but does not auto-fix, and `verbatimModuleSyntax` does not enforce the statement-split from sub-block 3.4 below. The known overlap modes (decorator metadata, `--isolatedDeclarations`) produce duplicate errors but no incorrect behaviour. The auto-fix and the split are the price of keeping the import block clean.
+
+**✓ Example.**
+
+```ts
+import type { User } from './user-types'
+
+import { fetchUser } from './user-service'
+```
+
+**✗ Example.**
+
+```ts
+import { User } from './user-types'   // value import, but used only as a type — kept in the emit
+
+import { fetchUser } from './user-service'
+```
+
+**Exceptions.** _None._ The compiler-level enforcement (`verbatimModuleSyntax`) leaves no slack here. See [sub-block 3.4](#34--type-imports-stay-in-their-own-statement) for the companion rule that prevents value and type imports from sharing a single statement.
+
+### 3.4 — Type imports stay in their own statement
+
+When a module exposes both runtime values and types, mixing them in one `import` statement (`import { fetchUser, type User } from './user'`) is legal but loses the visual signal that part of the import is type-only. The auto-fix splits them into two statements.
+
+#### Rule: `consistent-type-imports` with `fixStyle: 'separate-type-imports'`
+
+**Why.** Two single-purpose statements scan faster than one mixed statement: the eye sees the `import type` keyword and skips the line if it is looking for runtime usages. The cost is one extra line of imports per mixed module — paid back the first time a reader is hunting for value imports in a long block.
+
+**✓ Example.**
+
+```ts
+import type { User } from './user-types'
+
+import { fetchUser } from './user-service'
+```
+
+**✗ Example.**
+
+```ts
+import { fetchUser, type User } from './user-service'
+```
+
+**Exceptions.** _None._ The rule auto-fixes; nothing has to be done by hand.
+
+### 3.5 — No import cycles
+
+Two modules importing each other is almost always an accident. When it is intentional, the design is wrong: the shared piece should be extracted into a third module. Cycles also defeat tree-shaking and produce undefined-at-import-time bugs that only fire on the first call.
+
+#### Rule: `import-x/no-cycle` is enabled (`maxDepth: Infinity`, `ignoreExternal: true`)
+
+**Why.** A cycle through `n` modules turns into a `null` reference for the side that is loaded second — because the other side has not finished initializing when the first reference is taken. The bug is invisible until the import order changes (a new module is added, the bundler re-orders), at which point a previously-fine call site throws `TypeError: x is not a function`. The rule catches the cycle at lint time, before the runtime even loads. `ignoreExternal: true` skips cycles that pass through `node_modules` — those are the library author's problem and produce noisy false positives in apps.
+
+**Fix.** Extract the shared piece. If `a.ts` and `b.ts` both need `Foo`, move `Foo` into `foo.ts` and have both import from there.
+
+**Exceptions.** _None._ Cycles are extracted, not annotated.
+
+### 3.6 — Restricted imports
+
+A short denylist for libraries the platform now obsoletes. The error message points at the modern replacement so the fix is one search away.
+
+#### Rule: `lodash`, `lodash-es`, `moment`, `querystring`, `node:querystring` are forbidden
+
+**Why.** Each entry has a native or modern replacement that is smaller, faster, and already present in the runtime: `lodash` and `lodash-es` are obsoleted by ES2019+ array/object methods, `structuredClone`, and `Object.entries` / `Object.fromEntries`; `moment` is obsoleted by `Temporal`, `date-fns`, or `dayjs` (and is itself in maintenance mode); `querystring` is a deprecated Node built-in obsoleted by `URLSearchParams`. Reaching for the legacy library wastes bundle size and ties new code to an aging ecosystem.
+
+**✗ Example.**
+
+```ts
+import _ from 'lodash'
+import moment from 'moment'
+import qs from 'querystring'
+```
+
+**✓ Example.**
+
+```ts
+const unique = [...new Set(items)]
+const now = Temporal.Now.plainDateTimeISO()
+const params = new URLSearchParams({ q: 'search' })
+```
+
+**Exceptions.** _None for new code._ Migrating away from an existing dependency is a separate, scoped PR — the lint failure is the prompt.
+
 ## Notes
 
 - Cross-references to specific principles use the form [Principle N — title](../../../docs/principles.md).
 - The ESLint config that enforces these Cats lives in [`stacks/base/config/eslint.config.ts`](../config/eslint.config.ts); the compiler flags live in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json).
-- Future Cats (3 — Imports/Exports, 4 — Errors & Async, 5 — Functions, 6 — Comments, 7 — Testing) will append sections below this one.
+- Future Cats (4 — Errors & Async, 5 — Functions, 6 — Comments, 7 — Testing) will append sections below this one.
