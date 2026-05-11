@@ -19,7 +19,7 @@ Guidance for AI agents working on this repository.
     └── base/
         ├── config/        # tsconfig, eslint, prettier, lefthook, commitlint, knip
         └── docs/
-            └── rules.md   # 7 rule categories for the base stack
+            └── rules.md   # base stack rules (lands progressively in VEI-416..422)
 ```
 
 Future stacks: `node` (extends `base`), `nestjs` (extends `node`), `expo` and `tanstack-start` (both extend `base`).
@@ -46,9 +46,9 @@ Future stacks: `node` (extends `base`), `nestjs` (extends `node`), `expo` and `t
 
 ## Where to find things
 
-- **Foundational principles:** `docs/principles.md` (lands in VEI-411)
-- **Conventions:** `docs/conventions/{deps,git,testing,github-settings}.md`
+- **Foundational principles:** `docs/principles.md`
+- **Conventions:** `docs/conventions/{deps,git,testing,github-settings}.md` (`github-settings` lands in VEI-447)
 - **ADRs:** `docs/adr/NNNN-<slug>.md`
-- **Base stack rules:** `stacks/base/docs/rules.md`
+- **Base stack rules:** `stacks/base/docs/rules.md` (lands progressively in VEI-416..422)
 - **Base stack copyable configs:** `stacks/base/config/`
-- **Documentation templates:** `docs/_templates/` (lands in VEI-444)
+- **Documentation templates:** `docs/_templates/`
