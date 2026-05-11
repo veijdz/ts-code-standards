@@ -600,4 +600,4 @@ const params = new URLSearchParams({ q: 'search' })
 
 - Cross-references to specific principles use the form [Principle N — title](../../../docs/principles.md).
 - The ESLint config that enforces these Cats lives in [`stacks/base/config/eslint.config.ts`](../config/eslint.config.ts); the compiler flags live in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json).
-- Future Cats (3 — Imports/Exports, 4 — Errors & Async, 5 — Functions, 6 — Comments, 7 — Testing) will append sections below this one.
+- Future Cats (4 — Errors & Async, 5 — Functions, 6 — Comments, 7 — Testing) will append sections below this one.
