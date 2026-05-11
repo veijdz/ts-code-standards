@@ -195,11 +195,19 @@ export default tseslint.config(
   // and live in stacks/base/docs/rules.md only — there is no mainstream lint rule
   // for either, and bolting on ad-hoc `no-restricted-syntax` matchers would catch
   // accidental shape but miss the intent.
+  // `no-empty` (sub-block 4.1) is core ESLint and AST-only, so it spans JS as well —
+  // empty `catch {}` is a defect in `.config.{js,mjs,cjs}` files too. The remaining
+  // rules in this Cat need type information, so they stay TS-only.
+  {
+    files: ['**/*.{ts,tsx,cts,mts,js,jsx,cjs,mjs}'],
+    rules: {
+      'no-empty': ['error', { allowEmptyCatch: false }],
+    },
+  },
   {
     files: ['**/*.{ts,tsx,cts,mts}'],
     plugins: { unicorn },
     rules: {
-      'no-empty': ['error', { allowEmptyCatch: false }],
       '@typescript-eslint/only-throw-error': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/return-await': ['error', 'in-try-catch'],
