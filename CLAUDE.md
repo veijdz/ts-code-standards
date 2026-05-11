@@ -37,7 +37,7 @@ Future stacks: `node` (extends `base`), `nestjs` (extends `node`), `expo` and `t
 
 - **Before starting any issue:** read the description and acceptance criteria of the issue in full — they are the contract.
 - **One issue = one PR.** Do not mix scope.
-- **Branch:** `<type>/<short-slug>`, where `<type>` matches the Conventional Commits type enum and `<slug>` is kebab-case (e.g., `docs/typescript-rules`, `chore/ci-min`, `feat/auth-magic-link`). Do not embed ticket IDs in the branch name.
+- **Branch:** `<type>/<short-slug>`, where `<type>` matches the Conventional Commits type enum and `<short-slug>` is kebab-case (e.g., `docs/typescript-rules`, `chore/ci-min`, `feat/auth-magic-link`). Do not embed ticket IDs in the branch name.
 - **Branch base:** `staging` (not `main`). PRs also target `staging`.
 - **Commits:** Conventional Commits, lowercase subject, header ≤72 chars. No ticket references in commit subjects.
 - **PR body:** `## Summary` + `## Test plan`. No AI attribution footer.

@@ -27,7 +27,7 @@ Applies to every commit, branch, and PR in this repo and in any project that ado
 
 - **Rule.** The `scope` is optional, lowercase, and refers to a feature area or module — not a file path or ticket ID.
   - **Why.** Scopes are read alongside the subject in `git log`; long file paths are noise. Ticket IDs already live in the PR description.
-  - **How.** Example: `feat(auth): support magic-link login`. Not `feat(src/auth/handler.ts):` and not `feat(PROJ-123):`.
+  - **How.** Example: `feat(auth): support magic-link login`. Not `feat(src/auth/handler.ts):` and not `feat(<TICKET>-123):`.
 
 ### Subject line
 
@@ -71,7 +71,7 @@ Applies to every commit, branch, and PR in this repo and in any project that ado
 
 - **Rule.** The PR title follows Conventional Commits and is what ends up in the squash-merge commit on `staging`.
   - **Why.** With squash merge, the PR title becomes the single permanent record of the change. It must satisfy the same parseable format as a commit.
-  - **How.** Title example: `docs: add foundational principles`. If the project uses an issue tracker, an optional reference may be appended in parentheses (e.g., `docs: add foundational principles (#42)` or `(PROJ-123)`); the choice of where to place tracker references — title, body, or both — is the project's call. Tracker references must never appear in standalone commit subjects.
+  - **How.** Title example: `docs: add foundational principles`. If the project uses an issue tracker, an optional reference may be appended in parentheses (e.g., `docs: add foundational principles (#42)` or `(<TICKET>-123)`); the choice of where to place tracker references — title, body, or both — is the project's call. Tracker references must never appear in standalone commit subjects.
 
 - **Rule.** The PR body has two sections: `## Summary` (bullets of what changed and why) and `## Test plan` (checklist of how the reviewer can verify).
   - **Why.** A reviewer should not have to read the diff to know what they are checking. The two sections answer "what" and "how do I trust it".

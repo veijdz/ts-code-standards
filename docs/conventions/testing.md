@@ -7,7 +7,7 @@ last-reviewed: 2026-05-10
 
 # Conventions — Testing
 
-> Test taxonomy, layout, naming, and the parts that are non-negotiable (no DB mocks, coverage as diagnostic). Derives from [Principle 7 — Tests cover behavior, not implementation](../principles.md). Stack-specific runner and tooling rules live in the stack's `rules.md` (base in `stacks/base/docs/rules.md`, Cat 7 — not yet published).
+> Test taxonomy, layout, naming, and the parts that are non-negotiable (no DB mocks, coverage as diagnostic). Derives from [Principle 7 — Tests cover behavior, not implementation](../principles.md). Stack-specific runner and tooling rules live in the stack's `rules.md` (Cat 7 of `stacks/base/docs/rules.md`, not yet written).
 
 ## Scope
 
