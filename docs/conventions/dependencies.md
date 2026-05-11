@@ -29,30 +29,30 @@ Applies to every package listed in `package.json` (runtime, dev, peer, optional)
 
 Reach for the platform first. These are the most common substitutions; the principle generalizes to anything the platform already does.
 
-| Native (ES2024 / Node 22 LTS) | Replaces |
-|---|---|
-| `fetch` (global) | `axios`, `got`, `node-fetch` |
-| `structuredClone` | `lodash.clonedeep`, `rfdc` |
-| `Object.groupBy`, `Map.groupBy` | `lodash.groupby` |
-| `Promise.withResolvers` | manual deferred wrappers, `p-defer` |
-| `Array.prototype.toSorted` / `.toReversed` / `.toSpliced` | mutation + clone helpers |
-| `Array.prototype.findLast` / `.findLastIndex` | `lodash.findlast` |
-| `Iterator.prototype.map` / `.filter` / `.take` | eager array transforms when the input is large |
-| `URL`, `URLSearchParams` | `query-string`, `qs`, `url-parse` |
-| `node:test` + `node:assert` | a test runner for trivial scripts |
-| `node:crypto` `randomUUID`, `subtle` | `uuid`, `nanoid` (when v4 UUID is what you need) |
-| `Intl.DateTimeFormat`, `Intl.NumberFormat`, `Intl.Collator` | `numeral`, locale string helpers |
+| Native (ES2024 / Node 22 LTS)                               | Replaces                                         |
+| ----------------------------------------------------------- | ------------------------------------------------ |
+| `fetch` (global)                                            | `axios`, `got`, `node-fetch`                     |
+| `structuredClone`                                           | `lodash.clonedeep`, `rfdc`                       |
+| `Object.groupBy`, `Map.groupBy`                             | `lodash.groupby`                                 |
+| `Promise.withResolvers`                                     | manual deferred wrappers, `p-defer`              |
+| `Array.prototype.toSorted` / `.toReversed` / `.toSpliced`   | mutation + clone helpers                         |
+| `Array.prototype.findLast` / `.findLastIndex`               | `lodash.findlast`                                |
+| `Iterator.prototype.map` / `.filter` / `.take`              | eager array transforms when the input is large   |
+| `URL`, `URLSearchParams`                                    | `query-string`, `qs`, `url-parse`                |
+| `node:test` + `node:assert`                                 | a test runner for trivial scripts                |
+| `node:crypto` `randomUUID`, `subtle`                        | `uuid`, `nanoid` (when v4 UUID is what you need) |
+| `Intl.DateTimeFormat`, `Intl.NumberFormat`, `Intl.Collator` | `numeral`, locale string helpers                 |
 
 ### Banned packages
 
 The following are not allowed anywhere in the dependency tree. CI must fail when one is introduced.
 
-| Package | Reason |
-|---|---|
-| `lodash`, `lodash-es` | Modern platform equivalents (`structuredClone`, `Object.groupBy`, native array methods) cover the vast majority of real usage. Tree-shaking is not a counter-argument — if the function exists natively, importing it is still pure overhead. |
-| `underscore` | Superseded by both `lodash` (also banned) and the native methods that supersede `lodash`. |
-| `moment` | Legacy mode upstream; large bundle, mutable Date semantics, no tree-shaking. Use the native `Date` + `Intl` for most needs, `date-fns` or `dayjs` when arithmetic helpers are required. |
-| `querystring` (the npm package) | Node's built-in `querystring` is also legacy. Use `URL` / `URLSearchParams` instead. |
+| Package                         | Reason                                                                                                                                                                                                                                        |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lodash`, `lodash-es`           | Modern platform equivalents (`structuredClone`, `Object.groupBy`, native array methods) cover the vast majority of real usage. Tree-shaking is not a counter-argument — if the function exists natively, importing it is still pure overhead. |
+| `underscore`                    | Superseded by both `lodash` (also banned) and the native methods that supersede `lodash`.                                                                                                                                                     |
+| `moment`                        | Legacy mode upstream; large bundle, mutable Date semantics, no tree-shaking. Use the native `Date` + `Intl` for most needs, `date-fns` or `dayjs` when arithmetic helpers are required.                                                       |
+| `querystring` (the npm package) | Node's built-in `querystring` is also legacy. Use `URL` / `URLSearchParams` instead.                                                                                                                                                          |
 
 ### Lockfile discipline
 

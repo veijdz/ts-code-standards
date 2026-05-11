@@ -14,10 +14,10 @@ last-reviewed: 2026-05-11
 
 ### Required dependencies
 
-| Package | Min version | Role in this Cat |
-|---|---|---|
-| `typescript` | `^5.0.0` | Compiler that enforces the flags in sub-block 1.1. |
-| `typescript-eslint` | `^8.0.0` | Provides the rules in sub-blocks 1.2 – 1.5. |
+| Package             | Min version | Role in this Cat                                   |
+| ------------------- | ----------- | -------------------------------------------------- |
+| `typescript`        | `^5.0.0`    | Compiler that enforces the flags in sub-block 1.1. |
+| `typescript-eslint` | `^8.0.0`    | Provides the rules in sub-blocks 1.2 – 1.5.        |
 
 ### 1.1 — Compiler flags
 
@@ -29,20 +29,20 @@ The compiler is the first line of defense. Every flag below is non-negotiable: e
 
 The full set, configured in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json):
 
-| Flag | What it adds beyond `strict` |
-|---|---|
-| `strict` | Enables `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `alwaysStrict`. |
-| `noUncheckedIndexedAccess` | Treats `arr[i]` and `obj[key]` as `T \| undefined`. Forces narrowing before use. |
-| `exactOptionalPropertyTypes` | Distinguishes "property absent" from "property set to `undefined`". Critical for API contracts. |
-| `noImplicitOverride` | Requires the `override` keyword when subclassing — catches stale overrides after a base-class rename. |
-| `noImplicitReturns` | Every code path in a function must return (or none). Catches missing branches. |
-| `noFallthroughCasesInSwitch` | Forces `break` / `return` / `throw` between non-empty cases. |
-| `noUnusedLocals` | Errors on unused local bindings. |
-| `noUnusedParameters` | Errors on unused parameters (prefix with `_` to opt out). |
-| `noPropertyAccessFromIndexSignature` | Requires `obj['unknownKey']` instead of `obj.unknownKey` when the key is not declared on the type. Surfaces typos. |
-| `isolatedModules` | Each file must be transpilable in isolation — required by `tsc --build`, esbuild, swc, and Vite. |
-| `verbatimModuleSyntax` | Imports/exports are emitted exactly as written. Forces `import type` for type-only imports. |
-| `skipLibCheck` | Skips type-checking of declaration files in `node_modules`. Speeds up `tsc` significantly with no real loss — third-party types fail at consumption sites anyway. |
+| Flag                                 | What it adds beyond `strict`                                                                                                                                      |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `strict`                             | Enables `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `alwaysStrict`.                        |
+| `noUncheckedIndexedAccess`           | Treats `arr[i]` and `obj[key]` as `T \| undefined`. Forces narrowing before use.                                                                                  |
+| `exactOptionalPropertyTypes`         | Distinguishes "property absent" from "property set to `undefined`". Critical for API contracts.                                                                   |
+| `noImplicitOverride`                 | Requires the `override` keyword when subclassing — catches stale overrides after a base-class rename.                                                             |
+| `noImplicitReturns`                  | Every code path in a function must return (or none). Catches missing branches.                                                                                    |
+| `noFallthroughCasesInSwitch`         | Forces `break` / `return` / `throw` between non-empty cases.                                                                                                      |
+| `noUnusedLocals`                     | Errors on unused local bindings.                                                                                                                                  |
+| `noUnusedParameters`                 | Errors on unused parameters (prefix with `_` to opt out).                                                                                                         |
+| `noPropertyAccessFromIndexSignature` | Requires `obj['unknownKey']` instead of `obj.unknownKey` when the key is not declared on the type. Surfaces typos.                                                |
+| `isolatedModules`                    | Each file must be transpilable in isolation — required by `tsc --build`, esbuild, swc, and Vite.                                                                  |
+| `verbatimModuleSyntax`               | Imports/exports are emitted exactly as written. Forces `import type` for type-only imports.                                                                       |
+| `skipLibCheck`                       | Skips type-checking of declaration files in `node_modules`. Speeds up `tsc` significantly with no real loss — third-party types fail at consumption sites anyway. |
 
 **Exceptions.** _None._ A project that needs to relax any of these flags has a deeper problem (legacy migration, generated code) and should isolate the relaxation in a separate `tsconfig.<scope>.json`, not weaken the base.
 
@@ -77,13 +77,13 @@ function parseUser(input: any): User {
 
 **Why.** Even with `no-explicit-any` on, `any` still creeps in: `JSON.parse`, untyped libraries, `Function` parameters, dynamic property access. The `no-unsafe-*` family closes those routes one by one.
 
-| Rule | What it catches |
-|---|---|
-| `no-unsafe-argument` | Passing `any` as an argument to a typed function. |
-| `no-unsafe-assignment` | Assigning `any` to a typed binding. |
-| `no-unsafe-call` | Calling a value typed as `any`. |
-| `no-unsafe-member-access` | Reading a property off `any`. |
-| `no-unsafe-return` | Returning `any` from a function with a non-`any` return type. |
+| Rule                      | What it catches                                               |
+| ------------------------- | ------------------------------------------------------------- |
+| `no-unsafe-argument`      | Passing `any` as an argument to a typed function.             |
+| `no-unsafe-assignment`    | Assigning `any` to a typed binding.                           |
+| `no-unsafe-call`          | Calling a value typed as `any`.                               |
+| `no-unsafe-member-access` | Reading a property off `any`.                                 |
+| `no-unsafe-return`        | Returning `any` from a function with a non-`any` return type. |
 
 **Exceptions.** _None._ Use `unknown` and narrow.
 
@@ -233,9 +233,9 @@ This category is the concrete enforcement of [Principle 11 — Clarity over brev
 
 ### Required dependencies
 
-| Package | Min version | Role in this Cat |
-|---|---|---|
-| `eslint-plugin-unicorn` | `^56.0.0` | Provides `filename-case` (sub-block 2.4) and `prevent-abbreviations` (applies to identifier shape across the whole Cat). |
+| Package                 | Min version | Role in this Cat                                                                                                         |
+| ----------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `eslint-plugin-unicorn` | `^56.0.0`   | Provides `filename-case` (sub-block 2.4) and `prevent-abbreviations` (applies to identifier shape across the whole Cat). |
 
 The `@typescript-eslint/naming-convention` rule from sub-blocks 2.1–2.3 is provided by `typescript-eslint` (already required by Cat 1).
 
@@ -253,14 +253,18 @@ Three cases, applied consistently per element kind. The compiler does not police
 
 ```ts
 const userCount = 42
-function fetchUser(userId: string) { /* … */ }
+function fetchUser(userId: string) {
+  /* … */
+}
 ```
 
 **✗ Example.**
 
 ```ts
 const UserCount = 42
-function FetchUser(user_id: string) { /* … */ }
+function FetchUser(user_id: string) {
+  /* … */
+}
 ```
 
 **Exceptions.** Default and namespace imports keep their source name (the `import` selector allows both `camelCase` and `PascalCase`); named imports (`import { foo } from '…'`) are not constrained by this rule because the library picks the binding shape. A leading underscore is permitted to mark a deliberately unused binding (`_unused`).
@@ -273,15 +277,22 @@ function FetchUser(user_id: string) { /* … */ }
 
 ```ts
 type User = { id: string }
-class OrderRepository { /* … */ }
-enum OrderStatus { Pending, Shipped }
+class OrderRepository {
+  /* … */
+}
+enum OrderStatus {
+  Pending,
+  Shipped,
+}
 ```
 
 **✗ Example.**
 
 ```ts
 type user = { id: string }
-class orderRepository { /* … */ }
+class orderRepository {
+  /* … */
+}
 ```
 
 #### Rule: global `const` may be `UPPER_CASE` only when bound to an external, immutable value
@@ -291,18 +302,18 @@ class orderRepository { /* … */ }
 **✓ Example.**
 
 ```ts
-const MAX_RETRY_COUNT = 5         // protocol-level cap, written once, read everywhere
-const DATABASE_URL = process.env.DATABASE_URL ?? ''   // external, immutable
+const MAX_RETRY_COUNT = 5 // protocol-level cap, written once, read everywhere
+const DATABASE_URL = process.env.DATABASE_URL ?? '' // external, immutable
 
-const defaultPageSize = 20        // tunable, app-internal — camelCase
-const cacheTtlMs = 30_000         // ditto
+const defaultPageSize = 20 // tunable, app-internal — camelCase
+const cacheTtlMs = 30_000 // ditto
 ```
 
 **✗ Example.**
 
 ```ts
-const DEFAULT_PAGE_SIZE = 20      // app-level config, not external — should be camelCase
-const FETCH_USER_URL = '/api/u'   // app-level route, not external
+const DEFAULT_PAGE_SIZE = 20 // app-level config, not external — should be camelCase
+const FETCH_USER_URL = '/api/u' // app-level route, not external
 ```
 
 **Exceptions.** _The rule itself is reviewer-side; the lint configuration accepts both shapes._ The choice between `camelCase` and `UPPER_CASE` for a global `const` is a code-review judgment that follows the principle above — lint cannot tell whether a value is bound to an external source.
@@ -327,8 +338,8 @@ const canEdit = user.role === 'editor'
 **✗ Example.**
 
 ```ts
-const authenticated = checkSession()  // is it bool, status string, or session object?
-const permission = role === 'admin'   // same question
+const authenticated = checkSession() // is it bool, status string, or session object?
+const permission = role === 'admin' // same question
 ```
 
 **Exceptions.** _None._ Other tense prefixes (`will`, `did`, `was`) are not in the allowlist; if the meaning truly is past or future, restructure as a noun (`lastLoginAt`, `nextRunAt`).
@@ -340,15 +351,19 @@ const permission = role === 'admin'   // same question
 **✓ Example.**
 
 ```ts
-function fetchUser(id: string): Promise<User> { /* … */ }
+function fetchUser(id: string): Promise<User> {
+  /* … */
+}
 const users: User[] = await fetchAllUsers()
 ```
 
 **✗ Example.**
 
 ```ts
-function userFetcher(id: string): Promise<User> { /* … */ }
-const user: User[] = await fetchAllUsers()  // plural collection, singular name
+function userFetcher(id: string): Promise<User> {
+  /* … */
+}
+const user: User[] = await fetchAllUsers() // plural collection, singular name
 ```
 
 **Exceptions.** _Not lint-enforced._ This is reviewer guidance — the false-positive rate of a verb-detector lint rule is too high to be worth running.
@@ -401,8 +416,12 @@ A barrel file (`index.ts` that re-exports from siblings) trades a tiny ergonomic
 
 ```ts
 // in user-service.ts
-export function fetchUser(id: string) { /* … */ }
-export function deleteUser(id: string) { /* … */ }
+export function fetchUser(id: string) {
+  /* … */
+}
+export function deleteUser(id: string) {
+  /* … */
+}
 
 // at the call site
 import { fetchUser } from './users/user-service'
@@ -416,7 +435,7 @@ export * from './user-service'
 export * from './user-repository'
 
 // at the call site
-import { fetchUser } from './users'   // bundler can't drop the unused exports
+import { fetchUser } from './users' // bundler can't drop the unused exports
 ```
 
 **Exceptions.** _None._ The lint rule (`no-restricted-syntax` on `ExportAllDeclaration`) bans every `export *` regardless of source — first-party or third-party. To re-export from a library, list the symbols explicitly: `export { foo, bar } from 'some-lib'`.
@@ -427,9 +446,9 @@ This category enforces a single, predictable shape for module boundaries: how a 
 
 ### Required dependencies
 
-| Package | Min version | Role in this Cat |
-|---|---|---|
-| `eslint-plugin-import-x` | `^4.0.0` | Provides `no-default-export` (sub-block 3.1), `order` (sub-block 3.2), and `no-cycle` (sub-block 3.5). |
+| Package                  | Min version | Role in this Cat                                                                                       |
+| ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------ |
+| `eslint-plugin-import-x` | `^4.0.0`    | Provides `no-default-export` (sub-block 3.1), `order` (sub-block 3.2), and `no-cycle` (sub-block 3.5). |
 
 `@typescript-eslint/consistent-type-imports` (sub-blocks 3.3 and 3.4) is provided by `typescript-eslint` (already required by Cat 1). `no-restricted-imports` (sub-block 3.6) is a core ESLint rule.
 
@@ -454,7 +473,9 @@ Default exports look ergonomic and cost nothing at first; the price shows up the
 
 ```ts
 // in user-service.ts
-export function fetchUser(id: string) { /* … */ }
+export function fetchUser(id: string) {
+  /* … */
+}
 
 // at the call site
 import { fetchUser } from './user-service'
@@ -464,7 +485,9 @@ import { fetchUser } from './user-service'
 
 ```ts
 // in user-service.ts
-export default function fetchUser(id: string) { /* … */ }
+export default function fetchUser(id: string) {
+  /* … */
+}
 
 // at the call sites — both legal, both different
 import fetchUser from './user-service'
@@ -536,7 +559,7 @@ import { fetchUser } from './user-service'
 **✗ Example.**
 
 ```ts
-import { User } from './user-types'   // value import, but used only as a type — kept in the emit
+import { User } from './user-types' // value import, but used only as a type — kept in the emit
 
 import { fetchUser } from './user-service'
 ```
@@ -611,10 +634,10 @@ This category enforces a single shape for failure: every thrown value is an `Err
 
 ### Required dependencies
 
-| Package | Min version | Role in this Cat |
-|---|---|---|
-| `typescript-eslint` | `^8.0.0` | Provides `only-throw-error` (4.2), `no-floating-promises` (4.4), `return-await` (4.5). Already required by Cat 1. |
-| `eslint-plugin-unicorn` | `^56.0.0` | Provides `error-message`, `throw-new-error`, `prefer-type-error` (4.2) and `custom-error-definition` (4.6). Already required by Cat 2. |
+| Package                 | Min version | Role in this Cat                                                                                                                       |
+| ----------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `typescript-eslint`     | `^8.0.0`    | Provides `only-throw-error` (4.2), `no-floating-promises` (4.4), `return-await` (4.5). Already required by Cat 1.                      |
+| `eslint-plugin-unicorn` | `^56.0.0`   | Provides `error-message`, `throw-new-error`, `prefer-type-error` (4.2) and `custom-error-definition` (4.6). Already required by Cat 2. |
 
 `no-empty` (sub-block 4.1) is a core ESLint rule.
 
@@ -846,7 +869,11 @@ function applyDiscount(order: Order, code: string): Order {
     return order
   }
   if (rule.minimumTotal > order.total) {
-    log.info('order below minimum', { code, total: order.total, minimum: rule.minimumTotal })
+    log.info('order below minimum', {
+      code,
+      total: order.total,
+      minimum: rule.minimumTotal,
+    })
     return order
   }
   // …another 18 lines of stacked conditions
@@ -1042,13 +1069,13 @@ const ids = users.map(extractId)
 
 ## Cat 6 — Comments & Documentation
 
-This category sets the boundary for *when to write a comment at all*. Default is silence (sub-block 6.1); the only legitimate target is the non-obvious **why** (6.2); JSDoc is reserved for published surfaces (6.3); dev markers like `TODO`/`FIXME`/`XXX`/`HACK` are forbidden in committed code (6.4); and any lint suppression must justify itself in-line (6.5).
+This category sets the boundary for _when to write a comment at all_. Default is silence (sub-block 6.1); the only legitimate target is the non-obvious **why** (6.2); JSDoc is reserved for published surfaces (6.3); dev markers like `TODO`/`FIXME`/`XXX`/`HACK` are forbidden in committed code (6.4); and any lint suppression must justify itself in-line (6.5).
 
 ### Required dependencies
 
-| Package | Min version | Role in this Cat |
-|---|---|---|
-| `@eslint-community/eslint-plugin-eslint-comments` | `^4.0.0` | Provides `require-description` (6.5). |
+| Package                                           | Min version | Role in this Cat                      |
+| ------------------------------------------------- | ----------- | ------------------------------------- |
+| `@eslint-community/eslint-plugin-eslint-comments` | `^4.0.0`    | Provides `require-description` (6.5). |
 
 `no-warning-comments` (sub-block 6.4) is a core ESLint rule. Sub-blocks 6.1, 6.2 and 6.3 are convention only — no mainstream lint rule encodes "comment density" or "JSDoc-on-public-API-only", and ad-hoc matchers would catch shape but miss intent.
 
@@ -1056,7 +1083,7 @@ This category sets the boundary for *when to write a comment at all*. Default is
 
 Well-named identifiers carry the meaning that a comment would otherwise restate. A function named `applyDiscount` already says "this applies a discount"; the comment `// applies the discount` adds nothing and rots when the function changes. Default state is silence — comments are an exception that needs a reason.
 
-#### Convention: write no comment unless the *why* is non-obvious
+#### Convention: write no comment unless the _why_ is non-obvious
 
 **Why.** Comments degrade in two ways: they stop matching the code (because edits do not update them), and they crowd the screen (each line of unnecessary comment is one line of code the reader cannot see at the same time). The "explanation" a redundant comment provides is already in the identifiers; the only comments that survive a year of edits are the ones that record information the code itself cannot express. See [sub-block 6.2](#62--comment-only-the-non-obvious-why).
 
@@ -1084,15 +1111,15 @@ function applyDiscount(order: Order, code: string): Order {
 }
 ```
 
-**Exceptions.** _None._ When the *why* is non-obvious, write the comment per [sub-block 6.2](#62--comment-only-the-non-obvious-why). When the surface is published, use JSDoc per [sub-block 6.3](#63--jsdoc-only-on-published-apis).
+**Exceptions.** _None._ When the _why_ is non-obvious, write the comment per [sub-block 6.2](#62--comment-only-the-non-obvious-why). When the surface is published, use JSDoc per [sub-block 6.3](#63--jsdoc-only-on-published-apis).
 
-### 6.2 — Comment only the non-obvious *why*
+### 6.2 — Comment only the non-obvious _why_
 
-The single legitimate use of a comment is to record information the code *cannot* express: a workaround for an upstream bug, an external business rule, a platform gotcha, a constraint that was discovered the hard way. If removing the comment would leave a future reader confused about *why* the code is the way it is, it earns a comment.
+The single legitimate use of a comment is to record information the code _cannot_ express: a workaround for an upstream bug, an external business rule, a platform gotcha, a constraint that was discovered the hard way. If removing the comment would leave a future reader confused about _why_ the code is the way it is, it earns a comment.
 
-#### Convention: comment the *why*, never the *what*
+#### Convention: comment the _why_, never the _what_
 
-**Why.** The *what* is already in the code — restating it is overhead that drifts out of date. The *why* — workarounds, external constraints, non-obvious invariants — is the part that disappears from the codebase the moment the original author leaves. Pinning that information at the call site is the cheapest way to keep it alive: the next reader sees it without context-switching to a tracker, and the comment moves with the code if the file is split.
+**Why.** The _what_ is already in the code — restating it is overhead that drifts out of date. The _why_ — workarounds, external constraints, non-obvious invariants — is the part that disappears from the codebase the moment the original author leaves. Pinning that information at the call site is the cheapest way to keep it alive: the next reader sees it without context-switching to a tracker, and the comment moves with the code if the file is split.
 
 **✓ Example.**
 
@@ -1154,7 +1181,7 @@ Markers like `TODO`, `FIXME`, `XXX`, and `HACK` are scratch-paper artifacts. The
 
 #### Rule: `no-warning-comments` with `terms: ['todo', 'fixme', 'xxx', 'hack']`
 
-**Why.** Tracking work in the source instead of in an issue tracker has three failure modes: (a) `TODO`s never get a date or an owner, so they outlive the original context that motivated them; (b) reviewers cannot tell which `TODO`s block the merge and which were copied in from a year ago; (c) external observers (PMs, oncall, future hires) have no surface to discover them. Lint-failing on the four markers forces the work into the tracker, where it gets a number, an owner, and a status. The terms are matched at the start of the comment (the rule's default `location: 'start'`), so a reference to the word `todo` mid-sentence in a *legitimate* comment is unaffected.
+**Why.** Tracking work in the source instead of in an issue tracker has three failure modes: (a) `TODO`s never get a date or an owner, so they outlive the original context that motivated them; (b) reviewers cannot tell which `TODO`s block the merge and which were copied in from a year ago; (c) external observers (PMs, oncall, future hires) have no surface to discover them. Lint-failing on the four markers forces the work into the tracker, where it gets a number, an owner, and a status. The terms are matched at the start of the comment (the rule's default `location: 'start'`), so a reference to the word `todo` mid-sentence in a _legitimate_ comment is unaffected.
 
 **✓ Example.**
 
@@ -1177,7 +1204,7 @@ function reconcile(payments: Payment[]): Reconciled[] {
 }
 ```
 
-**Exceptions.** _None._ When work needs to be deferred, the issue tracker is the deferral mechanism. A reference to a tracker ticket inside a [sub-block 6.2](#62--comment-only-the-non-obvious-why) *why* comment is fine — it is the marker word at the start of a comment that the rule rejects, not the act of cross-referencing.
+**Exceptions.** _None._ When work needs to be deferred, the issue tracker is the deferral mechanism. A reference to a tracker ticket inside a [sub-block 6.2](#62--comment-only-the-non-obvious-why) _why_ comment is fine — it is the marker word at the start of a comment that the rule rejects, not the act of cross-referencing.
 
 ### 6.5 — Every `eslint-disable*` directive carries a description
 
@@ -1279,7 +1306,7 @@ AAA (arrange / act / assert) is a model for writing a test, not a comment templa
 
 #### Convention: comment `// arrange` / `// act` / `// assert` only when the boundaries are not obvious from the structure
 
-**Why.** Labels that restate what the next line obviously is fall under the same problem as [sub-block 6.1](#61--default-zero-comments) — they pad the test without adding signal, and they desensitize the reader to labels that *would* have meant something. Reserving the labels for tests where the phases genuinely blur (long arrange, multi-step act, layered assertions) keeps them informative.
+**Why.** Labels that restate what the next line obviously is fall under the same problem as [sub-block 6.1](#61--default-zero-comments) — they pad the test without adding signal, and they desensitize the reader to labels that _would_ have meant something. Reserving the labels for tests where the phases genuinely blur (long arrange, multi-step act, layered assertions) keeps them informative.
 
 **✓ Example (small test — no labels needed).**
 
@@ -1295,8 +1322,13 @@ it('rejects orders with no items', () => {
 ```ts
 it('refunds shipping when the order is cancelled within the window', async () => {
   // arrange
-  const order = await orderFactory.create({ shippingFee: 12, paidAt: hoursAgo(2) })
-  const refundClient = mockRefundClient({ shippingPolicy: 'refundable-within-24h' })
+  const order = await orderFactory.create({
+    shippingFee: 12,
+    paidAt: hoursAgo(2),
+  })
+  const refundClient = mockRefundClient({
+    shippingPolicy: 'refundable-within-24h',
+  })
 
   // act
   const result = await cancelOrder({ orderId: order.id, refundClient })
@@ -1321,7 +1353,7 @@ it('returns false for empty input', () => {
 })
 ```
 
-**Exceptions.** _None._ When in doubt, omit the labels — the cost of a missing label is one extra second of reading; the cost of an unnecessary label is the desensitization that makes a future reader skip past a label that *would* have been useful.
+**Exceptions.** _None._ When in doubt, omit the labels — the cost of a missing label is one extra second of reading; the cost of an unnecessary label is the desensitization that makes a future reader skip past a label that _would_ have been useful.
 
 ### 7.4 — Test names read like a sentence
 
@@ -1335,9 +1367,15 @@ A test name is the message the runner prints when it fails. If the name says `te
 
 ```ts
 describe('OrderService', () => {
-  it('rejects orders with no items', () => { /* … */ })
-  it('applies the discount before tax', () => { /* … */ })
-  it('preserves the original total when no discount applies', () => { /* … */ })
+  it('rejects orders with no items', () => {
+    /* … */
+  })
+  it('applies the discount before tax', () => {
+    /* … */
+  })
+  it('preserves the original total when no discount applies', () => {
+    /* … */
+  })
 })
 ```
 
@@ -1345,9 +1383,15 @@ describe('OrderService', () => {
 
 ```ts
 describe('order tests', () => {
-  it('test1', () => { /* … */ })
-  it('works', () => { /* … */ })
-  it('checkout and refund', () => { /* … */ }) // two behaviors in one test
+  it('test1', () => {
+    /* … */
+  })
+  it('works', () => {
+    /* … */
+  })
+  it('checkout and refund', () => {
+    /* … */
+  }) // two behaviors in one test
 })
 ```
 
@@ -1359,7 +1403,7 @@ Inline test data duplicates across files and drifts apart silently — five test
 
 #### Convention: static fixtures under `tests/fixtures/`, programmatic builders under `tests/factories/`
 
-**Why.** The two folders distinguish the two flavors of shared data: a *fixture* is a frozen artifact (a sample webhook payload, a recorded API response, a known-good JSON document) that needs to stay byte-stable; a *factory* is a function that builds an object with sensible defaults and per-test overrides (`orderFactory.build({ total: 99 })`). Mixing them — putting a function inside `fixtures/` or a JSON blob inside `factories/` — loses the affordance: a reader reaching for `fixtures/stripe-webhook-payment.json` expects a frozen sample, and a reader reaching for `factories/order.ts` expects a builder.
+**Why.** The two folders distinguish the two flavors of shared data: a _fixture_ is a frozen artifact (a sample webhook payload, a recorded API response, a known-good JSON document) that needs to stay byte-stable; a _factory_ is a function that builds an object with sensible defaults and per-test overrides (`orderFactory.build({ total: 99 })`). Mixing them — putting a function inside `fixtures/` or a JSON blob inside `factories/` — loses the affordance: a reader reaching for `fixtures/stripe-webhook-payment.json` expects a frozen sample, and a reader reaching for `factories/order.ts` expects a builder.
 
 **✓ Example structure.**
 
@@ -1392,7 +1436,7 @@ Order-dependent tests are a class of bug that surfaces only when the test list i
 
 #### Convention: every test sets up its own state and tears it down; no `it` reads from another `it`
 
-**Why.** Test isolation is the property that makes failures bisectable. When test 5 fails, the reader needs to be able to re-run test 5 alone and reproduce the failure — which is impossible if test 5 secretly depends on test 3 having mutated a shared global. Per-stack runners (vitest, jest) provide `beforeEach`/`afterEach` hooks for the cleanup; the convention is to *use* them, not to chain state through module-level `let` bindings.
+**Why.** Test isolation is the property that makes failures bisectable. When test 5 fails, the reader needs to be able to re-run test 5 alone and reproduce the failure — which is impossible if test 5 secretly depends on test 3 having mutated a shared global. Per-stack runners (vitest, jest) provide `beforeEach`/`afterEach` hooks for the cleanup; the convention is to _use_ them, not to chain state through module-level `let` bindings.
 
 **✓ Example.**
 
@@ -1437,7 +1481,7 @@ Coverage tells you which lines the suite touched. It does not tell you whether t
 
 #### Convention: generate coverage locally to find blind spots; do not set a threshold in CI
 
-**Why.** Coverage gates create the wrong incentive: a developer chasing the threshold writes whichever tests are easiest to add (constructor exercises, getter calls, dead-code probes) instead of the tests that matter (branching error paths, race conditions, integration boundaries). The real gate is review of test *quality* — a reviewer asks "does this test express the contract?" rather than "does this test bump the percentage?". Coverage as a local report still earns its keep: it surfaces files the suite never touches at all, which is a different signal than "this file is 70% covered".
+**Why.** Coverage gates create the wrong incentive: a developer chasing the threshold writes whichever tests are easiest to add (constructor exercises, getter calls, dead-code probes) instead of the tests that matter (branching error paths, race conditions, integration boundaries). The real gate is review of test _quality_ — a reviewer asks "does this test express the contract?" rather than "does this test bump the percentage?". Coverage as a local report still earns its keep: it surfaces files the suite never touches at all, which is a different signal than "this file is 70% covered".
 
 **✓ Example (per-stack vitest config snippet).**
 
@@ -1470,7 +1514,7 @@ Mocking the database is the most common way to ship tests that pass in CI and br
 
 #### Convention: real database (per-stack — see future `node` Cat 7 for testcontainers); mock only paid or remote-only third-party boundaries
 
-**Why.** A mocked database guarantees the test exercises the *idea* of the query, not the query itself — the schema migration that nobody ran, the JSONB cast that silently fails, the index missing that the query planner now scans sequentially: none of these surface against a mock. Real database tests (introduced concretely in the `node` stack's Cat 7 via testcontainers) cost a few hundred milliseconds of startup per file and remove the entire class of mock-vs-prod divergence. For external services that are remote-only or paid (Stripe API, SendGrid, OpenAI), the trade reverses: the round-trip is too expensive and too flaky to run on every PR, so a faithful mock at the HTTP boundary is the right tool. Internal modules are never mocked — if a module is hard to test without mocks, the answer is to refactor the module, not to mock around it.
+**Why.** A mocked database guarantees the test exercises the _idea_ of the query, not the query itself — the schema migration that nobody ran, the JSONB cast that silently fails, the index missing that the query planner now scans sequentially: none of these surface against a mock. Real database tests (introduced concretely in the `node` stack's Cat 7 via testcontainers) cost a few hundred milliseconds of startup per file and remove the entire class of mock-vs-prod divergence. For external services that are remote-only or paid (Stripe API, SendGrid, OpenAI), the trade reverses: the round-trip is too expensive and too flaky to run on every PR, so a faithful mock at the HTTP boundary is the right tool. Internal modules are never mocked — if a module is hard to test without mocks, the answer is to refactor the module, not to mock around it.
 
 **✓ Example (real DB, mocked external).**
 
