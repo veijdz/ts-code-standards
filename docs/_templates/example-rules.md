@@ -15,11 +15,11 @@ last-reviewed: 2026-05-10
 
 The consumer must install these to apply the rules below. Versions are the **minimum supported**; newer compatible majors should keep working unless noted.
 
-| Package | Min version | Role in this Cat |
-|---|---|---|
-| `vitest` | `^2.0.0` | Test runner that the rules in this Cat target (file layout, naming, lifecycle). |
-| `eslint-plugin-vitest` | `^0.5.0` | Lints test code against the rules below (no focused tests, no skipped tests without a reason). |
-| `@vitest/coverage-v8` | `^2.0.0` | Coverage collection used as diagnostic by `pnpm test --coverage`; no threshold enforced. |
+| Package                | Min version | Role in this Cat                                                                               |
+| ---------------------- | ----------- | ---------------------------------------------------------------------------------------------- |
+| `vitest`               | `^2.0.0`    | Test runner that the rules in this Cat target (file layout, naming, lifecycle).                |
+| `eslint-plugin-vitest` | `^0.5.0`    | Lints test code against the rules below (no focused tests, no skipped tests without a reason). |
+| `@vitest/coverage-v8`  | `^2.0.0`    | Coverage collection used as diagnostic by `pnpm test --coverage`; no threshold enforced.       |
 
 ## Sub-blocks
 
@@ -61,12 +61,12 @@ Tests must not share mutable state.
 **✓ Example.**
 
 ```ts
-import { PostgreSqlContainer } from '@testcontainers/postgresql';
+import { PostgreSqlContainer } from '@testcontainers/postgresql'
 
 beforeAll(async () => {
-  container = await new PostgreSqlContainer().start();
-  db = createClient(container.getConnectionUri());
-});
+  container = await new PostgreSqlContainer().start()
+  db = createClient(container.getConnectionUri())
+})
 ```
 
 **✗ Example.**
@@ -74,7 +74,7 @@ beforeAll(async () => {
 ```ts
 vi.mock('./db', () => ({
   query: vi.fn().mockResolvedValue([{ id: 1 }]),
-}));
+}))
 ```
 
 **Exceptions.** Unit tests that exercise pure logic with no DB dependency obviously do not need a container. Anything touching the data layer does.

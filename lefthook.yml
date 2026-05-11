@@ -1,0 +1,2 @@
+extends:
+  - ./stacks/base/config/lefthook.yml
