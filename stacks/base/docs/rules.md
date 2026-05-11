@@ -605,8 +605,208 @@ const params = new URLSearchParams({ q: 'search' })
 
 **Exceptions.** _None for new code._ Migrating away from an existing dependency is a separate, scoped PR — the lint failure is the prompt.
 
+## Cat 4 — Errors & Async
+
+This category enforces a single shape for failure: every thrown value is an `Error` (sub-blocks 4.1–4.2, 4.6), every re-throw preserves its predecessor (sub-block 4.3), and every `Promise` is either awaited or explicitly handled (sub-blocks 4.4–4.5). Together they turn "the call failed" into a debuggable trail rather than a stack with the wrong line numbers.
+
+### Required dependencies
+
+| Package | Min version | Role in this Cat |
+|---|---|---|
+| `typescript-eslint` | `^8.0.0` | Provides `only-throw-error` (4.2), `no-floating-promises` (4.4), `return-await` (4.5). Already required by Cat 1. |
+| `eslint-plugin-unicorn` | `^56.0.0` | Provides `error-message`, `throw-new-error`, `prefer-type-error` (4.2) and `custom-error-definition` (4.6). Already required by Cat 2. |
+
+`no-empty` (sub-block 4.1) is a core ESLint rule.
+
+### 4.1 — Empty catch blocks are forbidden
+
+A `catch (e) {}` block silently swallows every failure that flows through it, including the ones the original author never anticipated. The fix is one of: re-throw, log with context, or convert to a typed result — never nothing.
+
+#### Rule: `no-empty` with `allowEmptyCatch: false`
+
+**Why.** A swallowed exception removes the only signal a future debugger has that anything went wrong. The bug shifts from "this line throws" to "this feature silently does nothing for some users", which is orders of magnitude harder to chase. Even a comment-only `catch` is better than an empty one — it at least points at intent.
+
+**✓ Example.**
+
+```ts
+try {
+  await sendMetric(payload)
+} catch (error) {
+  logger.warn('metric send failed', { error, payload })
+}
+```
+
+**✗ Example.**
+
+```ts
+try {
+  await sendMetric(payload)
+} catch {}
+```
+
+**Exceptions.** _None._ If a failure is genuinely safe to ignore, the catch body should still log at debug level — silence is never the correct intent.
+
+### 4.2 — Throw `Error` instances, never plain values
+
+A thrown string or object literal loses everything an `Error` carries: a stack trace, a `name`, a uniform `instanceof` check, and the V8 cause chain. Every throw site uses `new Error(...)` or a subclass.
+
+#### Rule: `@typescript-eslint/only-throw-error`, `unicorn/throw-new-error`, `unicorn/error-message`, `unicorn/prefer-type-error`
+
+**Why.** Four failure modes the four rules close, in order: (1) throwing a non-`Error` value (`throw 'oops'`) defeats every `instanceof Error` guard downstream and produces a useless stack trace; (2) `throw Error('msg')` (no `new`) is inconsistent with subclass usage and trips static analyzers that assume constructor calls; (3) `throw new Error()` with no message produces `Error: undefined` in logs; (4) `throw new Error('expected a string')` after a `typeof` check should be `throw new TypeError(...)` — the typed subclass lets callers distinguish "wrong type" from "wrong value".
+
+**✓ Example.**
+
+```ts
+if (typeof input !== 'string') {
+  throw new TypeError(`expected string, received ${typeof input}`)
+}
+throw new Error(`unknown user: ${id}`)
+```
+
+**✗ Example.**
+
+```ts
+throw 'unknown user'
+throw { message: 'unknown user' }
+throw Error('unknown user')
+throw new Error()
+if (typeof input !== 'string') {
+  throw new Error('expected string')
+}
+```
+
+**Exceptions.** _None._ Library code that needs callers to `instanceof`-check a custom class should subclass `Error` (see [sub-block 4.6](#46--custom-error-classes-carry-semantic-names)), not throw a bare value.
+
+### 4.3 — Re-throws preserve the original via `cause`
+
+When wrapping an error to add context, the original error is passed through the `cause` option of the `Error` constructor. Modern runtimes walk the cause chain in stack traces and structured logs.
+
+#### Convention: `new Error('context', { cause: original })`
+
+**Why.** Without `cause`, the wrap discards the original stack trace and replaces the trail at the wrap site. The downstream debugger sees "wrap failed" with no clue what the inner failure was. With `cause`, Node's default error formatter prints both — `Error: wrap failed → caused by: Error: inner failure` — and structured loggers (`pino`, `winston`) traverse the chain automatically.
+
+**✓ Example.**
+
+```ts
+try {
+  return await fetchUser(id)
+} catch (error) {
+  throw new Error(`failed to load user ${id}`, { cause: error })
+}
+```
+
+**✗ Example.**
+
+```ts
+try {
+  return await fetchUser(id)
+} catch (error) {
+  throw new Error(`failed to load user ${id}: ${(error as Error).message}`)
+}
+```
+
+**Exceptions.** _None._ String-interpolating the inner message into the outer message hides the inner stack; `cause` keeps both. This sub-block is convention only — no mainstream lint rule enforces it, and ad-hoc `no-restricted-syntax` matchers catch shape but miss intent.
+
+### 4.4 — No floating promises
+
+A `Promise` that is created but never awaited or chained leaks two ways: rejections become unhandled (crashing modern Node by default), and the surrounding function returns before the promise settles. Every promise either has an `await`, a `.then(...).catch(...)`, or a deliberate `void` to signal fire-and-forget.
+
+#### Rule: `@typescript-eslint/no-floating-promises` with default options
+
+**Why.** Floating promises are the single most common cause of "the test passed but the assertion never ran" and of silent data-loss bugs ("we wrote the audit log… or did we?"). The rule reads from type information, so it flags any `Promise<T>` value that is dropped — including ones from third-party libraries the author may not have realized were async. Defaults are kept (`ignoreVoid: true`): a leading `void` is the documented escape hatch for code that genuinely wants fire-and-forget, and removing the hatch tends to push teams toward worse workarounds (top-level `.catch(noop)` etc).
+
+**✓ Example.**
+
+```ts
+await sendMetric(payload)
+
+// fire-and-forget, intentional, with explicit handler
+void sendMetric(payload).catch((error) => logger.warn('metric failed', { error }))
+```
+
+**✗ Example.**
+
+```ts
+sendMetric(payload)
+```
+
+**Exceptions.** _None._ `void` is the escape hatch. If `void` feels too easy, the call probably should be awaited.
+
+### 4.5 — `return await` inside `try`/`catch`
+
+`return promise` and `return await promise` behave differently when the surrounding function has a `catch`. Without the `await`, the promise leaves the `try` block before settling, so a rejection is never caught.
+
+#### Rule: `@typescript-eslint/return-await` set to `'in-try-catch'`
+
+**Why.** Outside of a `try`/`catch`, `return await` and `return` are equivalent at runtime — the extra microtask is wasteful. Inside a `try`/`catch`, the difference is silent and load-bearing: `return promise` lets the rejection escape past the `catch`, so the wrap-and-rethrow pattern in [sub-block 4.3](#43--re-throws-preserve-the-original-via-cause) never fires. `'in-try-catch'` requires the `await` only where it matters and forbids it where it does not.
+
+**✓ Example.**
+
+```ts
+async function loadUser(id: string) {
+  try {
+    return await fetchUser(id)
+  } catch (error) {
+    throw new Error(`failed to load user ${id}`, { cause: error })
+  }
+}
+
+async function listUsers() {
+  return fetchUsers() // no try/catch — bare return is fine
+}
+```
+
+**✗ Example.**
+
+```ts
+async function loadUser(id: string) {
+  try {
+    return fetchUser(id) // rejection escapes the try; catch never fires
+  } catch (error) {
+    throw new Error(`failed to load user ${id}`, { cause: error })
+  }
+}
+```
+
+**Exceptions.** _None._ The rule's auto-fix inserts the `await` where required.
+
+### 4.6 — Custom error classes carry semantic names
+
+When a domain has more than one failure mode, distinguishing them by class is cheaper for callers than parsing message strings. The convention: subclass `Error`, set `this.name` to the class name in the constructor, and use names that describe the failure category — `ValidationError`, `NotFoundError`, `ConflictError`, `AuthorizationError` — not the symptom.
+
+#### Rule: `unicorn/custom-error-definition`
+
+**Why.** A `catch (error)` that needs to branch on category should branch on `instanceof NotFoundError`, not on `error.message.includes('not found')` — string parsing is fragile to translation, log redaction, and copy edits. The class name also surfaces in structured logs (`error.name`), which is what dashboards group on. The lint rule enforces the structural pieces (correct `super` call, `name` set in the constructor) so subclasses behave like real `Error`s.
+
+**✓ Example.**
+
+```ts
+class NotFoundError extends Error {
+  constructor(resource: string, id: string) {
+    super(`${resource} ${id} not found`)
+    this.name = 'NotFoundError'
+  }
+}
+
+if (!user) {
+  throw new NotFoundError('user', id)
+}
+```
+
+**✗ Example.**
+
+```ts
+class NotFoundError extends Error {
+  // missing super(message), missing this.name — instanceof works, log shape does not
+}
+
+throw new Error('user not found') // forces callers to string-match
+```
+
+**Exceptions.** Names are convention, not lint-enforced — the rule only checks structure. A project that needs different categories (`RateLimitedError`, `OutOfStockError`) is free to add them; the constraint is "names describe the category, not the symptom".
+
 ## Notes
 
 - Cross-references to specific principles use the form [Principle N — title](../../../docs/principles.md).
 - The ESLint config that enforces these Cats lives in [`stacks/base/config/eslint.config.ts`](../config/eslint.config.ts); the compiler flags live in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json).
-- Future Cats (4 — Errors & Async, 5 — Functions, 6 — Comments, 7 — Testing) will append sections below this one.
+- Future Cats (5 — Functions, 6 — Comments, 7 — Testing) will append sections below this one.
