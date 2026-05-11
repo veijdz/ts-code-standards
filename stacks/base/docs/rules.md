@@ -71,7 +71,7 @@ function parseUser(input: any): User {
 }
 ```
 
-**Exceptions.** _None_ for first-party code. Third-party types that are demonstrably wrong may be widened or narrowed via a localized `as` plus a comment pointing at the upstream issue (see Principle 1).
+**Exceptions.** _None_ for first-party code. Third-party types that are demonstrably wrong may be widened or narrowed via a localized `as` plus a comment pointing at the upstream issue (see [Principle 1 — Type safety is non-negotiable](../../../docs/principles.md)).
 
 #### Rule: no implicit `any` from unsafe operations
 
