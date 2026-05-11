@@ -1,4 +1,5 @@
 import tseslint from 'typescript-eslint'
+import unicorn from 'eslint-plugin-unicorn'
 
 // Each rule category (Cat 1–7) appends its own config block here as it is written.
 // Rule rationale and exceptions are documented in stacks/base/docs/rules.md.
@@ -13,10 +14,9 @@ export default tseslint.config(
     },
   },
   // === Cat 1 — TypeScript / Type system ===
-  // The `naming-convention` rule for `typeParameter` (sub-block 1.4) is intentionally
-  // not declared here — it will be consolidated into the Cat 2 (Naming) block when that
-  // category lands. ESLint resolves a rule to the last block that defines it, so the
-  // entry must live wherever the broader naming policy lives.
+  // The `naming-convention` rule for `typeParameter` (sub-block 1.4) is consolidated
+  // into the Cat 2 block below — ESLint resolves a rule to the last block that defines
+  // it, so the entry must live wherever the broader naming policy lives.
   {
     files: ['**/*.{ts,tsx,cts,mts}'],
     rules: {
@@ -46,6 +46,89 @@ export default tseslint.config(
         },
       ],
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+    },
+  },
+  // === Cat 2 — Naming ===
+  {
+    files: ['**/*.{ts,tsx,cts,mts}'],
+    plugins: { unicorn },
+    rules: {
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: 'default',
+          format: ['camelCase'],
+          leadingUnderscore: 'allow',
+          trailingUnderscore: 'forbid',
+        },
+        {
+          selector: 'variable',
+          format: ['camelCase'],
+          leadingUnderscore: 'allow',
+        },
+        {
+          selector: 'variable',
+          types: ['boolean'],
+          format: ['camelCase'],
+          prefix: ['is', 'has', 'should', 'can'],
+        },
+        {
+          selector: 'variable',
+          modifiers: ['const', 'global'],
+          format: ['camelCase', 'UPPER_CASE'],
+        },
+        {
+          selector: 'typeLike',
+          format: ['PascalCase'],
+        },
+        {
+          selector: 'typeParameter',
+          format: ['PascalCase'],
+          prefix: ['T'],
+        },
+        {
+          selector: 'import',
+          format: ['camelCase', 'PascalCase'],
+        },
+      ],
+      'unicorn/filename-case': ['error', { case: 'kebabCase' }],
+      'unicorn/prevent-abbreviations': [
+        'error',
+        {
+          allowList: {
+            req: true,
+            res: true,
+            params: true,
+            props: true,
+            args: true,
+            env: true,
+            dev: true,
+            prod: true,
+            db: true,
+            auth: true,
+            ctx: true,
+            acc: true,
+            prev: true,
+            curr: true,
+            fn: true,
+            cb: true,
+            lib: true,
+            pkg: true,
+            mod: true,
+            repo: true,
+            src: true,
+            dist: true,
+          },
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ExportAllDeclaration',
+          message:
+            'Barrel files (export *) are banned. Import from the source module directly.',
+        },
+      ],
     },
   },
   // `interface` is required for module augmentation, so allow it inside `.d.ts`.
