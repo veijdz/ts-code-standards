@@ -9,6 +9,8 @@ last-reviewed: 2026-05-10
 
 > These eleven principles are the **why** behind every rule and convention in this repo. They are intentionally few, short, and stable — when a principle changes, downstream rules and ADRs must be revisited. Numbering is stable; do not renumber when adding.
 
+> Forward references to `stacks/base/docs/rules.md` below point to a file that lands progressively in VEI-416..422; today the path is a placeholder.
+
 1. **Type safety is non-negotiable.**
    TypeScript only earns its place if its guarantees actually hold. `any`, casual `as` casts, and silent `@ts-ignore` turn the compiler off exactly where the bug is most likely to live. The escape hatch is `@ts-expect-error` with a short written reason — the comment forces an explanation, and the directive itself surfaces as a failure if the underlying issue ever goes away. Concrete rules live in [base — Cat 1 (TypeScript)](../stacks/base/docs/rules.md). _Exception:_ third-party types that are demonstrably wrong may be narrowed with a localized `as` plus a comment pointing at the upstream issue.
 
