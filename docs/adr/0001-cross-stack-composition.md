@@ -36,9 +36,9 @@ This ADR decides, format by format, how composition is expressed.
 | **`knip.config.ts`** | Same as `lefthook.yml`. Lives only in `base`. | Consumer copies once, from `base`. |
 | **`package.json`** | Not a copyable file. Each stack's README documents the dev-dependencies the consumer must install. | Consumer adds dev-dependencies manually; the dep list is the contract, not a template. |
 
-### Why ESLint exports an array, not a function
+### Why ESLint exports a typed array
 
-The flat config format lets a config be either an array or a result of `tseslint.config(...)`. Exporting the array directly gives downstream stacks the simplest possible composition (`[...base, ...overrides]`) without forcing them to learn a helper. `tseslint.config` is still used **inside** each stack to get the typed wrapper, but the export is the plain array.
+The flat config format accepts either a plain array of config blocks or the array returned by `tseslint.config(...)`. Each stack exports the latter: the helper preserves the typing of every block (catching shape errors at the point they are written, not at lint time), but the return value is still an array — so downstream stacks compose with the same trivial spread (`[...base, ...overrides]`). The typed wrapper is an implementation detail of each stack; what crosses the stack boundary is always "an array of config blocks".
 
 ### Why `tsconfig.json` extends via relative path, not via a published name
 
