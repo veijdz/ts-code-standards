@@ -229,13 +229,17 @@ interface User {
 
 ## Cat 2 — Naming
 
+This category is the concrete enforcement of [Principle 11 — Clarity over brevity](../../../docs/principles.md): names that read in one second beat names that need a context lookup. Where a rule cannot be expressed in lint (function-as-verb, array-as-plural, "one concept per file"), the convention is documented as reviewer guidance per [Principle 6 — Tools enforce, humans decide](../../../docs/principles.md).
+
 ### Required dependencies
 
 | Package | Min version | Role in this Cat |
 |---|---|---|
-| `eslint-plugin-unicorn` | `^56.0.0` | Provides `filename-case` (sub-block 2.4) and `prevent-abbreviations` (sub-block 2.1). |
+| `eslint-plugin-unicorn` | `^56.0.0` | Provides `filename-case` (sub-block 2.4) and `prevent-abbreviations` (applies to identifier shape across the whole Cat). |
 
 The `@typescript-eslint/naming-convention` rule from sub-blocks 2.1–2.3 is provided by `typescript-eslint` (already required by Cat 1).
+
+> **Note on `prevent-abbreviations`.** The configured `allowList` matches **bare identifiers only** — `req: true` allows a binding literally named `req`, but `parseReq`, `httpReq`, `pageProps`, etc., are still flagged because the rule splits compound names on word boundaries. To exempt an abbreviation everywhere it appears (compound or bare), use `replacements: { req: false }` instead — the base stack errs on the conservative side and accepts the false-positive cost.
 
 ### 2.1 — Case per element
 
@@ -259,7 +263,7 @@ const UserCount = 42
 function FetchUser(user_id: string) { /* … */ }
 ```
 
-**Exceptions.** Imported bindings keep their source name (e.g., `import React from 'react'` is allowed). A leading underscore is permitted to mark a deliberately unused binding (`_unused`).
+**Exceptions.** Default and namespace imports keep their source name (the `import` selector allows both `camelCase` and `PascalCase`); named imports (`import { foo } from '…'`) are not constrained by this rule because the library picks the binding shape. A leading underscore is permitted to mark a deliberately unused binding (`_unused`).
 
 #### Rule: types, classes, interfaces, and enums are PascalCase
 
@@ -301,7 +305,7 @@ const DEFAULT_PAGE_SIZE = 20      // app-level config, not external — should b
 const FETCH_USER_URL = '/api/u'   // app-level route, not external
 ```
 
-**Exceptions.** _None enforceable by lint._ The lint rule accepts both `camelCase` and `UPPER_CASE` for global `const`; the choice between them is a code-review judgment that follows the principle above.
+**Exceptions.** _The rule itself is reviewer-side; the lint configuration accepts both shapes._ The choice between `camelCase` and `UPPER_CASE` for a global `const` is a code-review judgment that follows the principle above — lint cannot tell whether a value is bound to an external source.
 
 ### 2.2 — Semantic identifiers
 
@@ -383,7 +387,7 @@ src/users/user_service.ts
 
 **Why.** A file named `user-service.ts` should export the user service and nothing else (helpers it uses internally are private, not co-exports). Files that bundle unrelated exports force the reader to scan the whole file to find the binding they came for, and they make the import line at the call site lie about its dependency.
 
-**Exceptions.** _Not lint-enforced._ The judgment is reviewer-side: tightly coupled types alongside the value they describe (`type User` next to `function isUser`) are fine; unrelated utilities crammed together are not.
+**Reviewer guidance.** _Not lint-enforced._ Tightly coupled types alongside the value they describe (`type User` next to `function isUser`) are fine; unrelated utilities crammed together are not.
 
 ### 2.5 — No barrel files
 
@@ -415,7 +419,7 @@ export * from './user-repository'
 import { fetchUser } from './users'   // bundler can't drop the unused exports
 ```
 
-**Exceptions.** _None_ for first-party code. Re-exporting from a third-party namespace package (`export * from 'some-lib'`) is also banned — list the symbols explicitly.
+**Exceptions.** _None._ The lint rule (`no-restricted-syntax` on `ExportAllDeclaration`) bans every `export *` regardless of source — first-party or third-party. To re-export from a library, list the symbols explicitly: `export { foo, bar } from 'some-lib'`.
 
 ## Notes
 

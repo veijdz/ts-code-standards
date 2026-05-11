@@ -14,9 +14,8 @@ export default tseslint.config(
     },
   },
   // === Cat 1 — TypeScript / Type system ===
-  // The `naming-convention` rule for `typeParameter` (sub-block 1.4) is consolidated
-  // into the Cat 2 block below — ESLint resolves a rule to the last block that defines
-  // it, so the entry must live wherever the broader naming policy lives.
+  // ESLint resolves a rule to the last block that defines it; the `typeParameter`
+  // selector for sub-block 1.4 therefore lives in the Cat 2 block below.
   {
     files: ['**/*.{ts,tsx,cts,mts}'],
     rules: {
@@ -67,9 +66,11 @@ export default tseslint.config(
           leadingUnderscore: 'allow',
         },
         {
+          // typescript-eslint trims the prefix before checking format, so the residual
+          // (`Enabled` from `isEnabled`) must be PascalCase, not camelCase.
           selector: 'variable',
           types: ['boolean'],
-          format: ['camelCase'],
+          format: ['PascalCase'],
           prefix: ['is', 'has', 'should', 'can'],
         },
         {
@@ -79,6 +80,12 @@ export default tseslint.config(
         },
         {
           selector: 'typeLike',
+          format: ['PascalCase'],
+        },
+        {
+          // `enumMember` is in `memberLike`, not `typeLike`, so the rule for
+          // "enums are PascalCase" needs an explicit selector here.
+          selector: 'enumMember',
           format: ['PascalCase'],
         },
         {
@@ -105,7 +112,6 @@ export default tseslint.config(
             dev: true,
             prod: true,
             db: true,
-            auth: true,
             ctx: true,
             acc: true,
             prev: true,
@@ -115,7 +121,6 @@ export default tseslint.config(
             lib: true,
             pkg: true,
             mod: true,
-            repo: true,
             src: true,
             dist: true,
           },
