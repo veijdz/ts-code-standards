@@ -5,6 +5,9 @@ import importX from 'eslint-plugin-import-x'
 // Each rule category (Cat 1–7) appends its own config block here as it is written.
 // Rule rationale and exceptions are documented in stacks/base/docs/rules.md.
 
+const nativeEsReplacementMessage =
+  'Use native ES (Array.prototype, structuredClone, Object.entries, etc.).'
+
 export default tseslint.config(
   {
     languageOptions: {
@@ -138,18 +141,31 @@ export default tseslint.config(
     },
   },
   // === Cat 3 — Imports / Exports ===
+  // Sub-blocks 3.3 / 3.4 (`consistent-type-imports`) are intentionally layered on
+  // top of Cat 1.1's `verbatimModuleSyntax`. The compiler enforces that elidable
+  // imports use `import type` but does not auto-fix and does not split mixed
+  // `import { foo, type Foo }` statements; the ESLint rule does both. The two
+  // can produce overlapping errors in narrow edge cases (decorator metadata,
+  // `--isolatedDeclarations`); the auto-fix ergonomics are worth that cost.
+  // See `stacks/base/docs/rules.md` sub-block 3.3 for the documented trade-off.
+  // This rule is scoped to TypeScript files only — the broader import-x block
+  // below also runs on plain JS.
   {
-    files: ['**/*.{ts,tsx,cts,mts,js,jsx,cjs,mjs}'],
-    plugins: { 'import-x': importX },
+    files: ['**/*.{ts,tsx,cts,mts}'],
     rules: {
       '@typescript-eslint/consistent-type-imports': [
         'error',
         {
           prefer: 'type-imports',
           fixStyle: 'separate-type-imports',
-          disallowTypeAnnotations: true,
         },
       ],
+    },
+  },
+  {
+    files: ['**/*.{ts,tsx,cts,mts,js,jsx,cjs,mjs}'],
+    plugins: { 'import-x': importX },
+    rules: {
       'import-x/no-default-export': 'error',
       'import-x/order': [
         'error',
@@ -164,28 +180,11 @@ export default tseslint.config(
         'error',
         {
           paths: [
-            {
-              name: 'lodash',
-              message:
-                'Use native ES (Array.prototype, structuredClone, Object.entries, etc.).',
-            },
-            {
-              name: 'lodash-es',
-              message:
-                'Use native ES (Array.prototype, structuredClone, Object.entries, etc.).',
-            },
-            {
-              name: 'moment',
-              message: 'Use Temporal, date-fns, or dayjs.',
-            },
-            {
-              name: 'querystring',
-              message: 'Use URLSearchParams.',
-            },
-            {
-              name: 'node:querystring',
-              message: 'Use URLSearchParams.',
-            },
+            { name: 'lodash', message: nativeEsReplacementMessage },
+            { name: 'lodash-es', message: nativeEsReplacementMessage },
+            { name: 'moment', message: 'Use Temporal, date-fns, or dayjs.' },
+            { name: 'querystring', message: 'Use URLSearchParams.' },
+            { name: 'node:querystring', message: 'Use URLSearchParams.' },
           ],
         },
       ],
