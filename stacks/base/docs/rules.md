@@ -1190,8 +1190,7 @@ A bare `// eslint-disable-next-line foo` hides a violation without explaining wh
 **✓ Example.**
 
 ```ts
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- third-party callback
-// is typed as `any` upstream; widening here only to satisfy the contract.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- third-party callback typed as `any` upstream; widening here only to satisfy the contract.
 processWebhook((event: any) => handle(event))
 ```
 
