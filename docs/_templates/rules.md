@@ -13,10 +13,10 @@ last-reviewed: YYYY-MM-DD
 
 The consumer must install these to apply the rules below. Versions are the **minimum supported**; newer compatible majors should keep working unless noted.
 
-| Package | Min version | Role in this Cat |
-|---|---|---|
-| `<plugin-or-runtime>` | `^X.Y.Z` | <what it provides — e.g., "ESLint plugin enforcing rule X", "Test runner used by rules in this Cat"> |
-| `<another-package>` | `^X.Y.Z` | <role> |
+| Package               | Min version | Role in this Cat                                                                                     |
+| --------------------- | ----------- | ---------------------------------------------------------------------------------------------------- |
+| `<plugin-or-runtime>` | `^X.Y.Z`    | <what it provides — e.g., "ESLint plugin enforcing rule X", "Test runner used by rules in this Cat"> |
+| `<another-package>`   | `^X.Y.Z`    | <role>                                                                                               |
 
 > If a Cat has no extra deps beyond the stack baseline, write: `_No additional dependencies beyond the stack baseline._`
 
@@ -38,8 +38,8 @@ Group rules into sub-blocks that share a theme. Each sub-block has a short intro
 // good
 function parse(input: unknown): User {
   // narrow with a type guard
-  if (!isUser(input)) throw new Error('invalid user');
-  return input;
+  if (!isUser(input)) throw new Error('invalid user')
+  return input
 }
 ```
 
@@ -48,7 +48,7 @@ function parse(input: unknown): User {
 ```ts
 // bad
 function parse(input: any): User {
-  return input;
+  return input
 }
 ```
 

@@ -27,13 +27,13 @@ Breaking changes use a `YYYY-MM-DD-BREAKING-<stack>` tag and list the migration 
 
 ## Stacks
 
-| Stack | Extends | Status |
-|---|---|---|
-| [`base`](stacks/base/) | — | under construction (M1) |
-| `node` | `base` | M2 |
-| `nestjs` | `node` | M3 |
-| `expo` | `base` | M4 |
-| `tanstack-start` | `base` | M5 |
+| Stack                  | Extends | Status                  |
+| ---------------------- | ------- | ----------------------- |
+| [`base`](stacks/base/) | —       | under construction (M1) |
+| `node`                 | `base`  | M2                      |
+| `nestjs`               | `node`  | M3                      |
+| `expo`                 | `base`  | M4                      |
+| `tanstack-start`       | `base`  | M5                      |
 
 ## Documentation
 

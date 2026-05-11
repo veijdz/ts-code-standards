@@ -26,15 +26,15 @@ This ADR decides, format by format, how composition is expressed.
 
 ## Decision
 
-| Format | Composition strategy | Where the consumer touches it |
-|---|---|---|
-| **ESLint** (`eslint.config.ts`) | Each stack exports a typed array of flat-config blocks. Downstream stacks `import` the upstream array and spread it: `[...base, ...nodeOverrides]`. | Consumer's `eslint.config.ts` re-exports the final stack's array. |
-| **TypeScript** (`tsconfig.json`) | Each downstream stack ships its own `tsconfig.json` that `extends` the upstream via a path relative to the template directory. | Consumer copies the final stack's `tsconfig.json` only; the chain of `extends` walks back through the copied stacks inside the consumer's `.standards/`. |
-| **Prettier** (`.prettierrc.json`) | No native extends. Each stack carries a **full copy** of the file with its own deltas. | Consumer copies one file (the final stack's). |
-| **`lefthook.yml`** | Lives only in the `base` stack. Downstream stacks inherit by virtue of being copied into the same consumer repo as `base`. | Consumer copies once, from `base`. |
-| **`commitlint.config.ts`** | Same as `lefthook.yml`. Lives only in `base`. | Consumer copies once, from `base`. |
-| **`knip.config.ts`** | Same as `lefthook.yml`. Lives only in `base`. | Consumer copies once, from `base`. |
-| **`package.json`** | Not a copyable file. Each stack's README documents the dev-dependencies the consumer must install. | Consumer adds dev-dependencies manually; the dep list is the contract, not a template. |
+| Format                            | Composition strategy                                                                                                                                | Where the consumer touches it                                                                                                                            |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ESLint** (`eslint.config.ts`)   | Each stack exports a typed array of flat-config blocks. Downstream stacks `import` the upstream array and spread it: `[...base, ...nodeOverrides]`. | Consumer's `eslint.config.ts` re-exports the final stack's array.                                                                                        |
+| **TypeScript** (`tsconfig.json`)  | Each downstream stack ships its own `tsconfig.json` that `extends` the upstream via a path relative to the template directory.                      | Consumer copies the final stack's `tsconfig.json` only; the chain of `extends` walks back through the copied stacks inside the consumer's `.standards/`. |
+| **Prettier** (`.prettierrc.json`) | No native extends. Each stack carries a **full copy** of the file with its own deltas.                                                              | Consumer copies one file (the final stack's).                                                                                                            |
+| **`lefthook.yml`**                | Lives only in the `base` stack. Downstream stacks inherit by virtue of being copied into the same consumer repo as `base`.                          | Consumer copies once, from `base`.                                                                                                                       |
+| **`commitlint.config.ts`**        | Same as `lefthook.yml`. Lives only in `base`.                                                                                                       | Consumer copies once, from `base`.                                                                                                                       |
+| **`knip.config.ts`**              | Same as `lefthook.yml`. Lives only in `base`.                                                                                                       | Consumer copies once, from `base`.                                                                                                                       |
+| **`package.json`**                | Not a copyable file. Each stack's README documents the dev-dependencies the consumer must install.                                                  | Consumer adds dev-dependencies manually; the dep list is the contract, not a template.                                                                   |
 
 ### Why ESLint exports a typed array
 

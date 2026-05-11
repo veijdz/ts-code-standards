@@ -14,10 +14,10 @@ last-reviewed: 2026-05-11
 
 ### Required dependencies
 
-| Package | Min version | Role in this Cat |
-|---|---|---|
-| `typescript` | `^5.0.0` | Compiler that enforces the flags in sub-block 1.1. |
-| `typescript-eslint` | `^8.0.0` | Provides the rules in sub-blocks 1.2 – 1.5. |
+| Package             | Min version | Role in this Cat                                   |
+| ------------------- | ----------- | -------------------------------------------------- |
+| `typescript`        | `^5.0.0`    | Compiler that enforces the flags in sub-block 1.1. |
+| `typescript-eslint` | `^8.0.0`    | Provides the rules in sub-blocks 1.2 – 1.5.        |
 
 ### 1.1 — Compiler flags
 
@@ -29,20 +29,20 @@ The compiler is the first line of defense. Every flag below is non-negotiable: e
 
 The full set, configured in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json):
 
-| Flag | What it adds beyond `strict` |
-|---|---|
-| `strict` | Enables `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `alwaysStrict`. |
-| `noUncheckedIndexedAccess` | Treats `arr[i]` and `obj[key]` as `T \| undefined`. Forces narrowing before use. |
-| `exactOptionalPropertyTypes` | Distinguishes "property absent" from "property set to `undefined`". Critical for API contracts. |
-| `noImplicitOverride` | Requires the `override` keyword when subclassing — catches stale overrides after a base-class rename. |
-| `noImplicitReturns` | Every code path in a function must return (or none). Catches missing branches. |
-| `noFallthroughCasesInSwitch` | Forces `break` / `return` / `throw` between non-empty cases. |
-| `noUnusedLocals` | Errors on unused local bindings. |
-| `noUnusedParameters` | Errors on unused parameters (prefix with `_` to opt out). |
-| `noPropertyAccessFromIndexSignature` | Requires `obj['unknownKey']` instead of `obj.unknownKey` when the key is not declared on the type. Surfaces typos. |
-| `isolatedModules` | Each file must be transpilable in isolation — required by `tsc --build`, esbuild, swc, and Vite. |
-| `verbatimModuleSyntax` | Imports/exports are emitted exactly as written. Forces `import type` for type-only imports. |
-| `skipLibCheck` | Skips type-checking of declaration files in `node_modules`. Speeds up `tsc` significantly with no real loss — third-party types fail at consumption sites anyway. |
+| Flag                                 | What it adds beyond `strict`                                                                                                                                      |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `strict`                             | Enables `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `alwaysStrict`.                        |
+| `noUncheckedIndexedAccess`           | Treats `arr[i]` and `obj[key]` as `T \| undefined`. Forces narrowing before use.                                                                                  |
+| `exactOptionalPropertyTypes`         | Distinguishes "property absent" from "property set to `undefined`". Critical for API contracts.                                                                   |
+| `noImplicitOverride`                 | Requires the `override` keyword when subclassing — catches stale overrides after a base-class rename.                                                             |
+| `noImplicitReturns`                  | Every code path in a function must return (or none). Catches missing branches.                                                                                    |
+| `noFallthroughCasesInSwitch`         | Forces `break` / `return` / `throw` between non-empty cases.                                                                                                      |
+| `noUnusedLocals`                     | Errors on unused local bindings.                                                                                                                                  |
+| `noUnusedParameters`                 | Errors on unused parameters (prefix with `_` to opt out).                                                                                                         |
+| `noPropertyAccessFromIndexSignature` | Requires `obj['unknownKey']` instead of `obj.unknownKey` when the key is not declared on the type. Surfaces typos.                                                |
+| `isolatedModules`                    | Each file must be transpilable in isolation — required by `tsc --build`, esbuild, swc, and Vite.                                                                  |
+| `verbatimModuleSyntax`               | Imports/exports are emitted exactly as written. Forces `import type` for type-only imports.                                                                       |
+| `skipLibCheck`                       | Skips type-checking of declaration files in `node_modules`. Speeds up `tsc` significantly with no real loss — third-party types fail at consumption sites anyway. |
 
 **Exceptions.** _None._ A project that needs to relax any of these flags has a deeper problem (legacy migration, generated code) and should isolate the relaxation in a separate `tsconfig.<scope>.json`, not weaken the base.
 
@@ -77,13 +77,13 @@ function parseUser(input: any): User {
 
 **Why.** Even with `no-explicit-any` on, `any` still creeps in: `JSON.parse`, untyped libraries, `Function` parameters, dynamic property access. The `no-unsafe-*` family closes those routes one by one.
 
-| Rule | What it catches |
-|---|---|
-| `no-unsafe-argument` | Passing `any` as an argument to a typed function. |
-| `no-unsafe-assignment` | Assigning `any` to a typed binding. |
-| `no-unsafe-call` | Calling a value typed as `any`. |
-| `no-unsafe-member-access` | Reading a property off `any`. |
-| `no-unsafe-return` | Returning `any` from a function with a non-`any` return type. |
+| Rule                      | What it catches                                               |
+| ------------------------- | ------------------------------------------------------------- |
+| `no-unsafe-argument`      | Passing `any` as an argument to a typed function.             |
+| `no-unsafe-assignment`    | Assigning `any` to a typed binding.                           |
+| `no-unsafe-call`          | Calling a value typed as `any`.                               |
+| `no-unsafe-member-access` | Reading a property off `any`.                                 |
+| `no-unsafe-return`        | Returning `any` from a function with a non-`any` return type. |
 
 **Exceptions.** _None._ Use `unknown` and narrow.
 
@@ -233,9 +233,9 @@ This category is the concrete enforcement of [Principle 11 — Clarity over brev
 
 ### Required dependencies
 
-| Package | Min version | Role in this Cat |
-|---|---|---|
-| `eslint-plugin-unicorn` | `^56.0.0` | Provides `filename-case` (sub-block 2.4) and `prevent-abbreviations` (applies to identifier shape across the whole Cat). |
+| Package                 | Min version | Role in this Cat                                                                                                         |
+| ----------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `eslint-plugin-unicorn` | `^56.0.0`   | Provides `filename-case` (sub-block 2.4) and `prevent-abbreviations` (applies to identifier shape across the whole Cat). |
 
 The `@typescript-eslint/naming-convention` rule from sub-blocks 2.1–2.3 is provided by `typescript-eslint` (already required by Cat 1).
 
@@ -253,14 +253,18 @@ Three cases, applied consistently per element kind. The compiler does not police
 
 ```ts
 const userCount = 42
-function fetchUser(userId: string) { /* … */ }
+function fetchUser(userId: string) {
+  /* … */
+}
 ```
 
 **✗ Example.**
 
 ```ts
 const UserCount = 42
-function FetchUser(user_id: string) { /* … */ }
+function FetchUser(user_id: string) {
+  /* … */
+}
 ```
 
 **Exceptions.** Default and namespace imports keep their source name (the `import` selector allows both `camelCase` and `PascalCase`); named imports (`import { foo } from '…'`) are not constrained by this rule because the library picks the binding shape. A leading underscore is permitted to mark a deliberately unused binding (`_unused`).
@@ -273,15 +277,22 @@ function FetchUser(user_id: string) { /* … */ }
 
 ```ts
 type User = { id: string }
-class OrderRepository { /* … */ }
-enum OrderStatus { Pending, Shipped }
+class OrderRepository {
+  /* … */
+}
+enum OrderStatus {
+  Pending,
+  Shipped,
+}
 ```
 
 **✗ Example.**
 
 ```ts
 type user = { id: string }
-class orderRepository { /* … */ }
+class orderRepository {
+  /* … */
+}
 ```
 
 #### Rule: global `const` may be `UPPER_CASE` only when bound to an external, immutable value
@@ -291,18 +302,18 @@ class orderRepository { /* … */ }
 **✓ Example.**
 
 ```ts
-const MAX_RETRY_COUNT = 5         // protocol-level cap, written once, read everywhere
-const DATABASE_URL = process.env.DATABASE_URL ?? ''   // external, immutable
+const MAX_RETRY_COUNT = 5 // protocol-level cap, written once, read everywhere
+const DATABASE_URL = process.env.DATABASE_URL ?? '' // external, immutable
 
-const defaultPageSize = 20        // tunable, app-internal — camelCase
-const cacheTtlMs = 30_000         // ditto
+const defaultPageSize = 20 // tunable, app-internal — camelCase
+const cacheTtlMs = 30_000 // ditto
 ```
 
 **✗ Example.**
 
 ```ts
-const DEFAULT_PAGE_SIZE = 20      // app-level config, not external — should be camelCase
-const FETCH_USER_URL = '/api/u'   // app-level route, not external
+const DEFAULT_PAGE_SIZE = 20 // app-level config, not external — should be camelCase
+const FETCH_USER_URL = '/api/u' // app-level route, not external
 ```
 
 **Exceptions.** _The rule itself is reviewer-side; the lint configuration accepts both shapes._ The choice between `camelCase` and `UPPER_CASE` for a global `const` is a code-review judgment that follows the principle above — lint cannot tell whether a value is bound to an external source.
@@ -327,8 +338,8 @@ const canEdit = user.role === 'editor'
 **✗ Example.**
 
 ```ts
-const authenticated = checkSession()  // is it bool, status string, or session object?
-const permission = role === 'admin'   // same question
+const authenticated = checkSession() // is it bool, status string, or session object?
+const permission = role === 'admin' // same question
 ```
 
 **Exceptions.** _None._ Other tense prefixes (`will`, `did`, `was`) are not in the allowlist; if the meaning truly is past or future, restructure as a noun (`lastLoginAt`, `nextRunAt`).
@@ -340,15 +351,19 @@ const permission = role === 'admin'   // same question
 **✓ Example.**
 
 ```ts
-function fetchUser(id: string): Promise<User> { /* … */ }
+function fetchUser(id: string): Promise<User> {
+  /* … */
+}
 const users: User[] = await fetchAllUsers()
 ```
 
 **✗ Example.**
 
 ```ts
-function userFetcher(id: string): Promise<User> { /* … */ }
-const user: User[] = await fetchAllUsers()  // plural collection, singular name
+function userFetcher(id: string): Promise<User> {
+  /* … */
+}
+const user: User[] = await fetchAllUsers() // plural collection, singular name
 ```
 
 **Exceptions.** _Not lint-enforced._ This is reviewer guidance — the false-positive rate of a verb-detector lint rule is too high to be worth running.
@@ -401,8 +416,12 @@ A barrel file (`index.ts` that re-exports from siblings) trades a tiny ergonomic
 
 ```ts
 // in user-service.ts
-export function fetchUser(id: string) { /* … */ }
-export function deleteUser(id: string) { /* … */ }
+export function fetchUser(id: string) {
+  /* … */
+}
+export function deleteUser(id: string) {
+  /* … */
+}
 
 // at the call site
 import { fetchUser } from './users/user-service'
@@ -416,7 +435,7 @@ export * from './user-service'
 export * from './user-repository'
 
 // at the call site
-import { fetchUser } from './users'   // bundler can't drop the unused exports
+import { fetchUser } from './users' // bundler can't drop the unused exports
 ```
 
 **Exceptions.** _None._ The lint rule (`no-restricted-syntax` on `ExportAllDeclaration`) bans every `export *` regardless of source — first-party or third-party. To re-export from a library, list the symbols explicitly: `export { foo, bar } from 'some-lib'`.
@@ -427,9 +446,9 @@ This category enforces a single, predictable shape for module boundaries: how a 
 
 ### Required dependencies
 
-| Package | Min version | Role in this Cat |
-|---|---|---|
-| `eslint-plugin-import-x` | `^4.0.0` | Provides `no-default-export` (sub-block 3.1), `order` (sub-block 3.2), and `no-cycle` (sub-block 3.5). |
+| Package                  | Min version | Role in this Cat                                                                                       |
+| ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------ |
+| `eslint-plugin-import-x` | `^4.0.0`    | Provides `no-default-export` (sub-block 3.1), `order` (sub-block 3.2), and `no-cycle` (sub-block 3.5). |
 
 `@typescript-eslint/consistent-type-imports` (sub-blocks 3.3 and 3.4) is provided by `typescript-eslint` (already required by Cat 1). `no-restricted-imports` (sub-block 3.6) is a core ESLint rule.
 
@@ -454,7 +473,9 @@ Default exports look ergonomic and cost nothing at first; the price shows up the
 
 ```ts
 // in user-service.ts
-export function fetchUser(id: string) { /* … */ }
+export function fetchUser(id: string) {
+  /* … */
+}
 
 // at the call site
 import { fetchUser } from './user-service'
@@ -464,7 +485,9 @@ import { fetchUser } from './user-service'
 
 ```ts
 // in user-service.ts
-export default function fetchUser(id: string) { /* … */ }
+export default function fetchUser(id: string) {
+  /* … */
+}
 
 // at the call sites — both legal, both different
 import fetchUser from './user-service'
@@ -536,7 +559,7 @@ import { fetchUser } from './user-service'
 **✗ Example.**
 
 ```ts
-import { User } from './user-types'   // value import, but used only as a type — kept in the emit
+import { User } from './user-types' // value import, but used only as a type — kept in the emit
 
 import { fetchUser } from './user-service'
 ```
@@ -605,8 +628,918 @@ const params = new URLSearchParams({ q: 'search' })
 
 **Exceptions.** _None for new code._ Migrating away from an existing dependency is a separate, scoped PR — the lint failure is the prompt.
 
+## Cat 4 — Errors & Async
+
+This category enforces a single shape for failure: every thrown value is an `Error` (sub-blocks 4.1–4.2, 4.6), every re-throw preserves its predecessor (sub-block 4.3), and every `Promise` is either awaited or explicitly handled (sub-blocks 4.4–4.5). Together they turn "the call failed" into a debuggable trail rather than a stack with the wrong line numbers.
+
+### Required dependencies
+
+| Package                 | Min version | Role in this Cat                                                                                                                       |
+| ----------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `typescript-eslint`     | `^8.0.0`    | Provides `only-throw-error` (4.2), `no-floating-promises` (4.4), `return-await` (4.5). Already required by Cat 1.                      |
+| `eslint-plugin-unicorn` | `^56.0.0`   | Provides `error-message`, `throw-new-error`, `prefer-type-error` (4.2) and `custom-error-definition` (4.6). Already required by Cat 2. |
+
+`no-empty` (sub-block 4.1) is a core ESLint rule.
+
+### 4.1 — Empty catch blocks are forbidden
+
+A `catch (e) {}` block silently swallows every failure that flows through it, including the ones the original author never anticipated. The fix is one of: re-throw, log with context, or convert to a typed result — never nothing.
+
+#### Rule: `no-empty` with `allowEmptyCatch: false`
+
+**Why.** A swallowed exception removes the only signal a future debugger has that anything went wrong. The bug shifts from "this line throws" to "this feature silently does nothing for some users", which is orders of magnitude harder to chase. Even a comment-only `catch` is better than an empty one — it at least points at intent.
+
+**✓ Example.**
+
+```ts
+try {
+  await sendMetric(payload)
+} catch (error) {
+  logger.warn('metric send failed', { error, payload })
+}
+```
+
+**✗ Example.**
+
+```ts
+try {
+  await sendMetric(payload)
+} catch {}
+```
+
+**Exceptions.** _None._ If a failure is genuinely safe to ignore, the catch body should still log at debug level — silence is never the correct intent.
+
+### 4.2 — Throw `Error` instances, never plain values
+
+A thrown string or object literal loses everything an `Error` carries: a stack trace, a `name`, a uniform `instanceof` check, and the V8 cause chain. Every throw site uses `new Error(...)` or a subclass.
+
+#### Rule: `@typescript-eslint/only-throw-error`, `unicorn/throw-new-error`, `unicorn/error-message`, `unicorn/prefer-type-error`
+
+**Why.** Four failure modes the four rules close, in order: (1) throwing a non-`Error` value (`throw 'oops'`) defeats every `instanceof Error` guard downstream and produces a useless stack trace; (2) `throw Error('msg')` (no `new`) is inconsistent with subclass usage and trips static analyzers that assume constructor calls; (3) `throw new Error()` with no message produces `Error: undefined` in logs; (4) `throw new Error('expected a string')` after a `typeof` check should be `throw new TypeError(...)` — the typed subclass lets callers distinguish "wrong type" from "wrong value".
+
+**✓ Example.**
+
+```ts
+if (typeof input !== 'string') {
+  throw new TypeError(`expected string, received ${typeof input}`)
+}
+throw new Error(`unknown user: ${id}`)
+```
+
+**✗ Example.**
+
+```ts
+throw 'unknown user'
+throw { message: 'unknown user' }
+throw Error('unknown user')
+throw new Error()
+if (typeof input !== 'string') {
+  throw new Error('expected string')
+}
+```
+
+**Exceptions.** _None._ Library code that needs callers to `instanceof`-check a custom class should subclass `Error` (see [sub-block 4.6](#46--custom-error-classes-carry-semantic-names)), not throw a bare value.
+
+### 4.3 — Re-throws preserve the original via `cause`
+
+When wrapping an error to add context, the original error is passed through the `cause` option of the `Error` constructor. Modern runtimes walk the cause chain in stack traces and structured logs.
+
+#### Convention: `new Error('context', { cause: original })`
+
+**Why.** Without `cause`, the wrap discards the original stack trace and replaces the trail at the wrap site. The downstream debugger sees "wrap failed" with no clue what the inner failure was. With `cause`, Node's default error formatter prints both — `Error: wrap failed → caused by: Error: inner failure` — and structured loggers (`pino`, `winston`) traverse the chain automatically.
+
+**✓ Example.**
+
+```ts
+try {
+  return await fetchUser(id)
+} catch (error) {
+  throw new Error(`failed to load user ${id}`, { cause: error })
+}
+```
+
+**✗ Example.**
+
+```ts
+try {
+  return await fetchUser(id)
+} catch (error) {
+  throw new Error(`failed to load user ${id}: ${(error as Error).message}`)
+}
+```
+
+**Exceptions.** _None._ String-interpolating the inner message into the outer message hides the inner stack; `cause` keeps both. This sub-block is convention only — no mainstream lint rule enforces it, and ad-hoc `no-restricted-syntax` matchers catch shape but miss intent.
+
+### 4.4 — No floating promises
+
+A `Promise` that is created but never awaited or chained leaks two ways: rejections become unhandled (crashing modern Node by default), and the surrounding function returns before the promise settles. Every promise either has an `await`, a `.then(...).catch(...)`, or a deliberate `void` to signal fire-and-forget.
+
+#### Rule: `@typescript-eslint/no-floating-promises` with default options
+
+**Why.** Floating promises are the single most common cause of "the test passed but the assertion never ran" and of silent data-loss bugs ("we wrote the audit log… or did we?"). The rule reads from type information, so it flags any `Promise<T>` value that is dropped — including ones from third-party libraries the author may not have realized were async. Defaults are kept (`ignoreVoid: true`): a leading `void` is the documented escape hatch for code that genuinely wants fire-and-forget, and removing the hatch tends to push teams toward worse workarounds (top-level `.catch(noop)` etc).
+
+**✓ Example.**
+
+```ts
+await sendMetric(payload)
+
+// fire-and-forget, intentional, with explicit handler
+void sendMetric(payload).catch((error) => logger.warn('metric failed', { error }))
+```
+
+**✗ Example.**
+
+```ts
+sendMetric(payload)
+```
+
+**Exceptions.** _None._ `void` is the escape hatch. If `void` feels too easy, the call probably should be awaited.
+
+### 4.5 — `return await` inside `try`/`catch`
+
+`return promise` and `return await promise` behave differently when the surrounding function has a `catch`. Without the `await`, the promise leaves the `try` block before settling, so a rejection is never caught.
+
+#### Rule: `@typescript-eslint/return-await` set to `'in-try-catch'`
+
+**Why.** Outside of a `try`/`catch`, `return await` and `return` are equivalent at runtime — the extra microtask is wasteful. Inside a `try`/`catch`, the difference is silent and load-bearing: `return promise` lets the rejection escape past the `catch`, so the wrap-and-rethrow pattern in [sub-block 4.3](#43--re-throws-preserve-the-original-via-cause) never fires. `'in-try-catch'` requires the `await` only where it matters and forbids it where it does not.
+
+**✓ Example.**
+
+```ts
+async function loadUser(id: string) {
+  try {
+    return await fetchUser(id)
+  } catch (error) {
+    throw new Error(`failed to load user ${id}`, { cause: error })
+  }
+}
+
+async function listUsers() {
+  return fetchUsers() // no try/catch — bare return is fine
+}
+```
+
+**✗ Example.**
+
+```ts
+async function loadUser(id: string) {
+  try {
+    return fetchUser(id) // rejection escapes the try; catch never fires
+  } catch (error) {
+    throw new Error(`failed to load user ${id}`, { cause: error })
+  }
+}
+```
+
+**Exceptions.** _None._ The rule's auto-fix inserts the `await` where required.
+
+### 4.6 — Custom error classes carry semantic names
+
+When a domain has more than one failure mode, distinguishing them by class is cheaper for callers than parsing message strings. The convention: subclass `Error`, set `this.name` to the class name in the constructor, and use names that describe the failure category — `ValidationError`, `NotFoundError`, `ConflictError`, `AuthorizationError` — not the symptom.
+
+#### Rule: `unicorn/custom-error-definition`
+
+**Why.** A `catch (error)` that needs to branch on category should branch on `instanceof NotFoundError`, not on `error.message.includes('not found')` — string parsing is fragile to translation, log redaction, and copy edits. The class name also surfaces in structured logs (`error.name`), which is what dashboards group on. The lint rule enforces the structural pieces (correct `super` call, `name` set in the constructor) so subclasses behave like real `Error`s.
+
+**✓ Example.**
+
+```ts
+class NotFoundError extends Error {
+  constructor(resource: string, id: string) {
+    super(`${resource} ${id} not found`)
+    this.name = 'NotFoundError'
+  }
+}
+
+if (!user) {
+  throw new NotFoundError('user', id)
+}
+```
+
+**✗ Example.**
+
+```ts
+class NotFoundError extends Error {
+  // missing super(message), missing this.name — instanceof works, log shape does not
+}
+
+throw new Error('user not found') // forces callers to string-match
+```
+
+**Exceptions.** Names are convention, not lint-enforced — the rule only checks structure. A project that needs different categories (`RateLimitedError`, `OutOfStockError`) is free to add them; the constraint is "names describe the category, not the symptom".
+
+## Cat 5 — Functions & Structure
+
+This category turns "how big a unit can be" into a hard ceiling. Functions stay short (sub-block 5.1), take few parameters (5.2), branch shallowly (5.3) and nest shallowly (5.4); files stay under a working-set ceiling (5.5). Module-level functions are named declarations so they hoist and surface in stack traces (5.6); arrow functions stay where they read best — inline at the call site (5.7).
+
+### Required dependencies
+
+All rules in this Cat are core ESLint — no additional packages required.
+
+### 5.1 — Functions stay under 30 effective lines
+
+Long functions accumulate responsibilities by accretion: each new branch lands in the same body because there is no friction to splitting. Capping the function at 30 lines of executable code (blank lines and comments do not count) makes the cost of "one more thing" visible — extracting a helper becomes cheaper than growing the body.
+
+#### Rule: `max-lines-per-function` set to `30` with `skipBlankLines` and `skipComments`
+
+**Why.** 30 is aggressive but still the median window a reader can hold on one screen without scrolling. Beyond that, the function stops being a unit and becomes a script: callers cannot predict its scope, edits cannot be reasoned about locally, and stack traces lose their narrative. The skip options are load-bearing — counting JSDoc and blank lines would punish the very habits (documentation, breathing room) that make a 30-line function readable.
+
+**✓ Example.**
+
+```ts
+function applyDiscount(order: Order, code: string): Order {
+  const rule = lookupRule(code)
+  if (!rule) return order
+  if (!isEligible(order, rule)) return order
+  return { ...order, total: order.total * (1 - rule.percent) }
+}
+```
+
+**✗ Example.**
+
+```ts
+function applyDiscount(order: Order, code: string): Order {
+  const rule = lookupRule(code)
+  if (!rule) {
+    log.warn('unknown discount code', { code })
+    return order
+  }
+  if (rule.expiresAt < Date.now()) {
+    log.info('discount code expired', { code, expiresAt: rule.expiresAt })
+    return order
+  }
+  if (rule.minimumTotal > order.total) {
+    log.info('order below minimum', {
+      code,
+      total: order.total,
+      minimum: rule.minimumTotal,
+    })
+    return order
+  }
+  // …another 18 lines of stacked conditions
+}
+```
+
+**Exceptions.** Test files (`**/*.{test,spec}.{ts,tsx,cts,mts}`) raise the cap to 100. The `describe(name, () => { ... })` callback aggregates cohesive scenarios that read better as one suite than as fragmented sibling files; the 100-line ceiling still flags suites that should split into nested describes.
+
+### 5.2 — Functions take three parameters or fewer
+
+Beyond three positional arguments, call sites stop being self-documenting. `createUser(name, email, role, true, null)` is unreadable; `createUser({ name, email, role, isAdmin: true, parent: null })` reads itself. The fourth parameter is the trigger to convert to an options object.
+
+#### Rule: `max-params` set to `3`
+
+**Why.** Positional arguments rely on the reader knowing the parameter order, and that knowledge degrades as functions evolve. Three is the empirical threshold where the call site still parses (`fetch(url, options, signal)`); at four it requires opening the signature. An options object also gives every argument a name at the call site, makes optional arguments truly optional, and absorbs new parameters without breaking existing callers.
+
+**✓ Example.**
+
+```ts
+type CreateOrderInput = {
+  customerId: string
+  items: Item[]
+  coupon?: string
+  metadata?: Record<string, unknown>
+}
+
+function createOrder(input: CreateOrderInput): Order {
+  // …
+}
+
+createOrder({ customerId, items, coupon: 'SUMMER25' })
+```
+
+**✗ Example.**
+
+```ts
+function createOrder(
+  customerId: string,
+  items: Item[],
+  coupon: string | undefined,
+  metadata: Record<string, unknown>,
+): Order {
+  // …
+}
+
+createOrder(customerId, items, undefined, {}) // what is each arg again?
+```
+
+**Exceptions.** _None._ Class constructors, route handlers, and library callbacks all respect the three-arg ceiling — when a DI container or framework signature needs more, the destructured options object replaces them.
+
+### 5.3 — Cyclomatic complexity stays at or below 10
+
+Complexity counts independent paths through a function — every `if`, `case`, `&&`, `||`, ternary, and loop adds one. A function with complexity above 10 has more execution paths than a reader can track while editing. The fix is the same as 5.1: extract.
+
+#### Rule: `complexity` set to `10`
+
+**Why.** 10 is the McCabe number — empirically the threshold above which functions become testing liabilities (you need more than ten test cases to cover every branch) and review liabilities (reviewers can no longer reason about what an edit broke). Below 10, branches still parse linearly; above, the function is a state machine that should either be split or reified as a typed state object. The rule catches the case where path count grows incrementally — each new branch looks small, but the cumulative complexity is what matters.
+
+**✓ Example.**
+
+```ts
+function classify(score: number): Tier {
+  if (score >= 90) return 'gold'
+  if (score >= 70) return 'silver'
+  if (score >= 50) return 'bronze'
+  return 'none'
+}
+```
+
+**✗ Example.**
+
+```ts
+function classify(input: Input): Tier {
+  if (input.kind === 'paid' && input.score >= 90 && !input.flagged) return 'gold'
+  else if (input.kind === 'paid' && input.score >= 70) return 'silver'
+  else if (input.kind === 'free' && input.score >= 50 && input.referrals > 0) return 'silver'
+  else if (input.kind === 'paid' && input.score >= 50) return 'bronze'
+  else if (input.score >= 30 || input.referrals > 5) return 'bronze'
+  // …each new branch silently raises the count
+  return 'none'
+}
+```
+
+**Exceptions.** _None._ Reducers and parsers that genuinely have many cases belong in a lookup table or a typed state machine, not a stacked conditional.
+
+### 5.4 — Block nesting stays at or below three
+
+Three levels of `if`/`for`/`try` nesting is the practical maximum for a reader to track "where am I, and how did I get here". Beyond that, the indentation alone obscures what is executing.
+
+#### Rule: `max-depth` set to `3`
+
+**Why.** Nested blocks compound: at depth 4, a reader has to hold four simultaneous predicates to interpret the inner code. Early returns, guard clauses, and extracted helpers flatten the same logic to depth 1–2. Most depth-4 nests indicate one of: (a) a guard that was not extracted, (b) a loop body that should be its own function, or (c) a ternary chain disguised as nested ifs. Catching the violation while writing is cheap; refactoring a depth-5 monstrosity later is not.
+
+**✓ Example.**
+
+```ts
+function process(items: Item[]): Result[] {
+  if (items.length === 0) return []
+  return items.filter(isActive).map(toResult)
+}
+```
+
+**✗ Example.**
+
+```ts
+function process(items: Item[]): Result[] {
+  const out: Result[] = []
+  if (items.length > 0) {
+    for (const item of items) {
+      if (item.active) {
+        if (item.score > 0) {
+          out.push(toResult(item)) // depth 4 — reader has lost the predicates
+        }
+      }
+    }
+  }
+  return out
+}
+```
+
+**Exceptions.** _None._
+
+### 5.5 — Files stay under 300 lines
+
+A file is a working-set boundary: everything in it loads into the reader's head at once. 300 lines is the threshold beyond which navigation (open file → find symbol → understand context) starts costing more than splitting.
+
+#### Rule: `max-lines` set to `300`
+
+**Why.** 300 is not about file load time — it is about cognitive load. Beyond 300 lines, IDE "jump to symbol" becomes faster than scrolling, which means the file has stopped being a unit. The rule fires during writing, not after the 800-line monolith already exists; that is when the split decision is cheap. Paired with sub-block 5.1, a healthy file holds roughly 5–10 functions plus their types and a small amount of module-scope setup — the natural density of one cohesive concept.
+
+**Exceptions.** Test files (`**/*.{test,spec}.{ts,tsx,cts,mts}`) raise the cap to 500. Integration suites benefit from grouping many scenarios in one file (shared fixtures, shared setup, shared narrative); the 500 ceiling still flags suites that should split by feature or scenario family.
+
+### 5.6 — Module-level functions are declarations
+
+Functions exported or used at module scope are declared with `function`, not assigned from arrow expressions. The two have meaningful runtime differences: declarations hoist (so the order of definitions in the file becomes editorial, not load-bearing), and they carry a name at runtime (so the stack trace says `at applyDiscount` instead of `at <anonymous>`).
+
+#### Rule: `func-style` set to `'declaration'`
+
+**Why.** Hoisting lets the file read top-down (public surface first, helpers below) without forcing every helper to be defined before its first caller. The named-function-trace property is what makes errors actionable — every minute spent debugging an `<anonymous>` frame is a minute lost to a style choice. The rule's strict mode (no `allowArrowFunctions`) is intentional: an exported `const handleClick = () => { ... }` defeats both properties at once.
+
+**✓ Example.**
+
+```ts
+export function applyDiscount(order: Order, code: string): Order {
+  return computeNewTotal(order, lookupRule(code))
+}
+
+function lookupRule(code: string): Rule | undefined {
+  // declared below the public function — hoisting makes the order editorial
+}
+
+function computeNewTotal(order: Order, rule: Rule | undefined): Order {
+  // …
+}
+```
+
+**✗ Example.**
+
+```ts
+// arrow assigned to const at module top — fails on hoisting and on stack-trace name
+export const applyDiscount = (order: Order, code: string): Order => {
+  // …
+}
+```
+
+**Exceptions.** Inline arrows passed as arguments are not affected by this rule — they are not assigned to a variable. See [sub-block 5.7](#57--arrow-functions-stay-inline-at-the-call-site).
+
+### 5.7 — Arrow functions stay inline at the call site
+
+`func-style: 'declaration'` only flags arrows assigned to variables; arrows passed inline as arguments are unaffected. That asymmetry is intentional — inline arrows are how callbacks and JSX handlers should look, and a named function would add ceremony with no readability gain.
+
+#### Convention: arrows for inline callbacks and JSX handlers; declarations for everything else
+
+**Why.** Naming costs context. A 5-character `x => x.id` body, when promoted to a named helper, becomes a three-line declaration that adds no information; the reader of `arr.map(extractId)` then has to jump to the definition to learn what `extractId` does — a worse outcome than the inline lambda. The convention works because the boundary is sharp: if the function has a second caller it earns a name (and a `function` declaration); if it has one caller the inline expression _is_ the call-site documentation.
+
+**✓ Example.**
+
+```ts
+const ids = users.map(user => user.id)
+const active = users.filter(user => user.status === 'active')
+
+return <Button onClick={() => handleSubmit(form)}>Submit</Button>
+```
+
+**✗ Example.**
+
+```ts
+const extractId = (user: User) => user.id // module-top arrow assignment — flagged by 5.6
+const ids = users.map(extractId)
+```
+
+**Exceptions.** _None._ A named single-use helper indicates either (a) the call site needs explanation, in which case prefer a comment at the call site, or (b) the helper has multiple callers, in which case it earns a `function` declaration per [sub-block 5.6](#56--module-level-functions-are-declarations).
+
+## Cat 6 — Comments & Documentation
+
+This category sets the boundary for _when to write a comment at all_. Default is silence (sub-block 6.1); the only legitimate target is the non-obvious **why** (6.2); JSDoc is reserved for published surfaces (6.3); dev markers like `TODO`/`FIXME`/`XXX`/`HACK` are forbidden in committed code (6.4); and any lint suppression must justify itself in-line (6.5).
+
+### Required dependencies
+
+| Package                                           | Min version | Role in this Cat                      |
+| ------------------------------------------------- | ----------- | ------------------------------------- |
+| `@eslint-community/eslint-plugin-eslint-comments` | `^4.0.0`    | Provides `require-description` (6.5). |
+
+`no-warning-comments` (sub-block 6.4) is a core ESLint rule. Sub-blocks 6.1, 6.2 and 6.3 are convention only — no mainstream lint rule encodes "comment density" or "JSDoc-on-public-API-only", and ad-hoc matchers would catch shape but miss intent.
+
+### 6.1 — Default: zero comments
+
+Well-named identifiers carry the meaning that a comment would otherwise restate. A function named `applyDiscount` already says "this applies a discount"; the comment `// applies the discount` adds nothing and rots when the function changes. Default state is silence — comments are an exception that needs a reason.
+
+#### Convention: write no comment unless the _why_ is non-obvious
+
+**Why.** Comments degrade in two ways: they stop matching the code (because edits do not update them), and they crowd the screen (each line of unnecessary comment is one line of code the reader cannot see at the same time). The "explanation" a redundant comment provides is already in the identifiers; the only comments that survive a year of edits are the ones that record information the code itself cannot express. See [sub-block 6.2](#62--comment-only-the-non-obvious-why).
+
+**✓ Example.**
+
+```ts
+function applyDiscount(order: Order, code: string): Order {
+  const rule = lookupRule(code)
+  if (!rule) return order
+  return { ...order, total: order.total * (1 - rule.percent) }
+}
+```
+
+**✗ Example.**
+
+```ts
+// Apply the discount to the order
+function applyDiscount(order: Order, code: string): Order {
+  // Look up the discount rule by code
+  const rule = lookupRule(code)
+  // If no rule, return the order unchanged
+  if (!rule) return order
+  // Compute the new total with the discount
+  return { ...order, total: order.total * (1 - rule.percent) }
+}
+```
+
+**Exceptions.** _None._ When the _why_ is non-obvious, write the comment per [sub-block 6.2](#62--comment-only-the-non-obvious-why). When the surface is published, use JSDoc per [sub-block 6.3](#63--jsdoc-only-on-published-apis).
+
+### 6.2 — Comment only the non-obvious _why_
+
+The single legitimate use of a comment is to record information the code _cannot_ express: a workaround for an upstream bug, an external business rule, a platform gotcha, a constraint that was discovered the hard way. If removing the comment would leave a future reader confused about _why_ the code is the way it is, it earns a comment.
+
+#### Convention: comment the _why_, never the _what_
+
+**Why.** The _what_ is already in the code — restating it is overhead that drifts out of date. The _why_ — workarounds, external constraints, non-obvious invariants — is the part that disappears from the codebase the moment the original author leaves. Pinning that information at the call site is the cheapest way to keep it alive: the next reader sees it without context-switching to a tracker, and the comment moves with the code if the file is split.
+
+**✓ Example.**
+
+```ts
+// Stripe rounds amounts down at 2 decimals; we apply the same flooring here so
+// our reconciliation totals match the dashboard. The discrepancy that surfaced
+// this is documented in the team's payments runbook.
+const settled = Math.floor(amount * 100) / 100
+```
+
+**✗ Example.**
+
+```ts
+// Floor the amount to 2 decimals
+const settled = Math.floor(amount * 100) / 100
+```
+
+**Exceptions.** _None._ A comment that reads like a sentence the reader could have inferred from the next two lines is the same problem as the redundant comments banned by [sub-block 6.1](#61--default-zero-comments).
+
+### 6.3 — JSDoc only on published APIs
+
+JSDoc is overhead that pays back only when there is an external consumer who cannot read the source — a library publishing a typed API, a cross-team contract, a public CLI surface. Internal modules do not need JSDoc; the type signature plus a well-named identifier already document the contract for in-repo callers.
+
+#### Convention: one-line JSDoc on published surfaces; no JSDoc anywhere else
+
+**Why.** Inside a single repo, the type signature, the identifier name, and a quick jump-to-definition give a reader more accurate information than any JSDoc — and the JSDoc requires a separate edit when the signature changes. JSDoc only earns its keep at the publication boundary, where consumers see the editor tooltip but not the source. Even there, one sentence is enough — multi-paragraph examples belong in the README, not above the function.
+
+**✓ Example.**
+
+```ts
+/** Validate an email per RFC 5322 lite — accepts the same shape as the HTML5 input. */
+export function isValidEmail(input: string): boolean {
+  // …
+}
+```
+
+**✗ Example.**
+
+```ts
+/**
+ * Validates the given email string.
+ *
+ * @param input - the string to validate
+ * @returns true if the input is a valid email, false otherwise
+ * @example
+ *   isValidEmail('foo@bar.com') // true
+ *   isValidEmail('not-an-email') // false
+ */
+function isValidEmail(input: string): boolean {
+  // …
+}
+```
+
+**Exceptions.** _None._ A `lib`-targeted stack may layer JSDoc validity rules (`check-tag-names`, `valid-types`) on top of this convention — that is out of scope for the base stack, which has to apply equally to apps and libraries.
+
+### 6.4 — Dev markers are forbidden in committed code
+
+Markers like `TODO`, `FIXME`, `XXX`, and `HACK` are scratch-paper artifacts. They mark "deal with this later" without a deadline, an owner, or a way to find them — and they accumulate. A code base with 200 `TODO` comments has 200 silent debts that nobody is tracking. The fix is to track the work in the issue tracker and let the source stay clean.
+
+#### Rule: `no-warning-comments` with `terms: ['todo', 'fixme', 'xxx', 'hack']`
+
+**Why.** Tracking work in the source instead of in an issue tracker has three failure modes: (a) `TODO`s never get a date or an owner, so they outlive the original context that motivated them; (b) reviewers cannot tell which `TODO`s block the merge and which were copied in from a year ago; (c) external observers (PMs, oncall, future hires) have no surface to discover them. Lint-failing on the four markers forces the work into the tracker, where it gets a number, an owner, and a status. The terms are matched at the start of the comment (the rule's default `location: 'start'`), so a reference to the word `todo` mid-sentence in a _legitimate_ comment is unaffected.
+
+**✓ Example.**
+
+```ts
+// Reconciliation skips refunds older than 90 days because Stripe expires their
+// metadata after that window. Tracked in the payments backlog if we need to revisit.
+function reconcile(payments: Payment[]): Reconciled[] {
+  // …
+}
+```
+
+**✗ Example.**
+
+```ts
+// TODO: handle refunds older than 90 days
+// FIXME: this breaks on negative amounts
+// HACK: bypass validation for now
+function reconcile(payments: Payment[]): Reconciled[] {
+  // …
+}
+```
+
+**Exceptions.** _None._ When work needs to be deferred, the issue tracker is the deferral mechanism. A reference to a tracker ticket inside a [sub-block 6.2](#62--comment-only-the-non-obvious-why) _why_ comment is fine — it is the marker word at the start of a comment that the rule rejects, not the act of cross-referencing.
+
+### 6.5 — Every `eslint-disable*` directive carries a description
+
+A bare `// eslint-disable-next-line foo` hides a violation without explaining why the violation is acceptable here. The trailing `-- reason` is the difference between a justified suppression and a covered-up bug.
+
+#### Rule: `@eslint-community/eslint-comments/require-description` with narrow `ignore`
+
+**Why.** Lint suppressions are the only mechanism that legitimately prevents the linter from doing its job, so the burden of proof sits on the person disabling the rule. Forcing a `-- reason` next to every `disable*` directive turns the suppression into a documented exception rather than an invisible escape hatch — reviewers can audit each one in isolation, and `git blame` always points to a justification, not a guess. The narrow `ignore` (`eslint-enable`, `eslint`, `global`, `globals`, `exported`) limits the requirement to the directives that actually carry bug-hiding risk: re-enables just invert an already-justified disable, and config or global directives are intentional file-level setup that the surrounding context already explains.
+
+**✓ Example.**
+
+```ts
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- third-party callback typed as `any` upstream; widening here only to satisfy the contract.
+processWebhook((event: any) => handle(event))
+```
+
+**✗ Example.**
+
+```ts
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+processWebhook((event: any) => handle(event))
+```
+
+**Exceptions.** _None._ When a suppression genuinely has no justification, the right move is to fix the underlying violation rather than disable the rule. The `-- reason` text is the artifact that proves the suppression was a deliberate trade-off.
+
+## Cat 7 — Testing
+
+This category sets the universal testing conventions every stack inherits — folder layout (sub-block 7.1), file suffixes (7.2), how to lay out a single test (7.3–7.4), where shared data lives (7.5), test independence (7.6), the role coverage plays (7.7), and the mock policy (7.8). None of these are lint-enforced at the base level: the actual test runner config and any runner-specific lint rules belong in each stack's own Cat 7 (e.g., the future `node` Cat 7 for `vitest` + testcontainers).
+
+### Required dependencies
+
+_None at the base level._ The runner (`vitest`, `jest`, etc.) and its eslint plugin are introduced per stack. The conventions in this Cat are runner-agnostic on purpose so they survive a future swap.
+
+### 7.1 — Test files live under `tests/`, never co-located with source
+
+A separate `tests/` tree keeps the production bundle clean — the runner globs `tests/**`, the build globs `src/**`, and there is no edge case where a test sneaks into a published artifact. Inside `tests/`, the suite type is encoded in the folder so a reviewer sees "this is integration" in the path, not in a tag inside the file.
+
+#### Convention: `tests/unit/`, `tests/integration/`, `tests/e2e/` — never alongside source
+
+**Why.** Three benefits compound: (a) the published bundle is provably free of test code without a per-file `exclude`; (b) the folder name itself classifies the test, so a stack trace on CI tells the reviewer the suite type before they open the file; (c) shared fixtures and factories ([sub-block 7.5](#75--shared-test-data-lives-in-testsfixtures-and-testsfactories)) sit one level up from the three suites, so they can be reused without circular reach across `src/` ↔ `tests/`.
+
+**✓ Example structure.**
+
+```
+src/
+  order.ts
+  payment.ts
+tests/
+  unit/
+    order.test.ts
+    payment.test.ts
+  integration/
+    checkout.test.ts
+  e2e/
+    purchase-flow.e2e.ts
+```
+
+**✗ Example structure.**
+
+```
+src/
+  order.ts
+  order.test.ts
+  payment.ts
+  payment.test.ts
+```
+
+**Exceptions.** _None._ Co-location is a 2010s React-era reflex; every modern runner discovers tests by glob, so the cost of separating them is zero.
+
+### 7.2 — Suffixes: `.test.ts` for unit/integration, `.e2e.ts` for end-to-end
+
+Two suffixes are enough: the folder distinguishes unit from integration (so they can share `.test.ts`), but end-to-end deserves its own suffix because it often runs through a different runner entirely (Playwright, smoke harness, browser driver) and the unit runner must not pick it up.
+
+#### Convention: `*.test.ts` everywhere except e2e, which uses `*.e2e.ts`
+
+**Why.** A single `.test.ts` suffix for unit and integration matches the per-stack runner's `include` glob without forcing a third pattern; the folder ([sub-block 7.1](#71--test-files-live-under-tests-never-co-located-with-source)) already disambiguates them. `.e2e.ts` is intentionally distinct so a separate command (`pnpm test:e2e`) can target it without listing folders, and so the unit runner does not accidentally pick up a Playwright spec and try to execute it as a vitest test.
+
+**✓ Example.**
+
+```
+tests/unit/order.test.ts            // unit
+tests/integration/checkout.test.ts  // integration
+tests/e2e/purchase-flow.e2e.ts      // e2e
+```
+
+**✗ Example.**
+
+```
+tests/unit/order.spec.ts            // mixed suffix
+tests/integration/checkout.test.ts
+tests/e2e/purchase-flow.test.ts     // e2e indistinguishable from unit
+```
+
+**Exceptions.** _None._ Stacks that need a third suffix (e.g., `.bench.ts` for benchmark suites) add it on top of these two without repurposing them.
+
+### 7.3 — Make AAA visible only when it helps reading
+
+AAA (arrange / act / assert) is a model for writing a test, not a comment template. A 4-line test with one obvious setup line, one call, and one expectation does not need three labels — they are more visual noise than the test itself. A 30-line test with multi-step setup and layered assertions does benefit from labels, because the reader otherwise loses track of which line is which phase.
+
+#### Convention: comment `// arrange` / `// act` / `// assert` only when the boundaries are not obvious from the structure
+
+**Why.** Labels that restate what the next line obviously is fall under the same problem as [sub-block 6.1](#61--default-zero-comments) — they pad the test without adding signal, and they desensitize the reader to labels that _would_ have meant something. Reserving the labels for tests where the phases genuinely blur (long arrange, multi-step act, layered assertions) keeps them informative.
+
+**✓ Example (small test — no labels needed).**
+
+```ts
+it('rejects orders with no items', () => {
+  const order = makeOrder({ items: [] })
+  expect(() => checkout(order)).toThrow(EmptyOrderError)
+})
+```
+
+**✓ Example (large test — labels earn their place).**
+
+```ts
+it('refunds shipping when the order is cancelled within the window', async () => {
+  // arrange
+  const order = await orderFactory.create({
+    shippingFee: 12,
+    paidAt: hoursAgo(2),
+  })
+  const refundClient = mockRefundClient({
+    shippingPolicy: 'refundable-within-24h',
+  })
+
+  // act
+  const result = await cancelOrder({ orderId: order.id, refundClient })
+
+  // assert
+  expect(result.refundedAmount).toBe(order.total)
+  expect(refundClient.refunds).toHaveLength(1)
+  expect(refundClient.refunds[0]?.includesShipping).toBe(true)
+})
+```
+
+**✗ Example.**
+
+```ts
+it('returns false for empty input', () => {
+  // arrange
+  const input = ''
+  // act
+  const result = isValidEmail(input)
+  // assert
+  expect(result).toBe(false)
+})
+```
+
+**Exceptions.** _None._ When in doubt, omit the labels — the cost of a missing label is one extra second of reading; the cost of an unnecessary label is the desensitization that makes a future reader skip past a label that _would_ have been useful.
+
+### 7.4 — Test names read like a sentence
+
+A test name is the message the runner prints when it fails. If the name says `test1` or `works correctly`, the failure tells the reader nothing about what broke; if it says `rejects orders with no items`, the failure pinpoints the contract that just regressed.
+
+#### Convention: `describe` names the unit under test; `it`/`test` names a single behavior
+
+**Why.** The pair `describe('OrderService') > it('rejects orders with no items')` reads as a complete English sentence at the failure site, which is the only context a CI log offers. A flat, opaque name forces the reader to open the file to discover what failed. Making the sentence the primary artifact also discourages tests that assert two unrelated behaviors at once — the moment the name needs an "and", the test needs to split.
+
+**✓ Example.**
+
+```ts
+describe('OrderService', () => {
+  it('rejects orders with no items', () => {
+    /* … */
+  })
+  it('applies the discount before tax', () => {
+    /* … */
+  })
+  it('preserves the original total when no discount applies', () => {
+    /* … */
+  })
+})
+```
+
+**✗ Example.**
+
+```ts
+describe('order tests', () => {
+  it('test1', () => {
+    /* … */
+  })
+  it('works', () => {
+    /* … */
+  })
+  it('checkout and refund', () => {
+    /* … */
+  }) // two behaviors in one test
+})
+```
+
+**Exceptions.** _None._ Snake-case names (`it('rejects_orders_with_no_items')`) are equivalent — the requirement is that the name be a readable sentence, not a particular casing.
+
+### 7.5 — Shared test data lives in `tests/fixtures/` and `tests/factories/`
+
+Inline test data duplicates across files and drifts apart silently — five tests build "a customer with two orders" five different ways, and a sixth reader cannot tell which version is canonical. Centralizing them once turns the "what does a valid X look like" question into a single source of truth.
+
+#### Convention: static fixtures under `tests/fixtures/`, programmatic builders under `tests/factories/`
+
+**Why.** The two folders distinguish the two flavors of shared data: a _fixture_ is a frozen artifact (a sample webhook payload, a recorded API response, a known-good JSON document) that needs to stay byte-stable; a _factory_ is a function that builds an object with sensible defaults and per-test overrides (`orderFactory.build({ total: 99 })`). Mixing them — putting a function inside `fixtures/` or a JSON blob inside `factories/` — loses the affordance: a reader reaching for `fixtures/stripe-webhook-payment.json` expects a frozen sample, and a reader reaching for `factories/order.ts` expects a builder.
+
+**✓ Example structure.**
+
+```
+tests/
+  fixtures/
+    stripe-webhook-payment.json
+    sample-pdf.bin
+  factories/
+    order.ts
+    customer.ts
+  unit/
+    order.test.ts          // imports orderFactory from '../factories/order'
+```
+
+**✗ Example structure.**
+
+```
+tests/
+  unit/
+    order.test.ts          // inlines a 40-line `makeOrder` helper at the top of the file
+    payment.test.ts        // copies most of `makeOrder` and renames it `buildOrder`
+```
+
+**Exceptions.** _None._ A helper used by exactly one test file can stay inline; the moment a second file needs the same shape, it moves into `factories/`.
+
+### 7.6 — Tests are independent — no implicit ordering
+
+Order-dependent tests are a class of bug that surfaces only when the test list is shuffled, sharded across CI workers, or run in isolation by a developer narrowing down a failure. A suite that passes only in declaration order is a suite that lies about which test broke.
+
+#### Convention: every test sets up its own state and tears it down; no `it` reads from another `it`
+
+**Why.** Test isolation is the property that makes failures bisectable. When test 5 fails, the reader needs to be able to re-run test 5 alone and reproduce the failure — which is impossible if test 5 secretly depends on test 3 having mutated a shared global. Per-stack runners (vitest, jest) provide `beforeEach`/`afterEach` hooks for the cleanup; the convention is to _use_ them, not to chain state through module-level `let` bindings.
+
+**✓ Example.**
+
+```ts
+describe('OrderRepo', () => {
+  beforeEach(async () => {
+    await db.truncate('orders')
+  })
+
+  it('inserts an order', async () => {
+    await repo.insert(makeOrder({ id: 'a' }))
+    expect(await repo.count()).toBe(1)
+  })
+
+  it('counts zero on an empty table', async () => {
+    expect(await repo.count()).toBe(0)
+  })
+})
+```
+
+**✗ Example.**
+
+```ts
+describe('OrderRepo', () => {
+  it('inserts an order', async () => {
+    await repo.insert(makeOrder({ id: 'a' }))
+    expect(await repo.count()).toBe(1)
+  })
+
+  it('counts the previous insert', async () => {
+    // depends on the test above having run first and not having torn down
+    expect(await repo.count()).toBe(1)
+  })
+})
+```
+
+**Exceptions.** _None._ Per-stack Cat 7 may add lint rules (e.g., `vitest/no-focused-tests`, `vitest/no-disabled-tests`) to keep `.only` and `.skip` out of the suite, since those are the most common ways isolation gets accidentally violated in CI.
+
+### 7.7 — Coverage is a diagnostic, never a CI gate
+
+Coverage tells you which lines the suite touched. It does not tell you whether the touch was meaningful — a getter can be 100% covered by a single import without a single assertion against it. Wiring a coverage threshold into CI rewards adding tests for whichever line the report singles out, which is rarely the line that needed a test.
+
+#### Convention: generate coverage locally to find blind spots; do not set a threshold in CI
+
+**Why.** Coverage gates create the wrong incentive: a developer chasing the threshold writes whichever tests are easiest to add (constructor exercises, getter calls, dead-code probes) instead of the tests that matter (branching error paths, race conditions, integration boundaries). The real gate is review of test _quality_ — a reviewer asks "does this test express the contract?" rather than "does this test bump the percentage?". Coverage as a local report still earns its keep: it surfaces files the suite never touches at all, which is a different signal than "this file is 70% covered".
+
+**✓ Example (per-stack vitest config snippet).**
+
+```ts
+test: {
+  coverage: {
+    enabled: true,
+    reporter: ['text', 'html'],
+    // no `thresholds` field on purpose — see sub-block 7.7
+  },
+}
+```
+
+**✗ Example.**
+
+```ts
+test: {
+  coverage: {
+    enabled: true,
+    thresholds: { lines: 80, branches: 80, functions: 80, statements: 80 },
+  },
+}
+```
+
+**Exceptions.** _None._ Stacks with a regulatory coverage requirement (rare) document the threshold inside their own Cat 7 with the regulation cited; otherwise the no-threshold default holds.
+
+### 7.8 — Mock policy: never the database, only external boundaries
+
+Mocking the database is the most common way to ship tests that pass in CI and break in production: the mock returns whatever the test author imagined the SQL would return, the real query disagrees, and the bug only shows up after deploy. The same logic applies inverted at external boundaries: a paid third-party API is too costly to call in CI, so a faithful mock is the right trade.
+
+#### Convention: real database (per-stack — see future `node` Cat 7 for testcontainers); mock only paid or remote-only third-party boundaries
+
+**Why.** A mocked database guarantees the test exercises the _idea_ of the query, not the query itself — the schema migration that nobody ran, the JSONB cast that silently fails, the index missing that the query planner now scans sequentially: none of these surface against a mock. Real database tests (introduced concretely in the `node` stack's Cat 7 via testcontainers) cost a few hundred milliseconds of startup per file and remove the entire class of mock-vs-prod divergence. For external services that are remote-only or paid (Stripe API, SendGrid, OpenAI), the trade reverses: the round-trip is too expensive and too flaky to run on every PR, so a faithful mock at the HTTP boundary is the right tool. Internal modules are never mocked — if a module is hard to test without mocks, the answer is to refactor the module, not to mock around it.
+
+**✓ Example (real DB, mocked external).**
+
+```ts
+it('charges the customer and persists the order', async () => {
+  const stripe = mockStripeClient({ chargeId: 'ch_123' })
+  const result = await checkout({ orderId: order.id, stripe }) // uses the real db
+  expect(result.chargeId).toBe('ch_123')
+  expect(await repo.findById(order.id)).toMatchObject({ status: 'paid' })
+})
+```
+
+**✗ Example (mocked DB).**
+
+```ts
+it('persists the order', async () => {
+  const fakeRepo = { findById: vi.fn().mockResolvedValue({ status: 'paid' }) }
+  const result = await checkout({ orderId: order.id, repo: fakeRepo })
+  expect(fakeRepo.findById).toHaveBeenCalled() // green even if the real query is broken
+})
+```
+
+**Exceptions.** _None._ When a test genuinely needs to isolate one module under test from another internal module, the answer is dependency injection (pass the dependency in) rather than `vi.mock()` — the test then exercises the real module at the boundary that matters.
+
 ## Notes
 
 - Cross-references to specific principles use the form [Principle N — title](../../../docs/principles.md).
 - The ESLint config that enforces these Cats lives in [`stacks/base/config/eslint.config.ts`](../config/eslint.config.ts); the compiler flags live in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json).
-- Future Cats (4 — Errors & Async, 5 — Functions, 6 — Comments, 7 — Testing) will append sections below this one.

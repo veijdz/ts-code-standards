@@ -46,7 +46,7 @@ Applies to every test file in any project that adopts these standards, regardles
 
 - **Rule.** Never mock the database. Use [testcontainers](https://node.testcontainers.org/) (or the equivalent in-process real database) for any test that touches data.
   - **Why.** Mocks of a database client hide schema drift, query-shape errors, and migration bugs — the exact failures DB code is most likely to introduce. A real database started per test run keeps the contract honest at the cheapest possible time.
-  - **How.** Standard pattern: `beforeAll` starts the container, `afterAll` stops it, tests run against the real connection URI. Concrete example in [docs/_templates/example-rules.md](../_templates/example-rules.md).
+  - **How.** Standard pattern: `beforeAll` starts the container, `afterAll` stops it, tests run against the real connection URI. Concrete example in [docs/\_templates/example-rules.md](../_templates/example-rules.md).
 
 - **Rule.** Mock only external boundaries you do not own: third-party HTTP APIs, costly SDKs (paid-per-call), and clocks when time matters to assertions.
   - **Why.** External boundaries are where determinism breaks; mocking them is the only way to keep tests offline and fast. Mocking your own code is testing the mocks.
