@@ -1203,8 +1203,299 @@ processWebhook((event: any) => handle(event))
 
 **Exceptions.** _None._ When a suppression genuinely has no justification, the right move is to fix the underlying violation rather than disable the rule. The `-- reason` text is the artifact that proves the suppression was a deliberate trade-off.
 
+## Cat 7 — Testing
+
+This category sets the universal testing conventions every stack inherits — folder layout (sub-block 7.1), file suffixes (7.2), how to lay out a single test (7.3–7.4), where shared data lives (7.5), test independence (7.6), the role coverage plays (7.7), and the mock policy (7.8). None of these are lint-enforced at the base level: the actual test runner config and any runner-specific lint rules belong in each stack's own Cat 7 (e.g., the future `node` Cat 7 for `vitest` + testcontainers).
+
+### Required dependencies
+
+_None at the base level._ The runner (`vitest`, `jest`, etc.) and its eslint plugin are introduced per stack. The conventions in this Cat are runner-agnostic on purpose so they survive a future swap.
+
+### 7.1 — Test files live under `tests/`, never co-located with source
+
+A separate `tests/` tree keeps the production bundle clean — the runner globs `tests/**`, the build globs `src/**`, and there is no edge case where a test sneaks into a published artifact. Inside `tests/`, the suite type is encoded in the folder so a reviewer sees "this is integration" in the path, not in a tag inside the file.
+
+#### Convention: `tests/unit/`, `tests/integration/`, `tests/e2e/` — never alongside source
+
+**Why.** Three benefits compound: (a) the published bundle is provably free of test code without a per-file `exclude`; (b) the folder name itself classifies the test, so a stack trace on CI tells the reviewer the suite type before they open the file; (c) shared fixtures and factories ([sub-block 7.5](#75--shared-test-data-lives-in-testsfixtures-and-testsfactories)) sit one level up from the three suites, so they can be reused without circular reach across `src/` ↔ `tests/`.
+
+**✓ Example structure.**
+
+```
+src/
+  order.ts
+  payment.ts
+tests/
+  unit/
+    order.test.ts
+    payment.test.ts
+  integration/
+    checkout.test.ts
+  e2e/
+    purchase-flow.e2e.ts
+```
+
+**✗ Example structure.**
+
+```
+src/
+  order.ts
+  order.test.ts
+  payment.ts
+  payment.test.ts
+```
+
+**Exceptions.** _None._ Co-location is a 2010s React-era reflex; every modern runner discovers tests by glob, so the cost of separating them is zero.
+
+### 7.2 — Suffixes: `.test.ts` for unit/integration, `.e2e.ts` for end-to-end
+
+Two suffixes are enough: the folder distinguishes unit from integration (so they can share `.test.ts`), but end-to-end deserves its own suffix because it often runs through a different runner entirely (Playwright, smoke harness, browser driver) and the unit runner must not pick it up.
+
+#### Convention: `*.test.ts` everywhere except e2e, which uses `*.e2e.ts`
+
+**Why.** A single `.test.ts` suffix for unit and integration matches the per-stack runner's `include` glob without forcing a third pattern; the folder ([sub-block 7.1](#71--test-files-live-under-tests-never-co-located-with-source)) already disambiguates them. `.e2e.ts` is intentionally distinct so a separate command (`pnpm test:e2e`) can target it without listing folders, and so the unit runner does not accidentally pick up a Playwright spec and try to execute it as a vitest test.
+
+**✓ Example.**
+
+```
+tests/unit/order.test.ts            // unit
+tests/integration/checkout.test.ts  // integration
+tests/e2e/purchase-flow.e2e.ts      // e2e
+```
+
+**✗ Example.**
+
+```
+tests/unit/order.spec.ts            // mixed suffix
+tests/integration/checkout.test.ts
+tests/e2e/purchase-flow.test.ts     // e2e indistinguishable from unit
+```
+
+**Exceptions.** _None._ Stacks that need a third suffix (e.g., `.bench.ts` for benchmark suites) add it on top of these two without repurposing them.
+
+### 7.3 — Make AAA visible only when it helps reading
+
+AAA (arrange / act / assert) is a model for writing a test, not a comment template. A 4-line test with one obvious setup line, one call, and one expectation does not need three labels — they are more visual noise than the test itself. A 30-line test with multi-step setup and layered assertions does benefit from labels, because the reader otherwise loses track of which line is which phase.
+
+#### Convention: comment `// arrange` / `// act` / `// assert` only when the boundaries are not obvious from the structure
+
+**Why.** Labels that restate what the next line obviously is fall under the same problem as [sub-block 6.1](#61--default-zero-comments) — they pad the test without adding signal, and they desensitize the reader to labels that *would* have meant something. Reserving the labels for tests where the phases genuinely blur (long arrange, multi-step act, layered assertions) keeps them informative.
+
+**✓ Example (small test — no labels needed).**
+
+```ts
+it('rejects orders with no items', () => {
+  const order = makeOrder({ items: [] })
+  expect(() => checkout(order)).toThrow(EmptyOrderError)
+})
+```
+
+**✓ Example (large test — labels earn their place).**
+
+```ts
+it('refunds shipping when the order is cancelled within the window', async () => {
+  // arrange
+  const order = await orderFactory.create({ shippingFee: 12, paidAt: hoursAgo(2) })
+  const refundClient = mockRefundClient({ shippingPolicy: 'refundable-within-24h' })
+
+  // act
+  const result = await cancelOrder({ orderId: order.id, refundClient })
+
+  // assert
+  expect(result.refundedAmount).toBe(order.total)
+  expect(refundClient.refunds).toHaveLength(1)
+  expect(refundClient.refunds[0]?.includesShipping).toBe(true)
+})
+```
+
+**✗ Example.**
+
+```ts
+it('returns false for empty input', () => {
+  // arrange
+  const input = ''
+  // act
+  const result = isValidEmail(input)
+  // assert
+  expect(result).toBe(false)
+})
+```
+
+**Exceptions.** _None._ When in doubt, omit the labels — the cost of a missing label is one extra second of reading; the cost of an unnecessary label is the desensitization that makes a future reader skip past a label that *would* have been useful.
+
+### 7.4 — Test names read like a sentence
+
+A test name is the message the runner prints when it fails. If the name says `test1` or `works correctly`, the failure tells the reader nothing about what broke; if it says `rejects orders with no items`, the failure pinpoints the contract that just regressed.
+
+#### Convention: `describe` names the unit under test; `it`/`test` names a single behavior
+
+**Why.** The pair `describe('OrderService') > it('rejects orders with no items')` reads as a complete English sentence at the failure site, which is the only context a CI log offers. A flat, opaque name forces the reader to open the file to discover what failed. Making the sentence the primary artifact also discourages tests that assert two unrelated behaviors at once — the moment the name needs an "and", the test needs to split.
+
+**✓ Example.**
+
+```ts
+describe('OrderService', () => {
+  it('rejects orders with no items', () => { /* … */ })
+  it('applies the discount before tax', () => { /* … */ })
+  it('preserves the original total when no discount applies', () => { /* … */ })
+})
+```
+
+**✗ Example.**
+
+```ts
+describe('order tests', () => {
+  it('test1', () => { /* … */ })
+  it('works', () => { /* … */ })
+  it('checkout and refund', () => { /* … */ }) // two behaviors in one test
+})
+```
+
+**Exceptions.** _None._ Snake-case names (`it('rejects_orders_with_no_items')`) are equivalent — the requirement is that the name be a readable sentence, not a particular casing.
+
+### 7.5 — Shared test data lives in `tests/fixtures/` and `tests/factories/`
+
+Inline test data duplicates across files and drifts apart silently — five tests build "a customer with two orders" five different ways, and a sixth reader cannot tell which version is canonical. Centralizing them once turns the "what does a valid X look like" question into a single source of truth.
+
+#### Convention: static fixtures under `tests/fixtures/`, programmatic builders under `tests/factories/`
+
+**Why.** The two folders distinguish the two flavors of shared data: a *fixture* is a frozen artifact (a sample webhook payload, a recorded API response, a known-good JSON document) that needs to stay byte-stable; a *factory* is a function that builds an object with sensible defaults and per-test overrides (`orderFactory.build({ total: 99 })`). Mixing them — putting a function inside `fixtures/` or a JSON blob inside `factories/` — loses the affordance: a reader reaching for `fixtures/stripe-webhook-payment.json` expects a frozen sample, and a reader reaching for `factories/order.ts` expects a builder.
+
+**✓ Example structure.**
+
+```
+tests/
+  fixtures/
+    stripe-webhook-payment.json
+    sample-pdf.bin
+  factories/
+    order.ts
+    customer.ts
+  unit/
+    order.test.ts          // imports orderFactory from '../factories/order'
+```
+
+**✗ Example structure.**
+
+```
+tests/
+  unit/
+    order.test.ts          // inlines a 40-line `makeOrder` helper at the top of the file
+    payment.test.ts        // copies most of `makeOrder` and renames it `buildOrder`
+```
+
+**Exceptions.** _None._ A helper used by exactly one test file can stay inline; the moment a second file needs the same shape, it moves into `factories/`.
+
+### 7.6 — Tests are independent — no implicit ordering
+
+Order-dependent tests are a class of bug that surfaces only when the test list is shuffled, sharded across CI workers, or run in isolation by a developer narrowing down a failure. A suite that passes only in declaration order is a suite that lies about which test broke.
+
+#### Convention: every test sets up its own state and tears it down; no `it` reads from another `it`
+
+**Why.** Test isolation is the property that makes failures bisectable. When test 5 fails, the reader needs to be able to re-run test 5 alone and reproduce the failure — which is impossible if test 5 secretly depends on test 3 having mutated a shared global. Per-stack runners (vitest, jest) provide `beforeEach`/`afterEach` hooks for the cleanup; the convention is to *use* them, not to chain state through module-level `let` bindings.
+
+**✓ Example.**
+
+```ts
+describe('OrderRepo', () => {
+  beforeEach(async () => {
+    await db.truncate('orders')
+  })
+
+  it('inserts an order', async () => {
+    await repo.insert(makeOrder({ id: 'a' }))
+    expect(await repo.count()).toBe(1)
+  })
+
+  it('counts zero on an empty table', async () => {
+    expect(await repo.count()).toBe(0)
+  })
+})
+```
+
+**✗ Example.**
+
+```ts
+describe('OrderRepo', () => {
+  it('inserts an order', async () => {
+    await repo.insert(makeOrder({ id: 'a' }))
+    expect(await repo.count()).toBe(1)
+  })
+
+  it('counts the previous insert', async () => {
+    // depends on the test above having run first and not having torn down
+    expect(await repo.count()).toBe(1)
+  })
+})
+```
+
+**Exceptions.** _None._ Per-stack Cat 7 may add lint rules (e.g., `vitest/no-focused-tests`, `vitest/no-disabled-tests`) to keep `.only` and `.skip` out of the suite, since those are the most common ways isolation gets accidentally violated in CI.
+
+### 7.7 — Coverage is a diagnostic, never a CI gate
+
+Coverage tells you which lines the suite touched. It does not tell you whether the touch was meaningful — a getter can be 100% covered by a single import without a single assertion against it. Wiring a coverage threshold into CI rewards adding tests for whichever line the report singles out, which is rarely the line that needed a test.
+
+#### Convention: generate coverage locally to find blind spots; do not set a threshold in CI
+
+**Why.** Coverage gates create the wrong incentive: a developer chasing the threshold writes whichever tests are easiest to add (constructor exercises, getter calls, dead-code probes) instead of the tests that matter (branching error paths, race conditions, integration boundaries). The real gate is review of test *quality* — a reviewer asks "does this test express the contract?" rather than "does this test bump the percentage?". Coverage as a local report still earns its keep: it surfaces files the suite never touches at all, which is a different signal than "this file is 70% covered".
+
+**✓ Example (per-stack vitest config snippet).**
+
+```ts
+test: {
+  coverage: {
+    enabled: true,
+    reporter: ['text', 'html'],
+    // no `thresholds` field on purpose — see sub-block 7.7
+  },
+}
+```
+
+**✗ Example.**
+
+```ts
+test: {
+  coverage: {
+    enabled: true,
+    thresholds: { lines: 80, branches: 80, functions: 80, statements: 80 },
+  },
+}
+```
+
+**Exceptions.** _None._ Stacks with a regulatory coverage requirement (rare) document the threshold inside their own Cat 7 with the regulation cited; otherwise the no-threshold default holds.
+
+### 7.8 — Mock policy: never the database, only external boundaries
+
+Mocking the database is the most common way to ship tests that pass in CI and break in production: the mock returns whatever the test author imagined the SQL would return, the real query disagrees, and the bug only shows up after deploy. The same logic applies inverted at external boundaries: a paid third-party API is too costly to call in CI, so a faithful mock is the right trade.
+
+#### Convention: real database (per-stack — see future `node` Cat 7 for testcontainers); mock only paid or remote-only third-party boundaries
+
+**Why.** A mocked database guarantees the test exercises the *idea* of the query, not the query itself — the schema migration that nobody ran, the JSONB cast that silently fails, the index missing that the query planner now scans sequentially: none of these surface against a mock. Real database tests (introduced concretely in the `node` stack's Cat 7 via testcontainers) cost a few hundred milliseconds of startup per file and remove the entire class of mock-vs-prod divergence. For external services that are remote-only or paid (Stripe API, SendGrid, OpenAI), the trade reverses: the round-trip is too expensive and too flaky to run on every PR, so a faithful mock at the HTTP boundary is the right tool. Internal modules are never mocked — if a module is hard to test without mocks, the answer is to refactor the module, not to mock around it.
+
+**✓ Example (real DB, mocked external).**
+
+```ts
+it('charges the customer and persists the order', async () => {
+  const stripe = mockStripeClient({ chargeId: 'ch_123' })
+  const result = await checkout({ orderId: order.id, stripe }) // uses the real db
+  expect(result.chargeId).toBe('ch_123')
+  expect(await repo.findById(order.id)).toMatchObject({ status: 'paid' })
+})
+```
+
+**✗ Example (mocked DB).**
+
+```ts
+it('persists the order', async () => {
+  const fakeRepo = { findById: vi.fn().mockResolvedValue({ status: 'paid' }) }
+  const result = await checkout({ orderId: order.id, repo: fakeRepo })
+  expect(fakeRepo.findById).toHaveBeenCalled() // green even if the real query is broken
+})
+```
+
+**Exceptions.** _None._ When a test genuinely needs to isolate one module under test from another internal module, the answer is dependency injection (pass the dependency in) rather than `vi.mock()` — the test then exercises the real module at the boundary that matters.
+
 ## Notes
 
 - Cross-references to specific principles use the form [Principle N — title](../../../docs/principles.md).
 - The ESLint config that enforces these Cats lives in [`stacks/base/config/eslint.config.ts`](../config/eslint.config.ts); the compiler flags live in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json).
-- The remaining Cat (7 — Testing) will append a section below this one.
