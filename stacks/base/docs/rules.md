@@ -227,8 +227,198 @@ interface User {
 
 **Exceptions.** Allowed inside `.d.ts` files only — module augmentation (`declare module '…' { interface X { … } }`) requires `interface`.
 
+## Cat 2 — Naming
+
+### Required dependencies
+
+| Package | Min version | Role in this Cat |
+|---|---|---|
+| `eslint-plugin-unicorn` | `^56.0.0` | Provides `filename-case` (sub-block 2.4) and `prevent-abbreviations` (sub-block 2.1). |
+
+The `@typescript-eslint/naming-convention` rule from sub-blocks 2.1–2.3 is provided by `typescript-eslint` (already required by Cat 1).
+
+### 2.1 — Case per element
+
+Three cases, applied consistently per element kind. The compiler does not police identifier shape — `naming-convention` does, and the policy is uniform across the stack so reviews never argue about it.
+
+#### Rule: variables, functions, and parameters are camelCase
+
+**Why.** Mixed casing inside a file makes it hard to scan; a single default for runtime values keeps the eye moving. PascalCase is reserved for compile-time names (types) so the two zones are visually separable at a glance.
+
+**✓ Example.**
+
+```ts
+const userCount = 42
+function fetchUser(userId: string) { /* … */ }
+```
+
+**✗ Example.**
+
+```ts
+const UserCount = 42
+function FetchUser(user_id: string) { /* … */ }
+```
+
+**Exceptions.** Imported bindings keep their source name (e.g., `import React from 'react'` is allowed). A leading underscore is permitted to mark a deliberately unused binding (`_unused`).
+
+#### Rule: types, classes, interfaces, and enums are PascalCase
+
+**Why.** These names exist only at compile time; PascalCase makes that obvious next to camelCase runtime values. Type and class names also tend to map to nouns (`User`, `OrderRepository`), which read better in PascalCase.
+
+**✓ Example.**
+
+```ts
+type User = { id: string }
+class OrderRepository { /* … */ }
+enum OrderStatus { Pending, Shipped }
+```
+
+**✗ Example.**
+
+```ts
+type user = { id: string }
+class orderRepository { /* … */ }
+```
+
+#### Rule: global `const` may be `UPPER_CASE` only when bound to an external, immutable value
+
+**Why.** `UPPER_CASE` is a strong visual signal — it should mean "this value is set outside the program and never changes" (an environment variable, a protocol constant, a magic number from a spec). Using it for ordinary tunables drains the signal: every reader has to ask "is this actually external?"
+
+**✓ Example.**
+
+```ts
+const MAX_RETRY_COUNT = 5         // protocol-level cap, written once, read everywhere
+const DATABASE_URL = process.env.DATABASE_URL ?? ''   // external, immutable
+
+const defaultPageSize = 20        // tunable, app-internal — camelCase
+const cacheTtlMs = 30_000         // ditto
+```
+
+**✗ Example.**
+
+```ts
+const DEFAULT_PAGE_SIZE = 20      // app-level config, not external — should be camelCase
+const FETCH_USER_URL = '/api/u'   // app-level route, not external
+```
+
+**Exceptions.** _None enforceable by lint._ The lint rule accepts both `camelCase` and `UPPER_CASE` for global `const`; the choice between them is a code-review judgment that follows the principle above.
+
+### 2.2 — Semantic identifiers
+
+A name should describe what the value _means_, not how it is implemented. Two patterns are enforced; the rest are guidance the reader will internalize.
+
+#### Rule: boolean variables are prefixed with `is`, `has`, `should`, or `can`
+
+**Why.** `user.active` could be a string, a count, an enum, or a boolean — the reader has to look. `user.isActive` ends the question. The four prefixes cover the natural shapes (state, possession, prescription, capability) without sprawling into synonyms.
+
+**✓ Example.**
+
+```ts
+const isAuthenticated = checkSession()
+const hasPermission = role === 'admin'
+const shouldRetry = attemptCount < maxAttempts
+const canEdit = user.role === 'editor'
+```
+
+**✗ Example.**
+
+```ts
+const authenticated = checkSession()  // is it bool, status string, or session object?
+const permission = role === 'admin'   // same question
+```
+
+**Exceptions.** _None._ Other tense prefixes (`will`, `did`, `was`) are not in the allowlist; if the meaning truly is past or future, restructure as a noun (`lastLoginAt`, `nextRunAt`).
+
+#### Rule: functions are imperative verbs; arrays are plural
+
+**Why.** `fetchUser` says what calling the function will do; `userFetcher` says what _kind of thing_ the function is, which is rarely the question at the call site. Plural array names (`users` vs `user`) prevent the off-by-one read where `user[0]` is mistaken for the only user.
+
+**✓ Example.**
+
+```ts
+function fetchUser(id: string): Promise<User> { /* … */ }
+const users: User[] = await fetchAllUsers()
+```
+
+**✗ Example.**
+
+```ts
+function userFetcher(id: string): Promise<User> { /* … */ }
+const user: User[] = await fetchAllUsers()  // plural collection, singular name
+```
+
+**Exceptions.** _Not lint-enforced._ This is reviewer guidance — the false-positive rate of a verb-detector lint rule is too high to be worth running.
+
+### 2.3 — Generic type parameters
+
+The rule lives in [Cat 1.4 — Generic type parameters](#14--generic-type-parameters); this sub-block is preserved for parity with the issue numbering. Type parameters are PascalCase with the `T` prefix (`T`, `TKey`, `TValue`).
+
+### 2.4 — File names
+
+A predictable filename shape matters more than which shape is picked, but a stack still has to pick one. The base stack picks kebab-case for portability (no case-sensitivity surprises across macOS / Linux / Windows) and matches the dominant convention in the Node ecosystem.
+
+#### Rule: file names are kebab-case
+
+**Why.** Mixed-case filenames silently break on case-insensitive filesystems (macOS default, Windows): a file `userService.ts` resolves the same as `UserService.ts` locally but not in CI. Kebab-case avoids the class entirely.
+
+**✓ Example.**
+
+```text
+src/users/user-service.ts
+src/orders/order-repository.ts
+src/lib/parse-currency.ts
+```
+
+**✗ Example.**
+
+```text
+src/users/UserService.ts
+src/users/userService.ts
+src/users/user_service.ts
+```
+
+**Exceptions.** Stacks built on top of `base` may legitimately need different cases for framework reasons (e.g., `app/[id]/page.tsx`, file-router conventions). When that happens, the downstream stack overrides this rule in its own ESLint block; the base rule remains kebab-case.
+
+#### Rule: one concept per file
+
+**Why.** A file named `user-service.ts` should export the user service and nothing else (helpers it uses internally are private, not co-exports). Files that bundle unrelated exports force the reader to scan the whole file to find the binding they came for, and they make the import line at the call site lie about its dependency.
+
+**Exceptions.** _Not lint-enforced._ The judgment is reviewer-side: tightly coupled types alongside the value they describe (`type User` next to `function isUser`) are fine; unrelated utilities crammed together are not.
+
+### 2.5 — No barrel files
+
+A barrel file (`index.ts` that re-exports from siblings) trades a tiny ergonomic gain for two real costs: it defeats tree-shaking (bundlers walk the whole barrel before deciding what to drop) and it creates subtle import cycles that are hard to debug.
+
+#### Rule: `export *` is forbidden
+
+**Why.** `export * from './x'` is the construct that turns `index.ts` into a barrel. Banning the construct is more precise than banning the filename — it allows `index.ts` to exist as a real module (containing actual code) while ruling out the re-export-only pattern. The fix at the call site is one extra path segment: `import { foo } from './module/foo'` instead of `import { foo } from './module'`.
+
+**✓ Example.**
+
+```ts
+// in user-service.ts
+export function fetchUser(id: string) { /* … */ }
+export function deleteUser(id: string) { /* … */ }
+
+// at the call site
+import { fetchUser } from './users/user-service'
+```
+
+**✗ Example.**
+
+```ts
+// in users/index.ts
+export * from './user-service'
+export * from './user-repository'
+
+// at the call site
+import { fetchUser } from './users'   // bundler can't drop the unused exports
+```
+
+**Exceptions.** _None_ for first-party code. Re-exporting from a third-party namespace package (`export * from 'some-lib'`) is also banned — list the symbols explicitly.
+
 ## Notes
 
 - Cross-references to specific principles use the form [Principle N — title](../../../docs/principles.md).
-- The ESLint config that enforces this Cat lives in [`stacks/base/config/eslint.config.ts`](../config/eslint.config.ts); the compiler flags live in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json).
-- Future Cats (2 — Naming, 3 — Imports/Exports, 4 — Errors & Async, 5 — Functions, 6 — Comments, 7 — Testing) will append sections below this one.
+- The ESLint config that enforces these Cats lives in [`stacks/base/config/eslint.config.ts`](../config/eslint.config.ts); the compiler flags live in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json).
+- Future Cats (3 — Imports/Exports, 4 — Errors & Async, 5 — Functions, 6 — Comments, 7 — Testing) will append sections below this one.
