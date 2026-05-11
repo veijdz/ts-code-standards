@@ -190,6 +190,25 @@ export default tseslint.config(
       ],
     },
   },
+  // === Cat 4 — Errors & Async ===
+  // Sub-blocks 4.3 (cause chain) and 4.6 (semantic error class names) are convention
+  // and live in stacks/base/docs/rules.md only — there is no mainstream lint rule
+  // for either, and bolting on ad-hoc `no-restricted-syntax` matchers would catch
+  // accidental shape but miss the intent.
+  {
+    files: ['**/*.{ts,tsx,cts,mts}'],
+    plugins: { unicorn },
+    rules: {
+      'no-empty': ['error', { allowEmptyCatch: false }],
+      '@typescript-eslint/only-throw-error': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/return-await': ['error', 'in-try-catch'],
+      'unicorn/error-message': 'error',
+      'unicorn/throw-new-error': 'error',
+      'unicorn/custom-error-definition': 'error',
+      'unicorn/prefer-type-error': 'error',
+    },
+  },
   // Default exports are required by most config files (vite, next, playwright, etc.).
   {
     files: ['**/*.config.{ts,mts,cts,js,mjs,cjs}'],
