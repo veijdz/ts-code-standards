@@ -1040,8 +1040,171 @@ const ids = users.map(extractId)
 
 **Exceptions.** _None._ A named single-use helper indicates either (a) the call site needs explanation, in which case prefer a comment at the call site, or (b) the helper has multiple callers, in which case it earns a `function` declaration per [sub-block 5.6](#56--module-level-functions-are-declarations).
 
+## Cat 6 — Comments & Documentation
+
+This category sets the boundary for *when to write a comment at all*. Default is silence (sub-block 6.1); the only legitimate target is the non-obvious **why** (6.2); JSDoc is reserved for published surfaces (6.3); dev markers like `TODO`/`FIXME`/`XXX`/`HACK` are forbidden in committed code (6.4); and any lint suppression must justify itself in-line (6.5).
+
+### Required dependencies
+
+| Package | Min version | Role in this Cat |
+|---|---|---|
+| `@eslint-community/eslint-plugin-eslint-comments` | `^4.0.0` | Provides `require-description` (6.5). |
+
+`no-warning-comments` (sub-block 6.4) is a core ESLint rule. Sub-blocks 6.1, 6.2 and 6.3 are convention only — no mainstream lint rule encodes "comment density" or "JSDoc-on-public-API-only", and ad-hoc matchers would catch shape but miss intent.
+
+### 6.1 — Default: zero comments
+
+Well-named identifiers carry the meaning that a comment would otherwise restate. A function named `applyDiscount` already says "this applies a discount"; the comment `// applies the discount` adds nothing and rots when the function changes. Default state is silence — comments are an exception that needs a reason.
+
+#### Convention: write no comment unless the *why* is non-obvious
+
+**Why.** Comments degrade in two ways: they stop matching the code (because edits do not update them), and they crowd the screen (each line of unnecessary comment is one line of code the reader cannot see at the same time). The "explanation" a redundant comment provides is already in the identifiers; the only comments that survive a year of edits are the ones that record information the code itself cannot express. See [sub-block 6.2](#62--comment-only-the-non-obvious-why).
+
+**✓ Example.**
+
+```ts
+function applyDiscount(order: Order, code: string): Order {
+  const rule = lookupRule(code)
+  if (!rule) return order
+  return { ...order, total: order.total * (1 - rule.percent) }
+}
+```
+
+**✗ Example.**
+
+```ts
+// Apply the discount to the order
+function applyDiscount(order: Order, code: string): Order {
+  // Look up the discount rule by code
+  const rule = lookupRule(code)
+  // If no rule, return the order unchanged
+  if (!rule) return order
+  // Compute the new total with the discount
+  return { ...order, total: order.total * (1 - rule.percent) }
+}
+```
+
+**Exceptions.** _None._ When the *why* is non-obvious, write the comment per [sub-block 6.2](#62--comment-only-the-non-obvious-why). When the surface is published, use JSDoc per [sub-block 6.3](#63--jsdoc-only-on-published-apis).
+
+### 6.2 — Comment only the non-obvious *why*
+
+The single legitimate use of a comment is to record information the code *cannot* express: a workaround for an upstream bug, an external business rule, a platform gotcha, a constraint that was discovered the hard way. If removing the comment would leave a future reader confused about *why* the code is the way it is, it earns a comment.
+
+#### Convention: comment the *why*, never the *what*
+
+**Why.** The *what* is already in the code — restating it is overhead that drifts out of date. The *why* — workarounds, external constraints, non-obvious invariants — is the part that disappears from the codebase the moment the original author leaves. Pinning that information at the call site is the cheapest way to keep it alive: the next reader sees it without context-switching to a tracker, and the comment moves with the code if the file is split.
+
+**✓ Example.**
+
+```ts
+// Stripe rounds amounts down at 2 decimals; we apply the same flooring here so
+// our reconciliation totals match the dashboard. The discrepancy that surfaced
+// this is documented in the team's payments runbook.
+const settled = Math.floor(amount * 100) / 100
+```
+
+**✗ Example.**
+
+```ts
+// Floor the amount to 2 decimals
+const settled = Math.floor(amount * 100) / 100
+```
+
+**Exceptions.** _None._ A comment that reads like a sentence the reader could have inferred from the next two lines is the same problem as the redundant comments banned by [sub-block 6.1](#61--default-zero-comments).
+
+### 6.3 — JSDoc only on published APIs
+
+JSDoc is overhead that pays back only when there is an external consumer who cannot read the source — a library publishing a typed API, a cross-team contract, a public CLI surface. Internal modules do not need JSDoc; the type signature plus a well-named identifier already document the contract for in-repo callers.
+
+#### Convention: one-line JSDoc on published surfaces; no JSDoc anywhere else
+
+**Why.** Inside a single repo, the type signature, the identifier name, and a quick jump-to-definition give a reader more accurate information than any JSDoc — and the JSDoc requires a separate edit when the signature changes. JSDoc only earns its keep at the publication boundary, where consumers see the editor tooltip but not the source. Even there, one sentence is enough — multi-paragraph examples belong in the README, not above the function.
+
+**✓ Example.**
+
+```ts
+/** Validate an email per RFC 5322 lite — accepts the same shape as the HTML5 input. */
+export function isValidEmail(input: string): boolean {
+  // …
+}
+```
+
+**✗ Example.**
+
+```ts
+/**
+ * Validates the given email string.
+ *
+ * @param input - the string to validate
+ * @returns true if the input is a valid email, false otherwise
+ * @example
+ *   isValidEmail('foo@bar.com') // true
+ *   isValidEmail('not-an-email') // false
+ */
+function isValidEmail(input: string): boolean {
+  // …
+}
+```
+
+**Exceptions.** _None._ A `lib`-targeted stack may layer JSDoc validity rules (`check-tag-names`, `valid-types`) on top of this convention — that is out of scope for the base stack, which has to apply equally to apps and libraries.
+
+### 6.4 — Dev markers are forbidden in committed code
+
+Markers like `TODO`, `FIXME`, `XXX`, and `HACK` are scratch-paper artifacts. They mark "deal with this later" without a deadline, an owner, or a way to find them — and they accumulate. A code base with 200 `TODO` comments has 200 silent debts that nobody is tracking. The fix is to track the work in the issue tracker and let the source stay clean.
+
+#### Rule: `no-warning-comments` with `terms: ['todo', 'fixme', 'xxx', 'hack']`
+
+**Why.** Tracking work in the source instead of in an issue tracker has three failure modes: (a) `TODO`s never get a date or an owner, so they outlive the original context that motivated them; (b) reviewers cannot tell which `TODO`s block the merge and which were copied in from a year ago; (c) external observers (PMs, oncall, future hires) have no surface to discover them. Lint-failing on the four markers forces the work into the tracker, where it gets a number, an owner, and a status. The terms are matched at the start of the comment (the rule's default `location: 'start'`), so a reference to the word `todo` mid-sentence in a *legitimate* comment is unaffected.
+
+**✓ Example.**
+
+```ts
+// Reconciliation skips refunds older than 90 days because Stripe expires their
+// metadata after that window. Tracked in the payments backlog if we need to revisit.
+function reconcile(payments: Payment[]): Reconciled[] {
+  // …
+}
+```
+
+**✗ Example.**
+
+```ts
+// TODO: handle refunds older than 90 days
+// FIXME: this breaks on negative amounts
+// HACK: bypass validation for now
+function reconcile(payments: Payment[]): Reconciled[] {
+  // …
+}
+```
+
+**Exceptions.** _None._ When work needs to be deferred, the issue tracker is the deferral mechanism. A reference to a tracker ticket inside a [sub-block 6.2](#62--comment-only-the-non-obvious-why) *why* comment is fine — it is the marker word at the start of a comment that the rule rejects, not the act of cross-referencing.
+
+### 6.5 — Every `eslint-disable*` directive carries a description
+
+A bare `// eslint-disable-next-line foo` hides a violation without explaining why the violation is acceptable here. The trailing `-- reason` is the difference between a justified suppression and a covered-up bug.
+
+#### Rule: `@eslint-community/eslint-comments/require-description` with narrow `ignore`
+
+**Why.** Lint suppressions are the only mechanism that legitimately prevents the linter from doing its job, so the burden of proof sits on the person disabling the rule. Forcing a `-- reason` next to every `disable*` directive turns the suppression into a documented exception rather than an invisible escape hatch — reviewers can audit each one in isolation, and `git blame` always points to a justification, not a guess. The narrow `ignore` (`eslint-enable`, `eslint`, `global`, `globals`, `exported`) limits the requirement to the directives that actually carry bug-hiding risk: re-enables just invert an already-justified disable, and config or global directives are intentional file-level setup that the surrounding context already explains.
+
+**✓ Example.**
+
+```ts
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- third-party callback typed as `any` upstream; widening here only to satisfy the contract.
+processWebhook((event: any) => handle(event))
+```
+
+**✗ Example.**
+
+```ts
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+processWebhook((event: any) => handle(event))
+```
+
+**Exceptions.** _None._ When a suppression genuinely has no justification, the right move is to fix the underlying violation rather than disable the rule. The `-- reason` text is the artifact that proves the suppression was a deliberate trade-off.
+
 ## Notes
 
 - Cross-references to specific principles use the form [Principle N — title](../../../docs/principles.md).
 - The ESLint config that enforces these Cats lives in [`stacks/base/config/eslint.config.ts`](../config/eslint.config.ts); the compiler flags live in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json).
-- Future Cats (6 — Comments, 7 — Testing) will append sections below this one.
+- The remaining Cat (7 — Testing) will append a section below this one.

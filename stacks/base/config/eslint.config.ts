@@ -1,6 +1,7 @@
 import tseslint from 'typescript-eslint'
 import unicorn from 'eslint-plugin-unicorn'
 import importX from 'eslint-plugin-import-x'
+import eslintComments from '@eslint-community/eslint-plugin-eslint-comments'
 
 // Each rule category (Cat 1–7) appends its own config block here as it is written.
 // Rule rationale and exceptions are documented in stacks/base/docs/rules.md.
@@ -234,6 +235,28 @@ export default tseslint.config(
       'max-depth': ['error', 3],
       'max-lines': ['error', 300],
       'func-style': ['error', 'declaration'],
+    },
+  },
+  // === Cat 6 — Comments & Documentation ===
+  // Sub-blocks 6.1 (zero-by-default), 6.2 (why-only), 6.3 (JSDoc on published APIs)
+  // are convention only — no mainstream lint rule encodes "comment density" or
+  // "JSDoc-on-public-API-only", and ad-hoc matchers would catch shape but miss intent.
+  // The two enforced rules are universal (no type info needed), so they span JS too.
+  {
+    files: ['**/*.{ts,tsx,cts,mts,js,jsx,cjs,mjs}'],
+    plugins: { '@eslint-community/eslint-comments': eslintComments },
+    rules: {
+      'no-warning-comments': [
+        'error',
+        { terms: ['todo', 'fixme', 'xxx', 'hack'], location: 'start' },
+      ],
+      // Narrow ignore: only the `disable*` directives carry real bug-hiding risk;
+      // `eslint-enable` just inverts an already-justified disable, and config/global
+      // directives are intentional file-level setup. See sub-block 6.5.
+      '@eslint-community/eslint-comments/require-description': [
+        'error',
+        { ignore: ['eslint-enable', 'eslint', 'global', 'globals', 'exported'] },
+      ],
     },
   },
   // Default exports are required by most config files (vite, next, playwright, etc.).
