@@ -19,7 +19,7 @@ This baseline targets Node 22 LTS and assumes the templates run in a project tha
 - `README.md` explains the `.js` extension hint on `.ts` sources as a property of ESM module resolution; the explanation only makes sense if ESM is the operating model.
 - `package.json` does not set `"type": "commonjs"` anywhere; the project-level default in Node 22 LTS is CJS for unmarked packages, so a consumer copying the templates into an unmarked package gets a working ESM toolchain only by accident.
 
-There is no half-step the templates support: they are not "CJS-friendly with ESM as an option". The choice has already been made — this ADR makes it visible so that consumers, adopting projects, and reviewers can rely on it instead of inferring it from configs.
+There is no half-step the templates support: they are not "CJS-friendly with ESM as an option". The choice has already been made — this ADR makes it visible so that consumers and reviewers can rely on it instead of inferring it from configs.
 
 ## Decision
 
@@ -28,23 +28,23 @@ This baseline assumes ESM as the default module system.
 - **Applications** built from these standards are ESM. Their `package.json` declares `"type": "module"`. They use ESM imports, `import.meta.url`, top-level await, and the Node ESM resolver.
 - **Libraries** built from these standards publish either ESM-only or dual (ESM + CJS) outputs. ESM-only is preferred; dual is acceptable when the library targets ecosystems still anchored to CJS. Pure-CJS publishing is out of scope of these standards.
 - **Tooling configs** in this baseline are written as ESM (`.ts` loaded via the toolchain's ESM loader, or `.mjs` when a tool requires it). CJS configs (`.cjs`, `module.exports = ...`) are not added.
-- **Banned packages** that exist primarily because they wrap CJS-only behavior (e.g., `esm` the loader) are not introduced; if a runtime dependency is CJS-only, it is consumed via Node's CJS interop, not via a wrapper.
+- **Loaders and shims** that exist primarily to wrap CJS-only behavior (e.g., the `esm` package) are not added; if a runtime dependency is CJS-only, it is consumed via Node's CJS interop, not via a wrapper.
 
-The decision is the contract for any project that adopts this baseline. A project that needs to deviate must amend or supersede this ADR.
+The decision is the contract for any project adopting this baseline. To deviate, a project must amend or supersede this ADR.
 
-### Why this is a baseline decision rather than a per-target one
+### Why this lives in the baseline, not per project
 
-Module system is a property of the runtime, not of the framework. A Node service, a NestJS API, an Expo app's Metro bundler, and a Vite-based TanStack Start app all support ESM source-side. Locating the decision in the baseline keeps every adopting project's `tsconfig.json` `extends` chain coherent (`module: NodeNext` flows through unmodified) and removes one thing each new project would otherwise need to re-decide.
+Module system is a property of the runtime, not of the framework. A Node service, a backend framework, a mobile bundler, a meta-framework — all support ESM source-side. Locating the decision in the baseline keeps every adopting project's `tsconfig.json` `extends` chain coherent (`module: NodeNext` flows through unmodified) and removes one thing each new project would otherwise need to re-decide.
 
 ### What this means for consumers
 
-A consumer who copies the baseline into a fresh project must ensure their `package.json` declares `"type": "module"`. The root `README.md` documents this in the wiring instructions; the practical effect is that `import` statements in `.ts` source files compile to ESM `import` statements at runtime, and the Node ESM resolver is the one that walks them.
+A consumer who copies these templates into a fresh project must ensure their `package.json` declares `"type": "module"`. The root `README.md` documents this in the wiring instructions; the practical effect is that `import` statements in `.ts` source files compile to ESM `import` statements at runtime, and the Node ESM resolver is the one that walks them.
 
 ## Consequences
 
 **Positive.**
 
-- A single, predictable module model across every project that adopts this baseline — no drift between CJS and ESM, no half-converted projects.
+- A single, predictable module model across every adopting project — no drift between CJS and ESM, no half-converted projects.
 - Top-level `await`, `import.meta.url` / `import.meta.dirname`, and dynamic `import()` are available everywhere without conditional wiring.
 - Tree-shaking and dead-code elimination work as designed — bundlers no longer have to disambiguate `module.exports` vs ESM exports.
 - Removes the `runtime ≠ bundler` failure mode where a project tests fine under one and breaks under the other.
@@ -53,13 +53,13 @@ A consumer who copies the baseline into a fresh project must ensure their `packa
 
 - Source `.ts` imports must carry the `.js` extension that NodeNext resolution expects (`import { foo } from './bar.js'`). This trips reviewers familiar with the older "no extension" TS style; the root `README.md` explains it but the friction is real.
 - `__dirname` and `require` are not available at runtime. Code that needs them uses the ESM equivalents (`fileURLToPath(import.meta.url)`, `createRequire(import.meta.url)`); concrete patterns will land with M2 (Node runtime, Cat 8–14).
-- A CJS-only dependency cannot be tree-shaken and cannot be top-level awaited; the dep must be consumed via Node's interop or replaced. The `dependencies.md` "native-first" table absorbs most of these substitutions, but real cases will still appear.
+- A CJS-only dependency cannot be tree-shaken and cannot be top-level awaited; the dep must be consumed via Node's interop or replaced. The dependencies convention's native-first stance reduces how often this matters in practice, but real cases will still appear.
 - Pure-CJS publishing is unsupported. A team that adopts these standards and later needs to publish CJS-only must amend this ADR rather than work around the templates.
 
 **Neutral.**
 
 - Any project that adopts this baseline must explicitly state if and where it deviates from ESM-first. The default is "no deviation".
-- Tooling that does not yet support `.ts` in ESM mode is consumed via `.mts` when needed; the `.mts/.cts` extensions are covered by the baseline's lint and prettier globs.
+- Tooling that does not yet support `.ts` in ESM mode is consumed via `.mts` when needed; the `.mts/.cts` extensions are covered by the baseline's lint and Prettier globs.
 
 ## Alternatives considered
 
