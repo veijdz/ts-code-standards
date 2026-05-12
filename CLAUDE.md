@@ -47,7 +47,7 @@ Future stacks: `node` (extends `base`), `nestjs` (extends `node`), `expo` and `t
 ## Where to find things
 
 - **Foundational principles:** `docs/principles.md`
-- **Conventions:** `docs/conventions/{deps,git,testing,github-settings}.md` (`github-settings` not yet written)
+- **Conventions:** `docs/conventions/{deps,git,testing,github-settings}.md`
 - **ADRs:** `docs/adr/NNNN-<slug>.md`
 - **Base stack rules:** `stacks/base/docs/rules.md` (built progressively, one file per category)
 - **Base stack copyable configs:** `stacks/base/config/`
