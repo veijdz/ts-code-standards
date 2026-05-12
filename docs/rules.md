@@ -1,5 +1,5 @@
 ---
-title: Base — rules
+title: Rules
 stack: base
 last-reviewed: 2026-05-11
 ---
@@ -239,7 +239,7 @@ This category is the concrete enforcement of [Principle 11 — Clarity over brev
 
 The `@typescript-eslint/naming-convention` rule from sub-blocks 2.1–2.3 is provided by `typescript-eslint` (already required by Cat 1).
 
-> **Note on `prevent-abbreviations`.** The configured `allowList` matches **bare identifiers only** — `req: true` allows a binding literally named `req`, but `parseReq`, `httpReq`, `pageProps`, etc., are still flagged because the rule splits compound names on word boundaries. To exempt an abbreviation everywhere it appears (compound or bare), use `replacements: { req: false }` instead — these rules err on the conservative side and accept the false-positive cost.
+> **Note on `prevent-abbreviations`.** The configured `allowList` matches **bare identifiers only** — `req: true` allows a binding literally named `req`, but `parseReq`, `httpReq`, `pageProps`, etc., are still flagged because the rule splits compound names on word boundaries. To exempt an abbreviation everywhere it appears (compound or bare), use `replacements: { req: false }` instead — these rules err on the conservative side.
 
 ### 2.1 — Case per element
 
@@ -1232,11 +1232,11 @@ processWebhook((event: any) => handle(event))
 
 ## Cat 7 — Testing
 
-This category sets the universal testing conventions — folder layout (sub-block 7.1), file suffixes (7.2), how to lay out a single test (7.3–7.4), where shared data lives (7.5), test independence (7.6), the role coverage plays (7.7), and the mock policy (7.8). None of these are lint-enforced at this layer: the actual test runner config and any runner-specific lint rules belong in the consumer repo's overlay (e.g., `vitest` + testcontainers for a Node API).
+This category sets the universal testing conventions every consumer inherits — folder layout (sub-block 7.1), file suffixes (7.2), how to lay out a single test (7.3–7.4), where shared data lives (7.5), test independence (7.6), the role coverage plays (7.7), and the mock policy (7.8). These conventions hold regardless of which runner a project picks. The runner choice itself (`vitest`, `jest`, etc.) — and any runner-specific lint plugin a project pulls in to enforce them — is wired per project.
 
 ### Required dependencies
 
-_None at this layer._ The runner (`vitest`, `jest`, etc.) and its eslint plugin are wired in the consumer repo. The conventions in this Cat are runner-agnostic on purpose so they survive a future swap.
+_None at the baseline level._ The runner (`vitest`, `jest`, etc.) and its eslint plugin are wired per project. The conventions in this Cat are runner-agnostic on purpose so they survive a future swap.
 
 ### 7.1 — Test files live under `tests/`, never co-located with source
 
@@ -1483,7 +1483,7 @@ Coverage tells you which lines the suite touched. It does not tell you whether t
 
 **Why.** Coverage gates create the wrong incentive: a developer chasing the threshold writes whichever tests are easiest to add (constructor exercises, getter calls, dead-code probes) instead of the tests that matter (branching error paths, race conditions, integration boundaries). The real gate is review of test _quality_ — a reviewer asks "does this test express the contract?" rather than "does this test bump the percentage?". Coverage as a local report still earns its keep: it surfaces files the suite never touches at all, which is a different signal than "this file is 70% covered".
 
-**✓ Example (vitest config snippet from a consumer repo).**
+**✓ Example (vitest config snippet).**
 
 ```ts
 test: {
@@ -1506,7 +1506,7 @@ test: {
 }
 ```
 
-**Exceptions.** _None._ Projects with a regulatory coverage requirement (rare) document the threshold in their consumer overlay with the regulation cited; otherwise the no-threshold default holds.
+**Exceptions.** _None._ Projects with a regulatory coverage requirement (rare) document the threshold in their own runner config with the regulation cited; otherwise the no-threshold default holds.
 
 ### 7.8 — Mock policy: never the database, only external boundaries
 
@@ -1514,7 +1514,7 @@ Mocking the database is the most common way to ship tests that pass in CI and br
 
 #### Convention: real database (consumer repos wire the runner — e.g., testcontainers in a Node API); mock only paid or remote-only third-party boundaries
 
-**Why.** A mocked database guarantees the test exercises the _idea_ of the query, not the query itself — the schema migration that nobody ran, the JSONB cast that silently fails, the index missing that the query planner now scans sequentially: none of these surface against a mock. Real database tests (wired by the consumer repo, typically via testcontainers) cost a few hundred milliseconds of startup per file and remove the entire class of mock-vs-prod divergence. For external services that are remote-only or paid (Stripe API, SendGrid, OpenAI), the trade reverses: the round-trip is too expensive and too flaky to run on every PR, so a faithful mock at the HTTP boundary is the right tool. Internal modules are never mocked — if a module is hard to test without mocks, the answer is to refactor the module, not to mock around it.
+**Why.** A mocked database guarantees the test exercises the _idea_ of the query, not the query itself — the schema migration that nobody ran, the JSONB cast that silently fails, the index missing that the query planner now scans sequentially: none of these surface against a mock. Real database tests cost a few hundred milliseconds of startup per file and remove the entire class of mock-vs-prod divergence. For external services that are remote-only or paid (Stripe API, SendGrid, OpenAI), the trade reverses: the round-trip is too expensive and too flaky to run on every PR, so a faithful mock at the HTTP boundary is the right tool. Internal modules are never mocked — if a module is hard to test without mocks, the answer is to refactor the module, not to mock around it.
 
 **✓ Example (real DB, mocked external).**
 
