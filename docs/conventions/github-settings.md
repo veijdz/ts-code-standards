@@ -77,7 +77,10 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
     --method PUT \
     --input - <<'JSON'
   {
-    "required_status_checks": null,
+    "required_status_checks": {
+      "strict": true,
+      "contexts": ["ci"]
+    },
     "enforce_admins": true,
     "required_pull_request_reviews": {
       "required_approving_review_count": 0,
@@ -94,11 +97,7 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
   JSON
   ```
 
-  `required_status_checks: null` is intentional — CI is added separately (see [Out of scope](#out-of-scope)). When the CI workflow lands, this field becomes:
-
-  ```json
-  "required_status_checks": { "strict": true, "contexts": ["<workflow job name>"] }
-  ```
+  `required_status_checks.contexts: ["ci"]` requires the `ci` summary job from [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) to pass before any PR can merge to `main`. The summary job aggregates a matrix of `typecheck`, `lint`, `format:check`, and `knip` — branch protection wires to the single summary name rather than the four matrix entries so adding or removing a matrix task does not require updating the protection rule. `strict: true` means the PR branch must be up-to-date with `main` before merge.
 
 - **Rule.** `staging` is not protected.
   - **Why.** `staging` is the working branch. Forcing PRs at this layer too would double the ceremony per change for no additional safety, since `main` (the actually-published artifact) is gated.
