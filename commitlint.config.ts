@@ -1,3 +1,3 @@
-import baseConfig from './stacks/base/config/commitlint.config.js'
+import baseConfig from './config/commitlint.config.js'
 
 export default baseConfig

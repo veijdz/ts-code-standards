@@ -7,11 +7,11 @@ last-reviewed: 2026-05-10
 
 # Conventions — Testing
 
-> Test taxonomy, layout, naming, and the parts that are non-negotiable (no DB mocks, coverage as diagnostic). Derives from [Principle 7 — Tests cover behavior, not implementation](../principles.md). Stack-specific runner and tooling rules live in the stack's `rules.md` (Cat 7 of [`stacks/base/docs/rules.md`](../../stacks/base/docs/rules.md) for the base stack).
+> Test taxonomy, layout, naming, and the parts that are non-negotiable (no DB mocks, coverage as diagnostic). Derives from [Principle 7 — Tests cover behavior, not implementation](../principles.md). Runner-specific and tooling rules live in [`rules.md` — Cat 7](../rules.md).
 
 ## Scope
 
-Applies to every test file in any project that adopts these standards, regardless of test runner. Covers the three test kinds, where they live on disk, naming, the mock policy, and what coverage signals are used for. Does **not** cover the runner config or assertion library — those belong in the stack's rules.
+Applies to every test file in any project that adopts these standards, regardless of test runner. Covers the three test kinds, where they live on disk, naming, the mock policy, and what coverage signals are used for. Does **not** cover the runner config or assertion library — those belong in [`rules.md` — Cat 7](../rules.md).
 
 ## Rules
 
@@ -99,7 +99,7 @@ Applies to every test file in any project that adopts these standards, regardles
 
 ## Out of scope
 
-- The choice of test runner (Vitest, Node test runner, Jest) — that is stack-specific; the `base` choice lives in [`stacks/base/docs/rules.md`](../../stacks/base/docs/rules.md) (Cat 7).
+- The choice of test runner (Vitest, Node test runner, Jest) — lives in [`rules.md` — Cat 7](../rules.md).
 - Snapshot testing policy — separate convention, not yet defined.
 - Performance / load testing — separate concern, lives outside this convention.
 

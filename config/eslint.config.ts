@@ -4,7 +4,7 @@ import unicorn from 'eslint-plugin-unicorn'
 import tseslint from 'typescript-eslint'
 
 // Each rule category (Cat 1–7) appends its own config block here as it is written.
-// Rule rationale and exceptions are documented in stacks/base/docs/rules.md.
+// Rule rationale and exceptions are documented in docs/rules.md.
 
 const nativeEsReplacementMessage =
   'Use native ES (Array.prototype, structuredClone, Object.entries, etc.).'
@@ -157,7 +157,7 @@ export default tseslint.config(
   // `import { foo, type Foo }` statements; the ESLint rule does both. The two
   // can produce overlapping errors in narrow edge cases (decorator metadata,
   // `--isolatedDeclarations`); the auto-fix ergonomics are worth that cost.
-  // See `stacks/base/docs/rules.md` sub-block 3.3 for the documented trade-off.
+  // See `docs/rules.md` sub-block 3.3 for the documented trade-off.
   // This rule is scoped to TypeScript files only — the broader import-x block
   // below also runs on plain JS.
   {
@@ -202,7 +202,7 @@ export default tseslint.config(
   },
   // === Cat 4 — Errors & Async ===
   // Sub-blocks 4.3 (cause chain) and 4.6 (semantic error class names) are convention
-  // and live in stacks/base/docs/rules.md only — there is no mainstream lint rule
+  // and live in docs/rules.md only — there is no mainstream lint rule
   // for either, and bolting on ad-hoc `no-restricted-syntax` matchers would catch
   // accidental shape but miss the intent.
   // `no-empty` (sub-block 4.1) is core ESLint and AST-only, so it spans JS as well —
