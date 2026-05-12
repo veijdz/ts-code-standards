@@ -38,13 +38,13 @@ Breaking changes use a `YYYY-MM-DD-BREAKING-<stack>` tag and list the migration 
 ## Documentation
 
 - [Foundational principles](docs/principles.md) — the eleven foundations every rule, convention, and ADR derives from
-- Conventions — [dependencies](docs/conventions/dependencies.md), [git](docs/conventions/git.md), [testing](docs/conventions/testing.md), GitHub
+- Conventions — [dependencies](docs/conventions/dependencies.md), [git](docs/conventions/git.md), [testing](docs/conventions/testing.md), [GitHub settings](docs/conventions/github-settings.md)
 - [ADRs](docs/adr/) — architectural decision records
 - [Documentation templates](docs/_templates/) — canonical anatomy for [rules](docs/_templates/rules.md), [ADRs](docs/_templates/adr.md), [conventions](docs/_templates/convention.md), and [principles](docs/_templates/principles.md), plus a [filled rules example](docs/_templates/example-rules.md)
 
 Every doc under `docs/` and `stacks/*/docs/` is built from one of those templates. New docs must reference the template they extend immediately after the frontmatter.
 
-> The `base` stack's `rules.md` and the GitHub-settings convention are still landing; stacks beyond `base` have not started. See the [Stacks table](#stacks) above for per-stack status.
+> Stacks beyond `base` have not started. See the [Stacks table](#stacks) above for per-stack status.
 
 ## For AI agents
 
