@@ -8,7 +8,7 @@
     "node": ">=22.22.2"
   },
   "packageManager": "pnpm@11.0.9",
-  "prettier": "./stacks/base/config/.prettierrc.json",
+  "prettier": "./config/.prettierrc.json",
   "pnpm": {
     "onlyBuiltDependencies": [
       "lefthook",
