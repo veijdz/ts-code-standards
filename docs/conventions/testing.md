@@ -11,7 +11,7 @@ last-reviewed: 2026-05-10
 
 ## Scope
 
-Applies to every test file in any project that adopts these standards, regardless of test runner. Covers the three test kinds, where they live on disk, naming, the mock policy, and what coverage signals are used for. Does **not** cover the runner config or assertion library — those belong in [`rules.md` — Cat 7](../rules.md).
+Applies to every test file in any consumer of these standards, regardless of test runner. Covers the three test kinds, where they live on disk, naming, the mock policy, and what coverage signals are used for. Does **not** cover the runner config or assertion library — those belong in [`rules.md` — Cat 7](../rules.md).
 
 ## Rules
 
