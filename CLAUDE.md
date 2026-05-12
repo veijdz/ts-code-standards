@@ -19,7 +19,7 @@ Guidance for AI agents working on this repository.
     └── rules.md           # rule categories enforced by the baseline (built progressively, one Cat per issue)
 ```
 
-This repo ships a single, framework-agnostic baseline (TypeScript + Node 22 LTS). Teams that need framework-specific opinions derive their own repo from this baseline and overlay rules on top — see [ADR 0004](docs/adr/0004-single-baseline.md).
+This repo ships a single, framework-agnostic baseline (TypeScript + Node 22 LTS). Consumers that need framework-specific opinions derive their own repo from this baseline and overlay rules on top — see [ADR 0004](docs/adr/0004-single-baseline.md).
 
 ## Decisions already made
 

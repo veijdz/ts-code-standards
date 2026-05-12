@@ -7,11 +7,11 @@ last-reviewed: 2026-05-10
 
 # Conventions — Dependencies
 
-> Criteria for adding, replacing, and auditing dependencies in any project that adopts these standards. Derives from [Principle 8 — Dependencies are debt](../principles.md).
+> Criteria for adding, replacing, and auditing dependencies in any consumer of these standards. Derives from [Principle 8 — Dependencies are debt](../principles.md).
 
 ## Scope
 
-Applies to every package listed in `package.json` (runtime, dev, peer, optional) in this repo and in any project that adopts this baseline. Covers what to add, what is banned outright, how to keep the dependency tree current, and how to detect dead weight. Does **not** cover internal workspace packages — those are governed by the consumer project's own rules.
+Applies to every package listed in `package.json` (runtime, dev, peer, optional) in this repo and in any consumer of this baseline. Covers what to add, what is banned outright, how to keep the dependency tree current, and how to detect dead weight. Does **not** cover internal workspace packages — those are governed by the consumer's own rules.
 
 ## Rules
 
@@ -85,11 +85,11 @@ The following are not allowed anywhere in the dependency tree. CI must fail when
 
 ### Peer dependencies (libraries only)
 
-- **Rule.** A library published from a project that adopts these standards declares its framework couplings as peer dependencies, never runtime ones, and marks each in `peerDependenciesMeta` with the appropriate `optional` flag.
+- **Rule.** A library published from a consumer of these standards declares its framework couplings as peer dependencies, never runtime ones, and marks each in `peerDependenciesMeta` with the appropriate `optional` flag.
   - **Why.** Prevents version-duplication blowups in consumers (two copies of React, two copies of NestJS) and signals which couplings the library actually requires versus tolerates.
   - **How.** Concrete `package.json` `exports` map shapes will land in M2 (Node runtime, Cat 8–14) alongside the publishing rules.
 
-- **Rule.** A library published from a project that adopts these standards ships ESM, either ESM-only or dual (ESM + CJS). Pure-CJS publishing is unsupported.
+- **Rule.** A library published from a consumer of these standards ships ESM, either ESM-only or dual (ESM + CJS). Pure-CJS publishing is unsupported.
   - **Why.** The repo is ESM-first. Pure-CJS output forces consumers into the runtime/bundler divergence the standards exist to remove.
   - **How.** See [ADR 0003 — ESM-first as the default module system](../adr/0003-esm-first.md). Concrete `package.json` `exports` map shapes will land with M2 (Node runtime, Cat 8–14).
 
@@ -101,8 +101,8 @@ The following are not allowed anywhere in the dependency tree. CI must fail when
 
 ## Out of scope
 
-- Framework-specific deps (NestJS modules, Expo plugins, etc.) — overlay in the consumer project's own `package.json`.
-- Build-time tool selection (bundler, transpiler) — handled by the consumer project.
+- Framework-specific deps (NestJS modules, Expo plugins, etc.) — overlay in the consumer repo's own `package.json`.
+- Build-time tool selection (bundler, transpiler) — handled by the consumer repo.
 - License auditing — separate convention; not yet defined.
 
 ## References
