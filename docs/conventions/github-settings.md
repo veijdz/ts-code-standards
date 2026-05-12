@@ -11,7 +11,7 @@ last-reviewed: 2026-05-12
 
 ## Scope
 
-Applies to this repo and to any project that adopts the `base` stack and hosts on GitHub. Covers: repository merge settings, branch protection on the release branch, and the security baseline (Dependabot, CODEOWNERS, SECURITY.md). Does **not** cover branch naming, commit format, or PR shape — those live in [Git conventions](git.md).
+Applies to this repo and to any project that adopts the `base` stack and hosts on GitHub. Covers: repository merge settings, branch protection on the release branch and on the working branch, and the security baseline (Dependabot, CODEOWNERS, SECURITY.md). Does **not** cover branch naming, commit format, or PR shape — those live in [Git conventions](git.md).
 
 Each rule below ships a `gh api` snippet that consumers run after cloning. Clicking through the GitHub UI is documented as a fallback, but the CLI snippet is the source of truth — the UI changes, REST endpoints do not.
 
@@ -77,7 +77,10 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
     --method PUT \
     --input - <<'JSON'
   {
-    "required_status_checks": null,
+    "required_status_checks": {
+      "strict": true,
+      "contexts": ["ci"]
+    },
     "enforce_admins": true,
     "required_pull_request_reviews": {
       "required_approving_review_count": 0,
@@ -94,14 +97,12 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
   JSON
   ```
 
-  `required_status_checks: null` is intentional — CI is added separately (see [Out of scope](#out-of-scope)). When the CI workflow lands, this field becomes:
+- **Rule.** `required_status_checks.contexts: ["ci"]` requires the `ci` summary job from [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) to pass before any PR can merge to `main`.
+  - **Why.** The `ci` job is a summary that aggregates a matrix of `typecheck`, `lint`, `format:check`, and `knip`. Wiring protection to the single summary name (rather than the four matrix entries) keeps the protection rule stable as the matrix evolves — adding or removing a task does not require an API call to update `contexts`.
 
-  ```json
-  "required_status_checks": { "strict": true, "contexts": ["<workflow job name>"] }
-  ```
-
-- **Rule.** `staging` is not protected.
-  - **Why.** `staging` is the working branch. Forcing PRs at this layer too would double the ceremony per change for no additional safety, since `main` (the actually-published artifact) is gated.
+- **Rule.** `required_status_checks.strict: true` requires the PR branch to be up to date with `main` before merge.
+  - **Why.** The CI result then reflects the post-merge state of `main`, not the pre-merge state of the PR branch in isolation. The cost is one extra "Update branch" click per PR when another change has landed since the PR opened — small for serialized solo work, larger when several contributors merge in parallel.
+  - **Revisit when.** The "Update branch" friction becomes the bottleneck — typically once `≥ 2` humans land PRs in the same day. The change is a one-field PATCH (`required_status_checks.strict: false`); the CI rule itself stays.
 
 - **Rule.** Emergency overrides (break-glass) are explicit and short-lived: disable `enforce_admins`, perform the override, re-enable in the same session.
   - **Why.** `enforce_admins: true` is deliberately designed to trap the maintainer when convention conflicts with reality (a flaky CI step that blocks a release; a malformed protection state that needs a direct push to recover). The escape hatch must exist, must be obvious, and must not be left open. Documenting it inline avoids the failure mode where the rule gets silently violated under pressure and the violation persists.
@@ -118,6 +119,35 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 
 - **Rule.** Audit consumers running `git log -- stacks/<stack>/` (per [ADR 0002](../adr/0002-release-policy.md)) target `staging`, not `main`.
   - **Why.** Squash-only at the release boundary collapses every feature PR between two release tags into a single commit on `main`. The per-PR granularity ADR 0002's audit recommendation depends on lives on `staging`, which preserves one commit per merged PR. `main` remains the canonical answer to "what's the latest release"; `staging` is the canonical answer to "what changed and when". The two roles are complementary, but they are not interchangeable for `git log` purposes.
+
+### Branch protection on `staging`
+
+`staging` is the working branch — every feature PR targets it, and the release PR (`staging` → `main`) carries its accumulated history into `main`. It is not gated like `main`, but it is not unprotected either: one narrow rule blocks deletion.
+
+- **Rule.** `staging` is protected against deletion only; merge requirements and approvals remain off.
+  - **Why.** `staging` is the working branch — forcing PRs at this layer too would double the ceremony per change for no additional safety, since `main` (the actually-published artifact) is gated.
+
+- **Rule.** `staging` deletion is blocked via `allow_deletions: false`.
+  - **Why.** `delete_branch_on_merge: true` from [Merge settings](#merge-settings) applies uniformly to every merged PR, including the release PR (`staging` → `main`) — which would silently delete `staging` itself after every release. The next feature PR opening against `staging` then fails with `base ref must be a branch`, and the contributor has to diagnose the disappearance from scratch. Pinning `allow_deletions: false` closes the trap without re-introducing PR ceremony on `staging`.
+  - **How.**
+
+    ```bash
+    gh api repos/:owner/:repo/branches/staging/protection \
+      --method PUT \
+      --input - <<'JSON'
+    {
+      "required_status_checks": null,
+      "enforce_admins": false,
+      "required_pull_request_reviews": null,
+      "restrictions": null,
+      "required_linear_history": false,
+      "allow_force_pushes": true,
+      "allow_deletions": false,
+      "block_creations": false,
+      "required_conversation_resolution": false
+    }
+    JSON
+    ```
 
 ### Security baseline
 
@@ -146,7 +176,7 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 
 ## Out of scope
 
-- **CI workflow.** The `required_status_checks` field above is intentionally `null` and is wired up separately when the GitHub Actions workflow lands.
+- **CI workflow file contents.** This convention pins the contract (the `ci` summary check name and `strict: true`); the workflow definition itself — matrix tasks, runner image, action versions — lives in [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) and changes without touching this doc.
 - **PR body enforcement.** `.github/pull_request_template.md` is a default body, not a hard requirement. `gh pr create --body "anything"` bypasses it. Mechanical enforcement (e.g., a check that fails on PRs without `## Summary` and `## Test plan` sections) belongs with the CI workflow.
 - **Branch naming, commit format, PR title format.** Covered in [Git conventions](git.md).
 - **Release tagging and the date-tag scheme.** Covered in [ADR 0002 — Release policy](../adr/0002-release-policy.md).
