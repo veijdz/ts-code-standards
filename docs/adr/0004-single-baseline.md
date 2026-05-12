@@ -60,7 +60,7 @@ Splitting "language conventions" from "runtime conventions" sounds clean but doe
 - Numbering of ADRs is preserved. ADR 0001 stays at 0001, marked `superseded`; the supersession note + frontmatter point readers to this ADR. No history is rewritten.
 - Categories 1–7 keep their numbering and content; Cat 8–14 (Node runtime, M2) carry the content that would have lived in the old `node` stack, but addressed to the single baseline rather than to a stack-on-stack composition.
 - Milestone M2 is rescoped to "Base extension: Node runtime (Cat 8–14)"; M3–M5 (NestJS, Expo, TanStack Start) are cancelled.
-- ADR 0002's release-tag format `YYYY-MM-DD-BREAKING-<stack>` and its per-stack `git log -- stacks/<stack>/` audit query inherit an open question — with a single baseline, `<stack>` is either vestigial or always the same value. This ADR does not decide what to do; the first breaking change after the follow-up PRs land is the natural forcing function for an amendment or supersession of ADR 0002.
+- ADR 0002's release-tag format `YYYY-MM-DD-BREAKING-<stack>` and its per-stack `git log -- stacks/<stack>/` audit query inherit an open question — with a single baseline, `<stack>` is either vestigial or always the same value. This ADR does not decide what to do; the first breaking change after the follow-up PRs land is the natural forcing function for an amendment or supersession of ADR 0002. **Resolved 2026-05-12: ADR 0002 amended in-place to drop the `<stack>` segment — see PR #46.**
 
 ## Alternatives considered
 
