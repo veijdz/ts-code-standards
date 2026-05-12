@@ -29,7 +29,7 @@ Future stacks: `node` (extends `base`), `nestjs` (extends `node`), `expo` and `t
 - **Package manager:** `pnpm` (see `packageManager` in `package.json`)
 - **Node:** 22 LTS, ESM-first
 - **Conventional Commits 1.0** required
-- **Squash merge** as the GitHub default
+- **Merge commit** as the GitHub default (no squash, no rebase)
 - **No `Co-Authored-By`** in commits or PRs (including any AI attribution)
 - **No "Generated with Claude Code"** footer (or similar) anywhere
 

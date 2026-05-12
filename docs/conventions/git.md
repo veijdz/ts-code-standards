@@ -55,8 +55,7 @@ Applies to every commit, branch, and PR in this repo and in any project that ado
 
 - **No** `Co-Authored-By` lines, ever.
 - **No** AI attribution footers ("🤖 Generated with Claude Code", "Co-Authored-By: Claude…", or any variant).
-- **No** WIP commits on a long-lived branch. WIP only on a private feature branch and squashed before merge.
-- **No** merge commits on feature branches into a long-lived branch (see "Merge strategy" below).
+- **No** WIP commits on a long-lived branch. WIP only on a private feature branch; clean up before opening the PR (interactive rebase, fixup commits) so the merge commit absorbs a coherent set.
 
 ### Branch naming
 
@@ -69,8 +68,8 @@ Applies to every commit, branch, and PR in this repo and in any project that ado
 
 ### PR conventions
 
-- **Rule.** The PR title follows Conventional Commits and is what ends up in the squash-merge commit on `staging`.
-  - **Why.** With squash merge, the PR title becomes the single permanent record of the change. It must satisfy the same parseable format as a commit.
+- **Rule.** The PR title follows Conventional Commits and becomes the subject of the merge commit that lands the PR.
+  - **Why.** The merge commit subject is the parseable record of "what this PR did" in `git log`. It must satisfy the same Conventional Commits format as a regular commit so changelog tooling and `--grep` can scan it.
   - **How.** Title example: `docs: add foundational principles`. If the project uses an issue tracker, an optional reference may be appended in parentheses (e.g., `docs: add foundational principles (#42)` or `(<TICKET>-123)`); the choice of where to place tracker references — title, body, or both — is the project's call. Tracker references must never appear in standalone commit subjects.
 
 - **Rule.** The PR body has two sections: `## Summary` (bullets of what changed and why) and `## Test plan` (checklist of how the reviewer can verify).
@@ -79,9 +78,9 @@ Applies to every commit, branch, and PR in this repo and in any project that ado
 
 ### Merge strategy
 
-- **Rule.** Squash merge is the default and only enabled option on GitHub.
-  - **Why.** Keeps the long-lived branches linear and makes `git bisect` actually useful. Every PR is exactly one commit on `staging`/`main`.
-  - **How.** Repo settings disable merge commits and disable rebase merge. See [GitHub settings convention](github-settings.md).
+- **Rule.** Merge commit is the default and only enabled option on GitHub. Squash and rebase merge are disabled.
+  - **Why.** Preserves every PR's individual commits on both `staging` and `main`, so `git log` answers any audit window with full granularity. The merge commit itself is the explicit "this PR landed here" marker — `git log --first-parent` collapses to PR-and-release granularity when that's what you want. Cost: intra-PR noise (review-fix commits, lint adjustments) reaches `main`. Accepted because the merge-commit boundary makes them filterable and because `staging` and `main` stay history-identical, which removes a class of synchronization friction.
+  - **How.** Repo settings disable squash and rebase merge. Merge commit subject = PR title; body = PR description. See [GitHub settings convention](github-settings.md).
 
 - **Rule.** Auto-delete head branch is enabled.
   - **Why.** Stale merged branches accumulate noise in lists and tab completion.
@@ -90,7 +89,8 @@ Applies to every commit, branch, and PR in this repo and in any project that ado
 
 - **Why 72 characters and not 50?** Fifty is the older Git convention from a 80-column terminal era. Modern terminals and the GitHub UI both display 72 cleanly; tighter limits force unnatural abbreviation in subject lines.
 - **Why ban AI attribution footers?** The footer adds no information a reviewer can act on (you cannot ask the AI to fix a regression three months later), and it bloats every `git log` line in a way that is impossible to grep around.
-- **Why squash and not rebase?** Rebase merge preserves intermediate commits, most of which are "fix typo", "address review", or other noise. Squash collapses that into the one commit that matters — the one whose title was already vetted in the PR.
+- **Why merge commit and not squash?** Squash collapses every PR into a single commit on the target branch, which keeps `git log --oneline` clean but loses per-PR detail — and in a two-tier setup (`staging` → `main`), means `main` and `staging` diverge in history (with identical tree) after every release, requiring an explicit reset to reconcile. Merge commit preserves the PR's individual commits and keeps both branches history-identical; intra-PR noise is the price.
+- **Why merge commit and not rebase?** Rebase replays each commit with a new SHA, breaking external references to commits inside the PR (PR comments, links). Merge commit preserves original SHAs and adds an explicit boundary commit where the PR landed, which `git log --first-parent` uses to collapse history to PR-level granularity on demand.
 
 ## Out of scope
 
