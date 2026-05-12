@@ -22,7 +22,7 @@ Templates are not versioned — once copied, they belong to your repo. To find o
 - Or subscribe to the [Atom feed](https://github.com/veijdz/ts-code-standards/releases.atom).
 - Or audit explicitly: `git log -- config/ docs/rules.md` against your last `degit` date.
 
-Breaking changes use a `YYYY-MM-DD-BREAKING-<stack>` tag and list the migration steps in the release body. See [ADR 0002 — Release policy](docs/adr/0002-release-policy.md) for the full rationale.
+Breaking changes use a `YYYY-MM-DD-BREAKING` tag and list the migration steps in the release body. See [ADR 0002 — Release policy](docs/adr/0002-release-policy.md) for the full rationale.
 
 ## Wiring
 
