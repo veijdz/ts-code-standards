@@ -35,8 +35,8 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
       -F merge_commit_message=PR_BODY
     ```
 
-- **Rule.** Branches are automatically deleted after their PR merges.
-  - **Why.** Merged branches are dead weight in `git branch -r` and in tab-completion. The convention removes a recurring janitorial step.
+- **Rule.** Branches are automatically deleted after their PR merges. The only exception is `staging`, which is the head of the release PR (`staging` → `main`) and must survive every release cut — see [Branch protection on `staging`](#branch-protection-on-staging) for the `allow_deletions: false` guard that enforces the exception.
+  - **Why.** Merged branches are dead weight in `git branch -r` and in tab-completion. The convention removes a recurring janitorial step. `staging` is exempted because `delete_branch_on_merge: true` would otherwise destroy the working branch on every release-PR merge.
   - **How.**
 
     ```bash
