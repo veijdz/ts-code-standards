@@ -28,7 +28,7 @@ Breaking changes use a `YYYY-MM-DD-BREAKING` tag and list the migration steps in
 
 Documentation and configs for a plain Node/TypeScript project.
 
-- [`docs/rules.md`](docs/rules.md) — rule categories the stack enforces
+- [`docs/rules.md`](docs/rules.md) — rule categories the baseline enforces
 - [`config/`](config/) — copyable config files
 
 ### Copy the templates
