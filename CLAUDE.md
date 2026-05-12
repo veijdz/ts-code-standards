@@ -16,13 +16,14 @@ Guidance for AI agents working on this repository.
     ├── adr/               # numbered architectural decision records
     ├── conventions/       # dependencies, git, testing, github-settings
     ├── principles.md      # foundational principles
-    └── rules.md           # base stack rules (built progressively, one file per category)
+    └── rules.md           # rule categories enforced by the baseline (built progressively, one Cat per issue)
 ```
 
-Future stacks: `node` (extends `base`), `nestjs` (extends `node`), `expo` and `tanstack-start` (both extend `base`).
+This repo ships a single, framework-agnostic baseline (TypeScript + Node 22 LTS). Teams that need framework-specific opinions derive their own repo from this baseline and overlay rules on top — see [ADR 0004](docs/adr/0004-single-baseline.md).
 
 ## Decisions already made
 
+- **Single-baseline scope** (TS + Node 22 LTS, framework-agnostic) — see [ADR 0004](docs/adr/0004-single-baseline.md)
 - **Package manager:** `pnpm` (see `packageManager` in `package.json`)
 - **Node:** 22 LTS, ESM-first
 - **Conventional Commits 1.0** required
@@ -46,6 +47,6 @@ Future stacks: `node` (extends `base`), `nestjs` (extends `node`), `expo` and `t
 - **Foundational principles:** `docs/principles.md`
 - **Conventions:** `docs/conventions/{dependencies,git,testing,github-settings}.md`
 - **ADRs:** `docs/adr/NNNN-<slug>.md`
-- **Base stack rules:** `docs/rules.md` (built progressively, one file per category)
-- **Base stack copyable configs:** `config/`
+- **Rules:** `docs/rules.md` (built progressively, one Cat per issue)
+- **Copyable configs:** `config/`
 - **Documentation templates:** `docs/_templates/`
