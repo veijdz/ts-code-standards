@@ -1,2 +1,2 @@
 extends:
-  - ./stacks/base/config/lefthook.yml
+  - ./config/lefthook.yml

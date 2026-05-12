@@ -8,7 +8,7 @@ last-reviewed: 2026-05-11
 
 # Base stack — rules
 
-> Catalog of enforceable rules for the `base` stack. Built progressively, one category per issue. See [`docs/principles.md`](../../../docs/principles.md) for the why behind every rule and [`stacks/base/config/`](../config) for the tools that enforce them.
+> Catalog of enforceable rules for the `base` stack. Built progressively, one category per issue. See [`docs/principles.md`](./principles.md) for the why behind every rule and [`config/`](../config) for the tools that enforce them.
 
 ## Cat 1 — TypeScript / Type system
 
@@ -27,7 +27,7 @@ The compiler is the first line of defense. Every flag below is non-negotiable: e
 
 **Why.** TypeScript without `strict: true` is a different language with a different set of guarantees. The flags beyond `strict` close gaps `strict` itself leaves open — index access, optional vs `undefined`, switch fallthrough, dead code. Enabling them later is exponentially more expensive than enabling them now.
 
-The full set, configured in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json):
+The full set, configured in [`config/tsconfig.json`](../config/tsconfig.json):
 
 | Flag                                 | What it adds beyond `strict`                                                                                                                                      |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -71,7 +71,7 @@ function parseUser(input: any): User {
 }
 ```
 
-**Exceptions.** _None_ for first-party code. Third-party types that are demonstrably wrong may be widened or narrowed via a localized `as` plus a comment pointing at the upstream issue (see [Principle 1 — Type safety is non-negotiable](../../../docs/principles.md)).
+**Exceptions.** _None_ for first-party code. Third-party types that are demonstrably wrong may be widened or narrowed via a localized `as` plus a comment pointing at the upstream issue (see [Principle 1 — Type safety is non-negotiable](./principles.md)).
 
 #### Rule: no implicit `any` from unsafe operations
 
@@ -229,7 +229,7 @@ interface User {
 
 ## Cat 2 — Naming
 
-This category is the concrete enforcement of [Principle 11 — Clarity over brevity](../../../docs/principles.md): names that read in one second beat names that need a context lookup. Where a rule cannot be expressed in lint (function-as-verb, array-as-plural, "one concept per file"), the convention is documented as reviewer guidance per [Principle 6 — Tools enforce, humans decide](../../../docs/principles.md).
+This category is the concrete enforcement of [Principle 11 — Clarity over brevity](./principles.md): names that read in one second beat names that need a context lookup. Where a rule cannot be expressed in lint (function-as-verb, array-as-plural, "one concept per file"), the convention is documented as reviewer guidance per [Principle 6 — Tools enforce, humans decide](./principles.md).
 
 ### Required dependencies
 
@@ -1541,5 +1541,5 @@ it('persists the order', async () => {
 
 ## Notes
 
-- Cross-references to specific principles use the form [Principle N — title](../../../docs/principles.md).
-- The ESLint config that enforces these Cats lives in [`stacks/base/config/eslint.config.ts`](../config/eslint.config.ts); the compiler flags live in [`stacks/base/config/tsconfig.json`](../config/tsconfig.json).
+- Cross-references to specific principles use the form [Principle N — title](./principles.md).
+- The ESLint config that enforces these Cats lives in [`config/eslint.config.ts`](../config/eslint.config.ts); the compiler flags live in [`config/tsconfig.json`](../config/tsconfig.json).

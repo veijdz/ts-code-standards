@@ -5,9 +5,9 @@ import type { KnipConfig } from 'knip'
 // `knip.config.ts`) and `node_modules/`; we only need to surface the base
 // templates that consumers copy via degit.
 const config: KnipConfig = {
-  entry: ['stacks/base/config/*.ts'],
+  entry: ['config/*.ts'],
   project: ['**/*.ts'],
-  // Knip's lefthook plugin does not follow `extends:` into stacks/base/config/lefthook.yml,
+  // Knip's lefthook plugin does not follow `extends:` into config/lefthook.yml,
   // so commitlint (invoked from the extended commit-msg hook) reads as unused.
   ignoreDependencies: ['@commitlint/cli'],
 }

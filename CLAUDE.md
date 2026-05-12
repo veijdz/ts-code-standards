@@ -10,16 +10,13 @@ Guidance for AI agents working on this repository.
 
 ```
 .
-├── docs/
-│   ├── _templates/        # canonical anatomy for each doc in the repo
-│   ├── adr/               # numbered architectural decision records
-│   ├── conventions/       # dependencies, git, testing, github-settings
-│   └── principles.md      # foundational principles
-└── stacks/
-    └── base/
-        ├── config/        # tsconfig, eslint, prettier, lefthook, commitlint, knip
-        └── docs/
-            └── rules.md   # base stack rules (built progressively, one file per category)
+├── config/                # tsconfig, eslint, prettier, lefthook, commitlint, knip
+└── docs/
+    ├── _templates/        # canonical anatomy for each doc in the repo
+    ├── adr/               # numbered architectural decision records
+    ├── conventions/       # dependencies, git, testing, github-settings
+    ├── principles.md      # foundational principles
+    └── rules.md           # base stack rules (built progressively, one file per category)
 ```
 
 Future stacks: `node` (extends `base`), `nestjs` (extends `node`), `expo` and `tanstack-start` (both extend `base`).
@@ -49,6 +46,6 @@ Future stacks: `node` (extends `base`), `nestjs` (extends `node`), `expo` and `t
 - **Foundational principles:** `docs/principles.md`
 - **Conventions:** `docs/conventions/{dependencies,git,testing,github-settings}.md`
 - **ADRs:** `docs/adr/NNNN-<slug>.md`
-- **Base stack rules:** `stacks/base/docs/rules.md` (built progressively, one file per category)
-- **Base stack copyable configs:** `stacks/base/config/`
+- **Base stack rules:** `docs/rules.md` (built progressively, one file per category)
+- **Base stack copyable configs:** `config/`
 - **Documentation templates:** `docs/_templates/`
