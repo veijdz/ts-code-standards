@@ -6,9 +6,9 @@ last-reviewed: 2026-05-11
 
 <!-- Based on docs/_templates/rules.md -->
 
-# Base stack — rules
+# Rules
 
-> Catalog of enforceable rules for the `base` stack. Built progressively, one category per issue. See [`docs/principles.md`](./principles.md) for the why behind every rule and [`config/`](../config) for the tools that enforce them.
+> Catalog of enforceable rules for the baseline (TypeScript + Node 22 LTS, framework-agnostic). Built progressively, one category per issue. See [`docs/principles.md`](./principles.md) for the why behind every rule and [`config/`](../config) for the tools that enforce them.
 
 ## Cat 1 — TypeScript / Type system
 
@@ -44,11 +44,11 @@ The full set, configured in [`config/tsconfig.json`](../config/tsconfig.json):
 | `verbatimModuleSyntax`               | Imports/exports are emitted exactly as written. Forces `import type` for type-only imports.                                                                       |
 | `skipLibCheck`                       | Skips type-checking of declaration files in `node_modules`. Speeds up `tsc` significantly with no real loss — third-party types fail at consumption sites anyway. |
 
-**Exceptions.** _None._ A project that needs to relax any of these flags has a deeper problem (legacy migration, generated code) and should isolate the relaxation in a separate `tsconfig.<scope>.json`, not weaken the base.
+**Exceptions.** _None._ A project that needs to relax any of these flags has a deeper problem (legacy migration, generated code) and should isolate the relaxation in a separate `tsconfig.<scope>.json`, not weaken the baseline.
 
 ### 1.2 — Disallow `any`
 
-`any` opts out of every guarantee TypeScript provides at the exact place a bug is most likely to live. The base stack bans `any` in every form — direct annotation, cross-boundary leakage, and silent inference from untyped libraries.
+`any` opts out of every guarantee TypeScript provides at the exact place a bug is most likely to live. We ban `any` in every form — direct annotation, cross-boundary leakage, and silent inference from untyped libraries.
 
 #### Rule: no explicit `any`, anywhere
 
@@ -89,7 +89,7 @@ function parseUser(input: any): User {
 
 ### 1.3 — Assertions and escape hatches
 
-Type assertions and `@ts-*` comments turn the compiler off. They are sometimes necessary, but the base stack forces them to leave a written trail.
+Type assertions and `@ts-*` comments turn the compiler off. They are sometimes necessary, but these rules force them to leave a written trail.
 
 #### Rule: no non-null assertions (`!`)
 
@@ -169,7 +169,7 @@ const value = <Config>readJson()
 
 ### 1.4 — Generic type parameters
 
-Generic type parameters in this stack always start with `T`. The convention matches TanStack and most modern TypeScript libraries, and makes type parameters visually distinguishable from concrete types at the point of use.
+Generic type parameters always start with `T`. The convention matches TanStack and most modern TypeScript libraries, and makes type parameters visually distinguishable from concrete types at the point of use.
 
 #### Rule: type parameters are PascalCase and prefixed with `T`
 
@@ -199,7 +199,7 @@ function pick<O, K extends keyof O>(obj: O, key: K): O[K] {
 
 ### 1.5 — `type` vs `interface`
 
-The two are nearly equivalent for object shapes — but only one is allowed per stack to avoid bikeshedding in review.
+The two are nearly equivalent for object shapes — but only one is allowed here, to avoid bikeshedding in review.
 
 #### Rule: define types with `type`, not `interface`
 
@@ -239,11 +239,11 @@ This category is the concrete enforcement of [Principle 11 — Clarity over brev
 
 The `@typescript-eslint/naming-convention` rule from sub-blocks 2.1–2.3 is provided by `typescript-eslint` (already required by Cat 1).
 
-> **Note on `prevent-abbreviations`.** The configured `allowList` matches **bare identifiers only** — `req: true` allows a binding literally named `req`, but `parseReq`, `httpReq`, `pageProps`, etc., are still flagged because the rule splits compound names on word boundaries. To exempt an abbreviation everywhere it appears (compound or bare), use `replacements: { req: false }` instead — the base stack errs on the conservative side and accepts the false-positive cost.
+> **Note on `prevent-abbreviations`.** The configured `allowList` matches **bare identifiers only** — `req: true` allows a binding literally named `req`, but `parseReq`, `httpReq`, `pageProps`, etc., are still flagged because the rule splits compound names on word boundaries. To exempt an abbreviation everywhere it appears (compound or bare), use `replacements: { req: false }` instead — these rules err on the conservative side and accept the false-positive cost.
 
 ### 2.1 — Case per element
 
-Three cases, applied consistently per element kind. The compiler does not police identifier shape — `naming-convention` does, and the policy is uniform across the stack so reviews never argue about it.
+Three cases, applied consistently per element kind. The compiler does not police identifier shape — `naming-convention` does, and the policy is uniform across the codebase so reviews never argue about it.
 
 #### Rule: variables, functions, and parameters are camelCase
 
@@ -374,7 +374,7 @@ The rule lives in [Cat 1.4 — Generic type parameters](#14--generic-type-parame
 
 ### 2.4 — File names
 
-A predictable filename shape matters more than which shape is picked, but a stack still has to pick one. The base stack picks kebab-case for portability (no case-sensitivity surprises across macOS / Linux / Windows) and matches the dominant convention in the Node ecosystem.
+A predictable filename shape matters more than which shape is picked, but a project still has to pick one. We pick kebab-case for portability (no case-sensitivity surprises across macOS / Linux / Windows) and to match the dominant convention in the Node ecosystem.
 
 #### Rule: file names are kebab-case
 
@@ -396,7 +396,7 @@ src/users/userService.ts
 src/users/user_service.ts
 ```
 
-**Exceptions.** Stacks built on top of `base` may legitimately need different cases for framework reasons (e.g., `app/[id]/page.tsx`, file-router conventions). When that happens, the downstream stack overrides this rule in its own ESLint block; the base rule remains kebab-case.
+**Exceptions.** Consumer repos with framework-specific routing may legitimately need different cases (e.g., `app/[id]/page.tsx`, file-router conventions). When that happens, the consumer overlay overrides this rule in its own ESLint block; the baseline rule remains kebab-case.
 
 #### Rule: one concept per file
 
@@ -452,7 +452,7 @@ This category enforces a single, predictable shape for module boundaries: how a 
 
 `@typescript-eslint/consistent-type-imports` (sub-blocks 3.3 and 3.4) is provided by `typescript-eslint` (already required by Cat 1). `no-restricted-imports` (sub-block 3.6) is a core ESLint rule.
 
-> **Note on resolvers.** `import-x/no-cycle` and `import-x/order` resolve module paths via the default Node resolver. Projects that use TypeScript path aliases (`paths` in `tsconfig.json`) must add `eslint-import-resolver-typescript` and wire it into `settings['import-x/resolver-next']` themselves — the base config does not assume aliases exist. Minimum wiring:
+> **Note on resolvers.** `import-x/no-cycle` and `import-x/order` resolve module paths via the default Node resolver. Projects that use TypeScript path aliases (`paths` in `tsconfig.json`) must add `eslint-import-resolver-typescript` and wire it into `settings['import-x/resolver-next']` themselves — the baseline config does not assume aliases exist. Minimum wiring:
 >
 > ```ts
 > import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript'
@@ -494,7 +494,7 @@ import fetchUser from './user-service'
 import getUser from './user-service'
 ```
 
-**Exceptions.** Root-level config files (`vite.config.ts`, `next.config.ts`, `playwright.config.ts`, etc.) match the glob `**/*.config.{ts,mts,cts,js,mjs,cjs}` and are exempted in the base config — most build tools load the file via `import('./tool.config').then((m) => m.default)` and have no way to consume a named export. Stacks that wrap frameworks with file-based routing (Next.js page/layout files, TanStack Start route files) own their own override on top of the base.
+**Exceptions.** Root-level config files (`vite.config.ts`, `next.config.ts`, `playwright.config.ts`, etc.) match the glob `**/*.config.{ts,mts,cts,js,mjs,cjs}` and are exempted in the baseline config — most build tools load the file via `import('./tool.config').then((m) => m.default)` and have no way to consume a named export. Consumer repos with file-based routing (Next.js page/layout files, TanStack Start route files) own their own override on top of the baseline.
 
 ### 3.2 — Import order
 
@@ -546,7 +546,7 @@ The compiler can elide imports that are used only as types — but only if they 
 
 **Why.** Without `import type`, the compiler keeps the import in the emitted JS even when the symbol is used only in a type position, which (a) breaks tree-shaking around the consumed module and (b) can cause runtime side-effect imports the author did not intend. Marking the intent at the import site lets the compiler elide cleanly.
 
-**On layering with `verbatimModuleSyntax`.** Cat 1.1 already turns `verbatimModuleSyntax` on, which is the compiler-level enforcement of this rule — and the [typescript-eslint docs explicitly recommend not running both `consistent-type-imports` and `verbatimModuleSyntax`](https://typescript-eslint.io/rules/consistent-type-imports/). The base stack runs both anyway, deliberately: the compiler errors but does not auto-fix, and `verbatimModuleSyntax` does not enforce the statement-split from sub-block 3.4 below. The known overlap modes (decorator metadata, `--isolatedDeclarations`) produce duplicate errors but no incorrect behaviour. The auto-fix and the split are the price of keeping the import block clean.
+**On layering with `verbatimModuleSyntax`.** Cat 1.1 already turns `verbatimModuleSyntax` on, which is the compiler-level enforcement of this rule — and the [typescript-eslint docs explicitly recommend not running both `consistent-type-imports` and `verbatimModuleSyntax`](https://typescript-eslint.io/rules/consistent-type-imports/). The baseline runs both anyway, deliberately: the compiler errors but does not auto-fix, and `verbatimModuleSyntax` does not enforce the statement-split from sub-block 3.4 below. The known overlap modes (decorator metadata, `--isolatedDeclarations`) produce duplicate errors but no incorrect behaviour. The auto-fix and the split are the price of keeping the import block clean.
 
 **✓ Example.**
 
@@ -1173,7 +1173,7 @@ function isValidEmail(input: string): boolean {
 }
 ```
 
-**Exceptions.** _None._ A `lib`-targeted stack may layer JSDoc validity rules (`check-tag-names`, `valid-types`) on top of this convention — that is out of scope for the base stack, which has to apply equally to apps and libraries.
+**Exceptions.** _None._ A library project may layer JSDoc validity rules (`check-tag-names`, `valid-types`) on top of this convention — that is out of scope here; the baseline applies equally to apps and libraries.
 
 ### 6.4 — Dev markers are forbidden in committed code
 
@@ -1232,11 +1232,11 @@ processWebhook((event: any) => handle(event))
 
 ## Cat 7 — Testing
 
-This category sets the universal testing conventions every stack inherits — folder layout (sub-block 7.1), file suffixes (7.2), how to lay out a single test (7.3–7.4), where shared data lives (7.5), test independence (7.6), the role coverage plays (7.7), and the mock policy (7.8). None of these are lint-enforced at the base level: the actual test runner config and any runner-specific lint rules belong in each stack's own Cat 7 (e.g., the future `node` Cat 7 for `vitest` + testcontainers).
+This category sets the universal testing conventions — folder layout (sub-block 7.1), file suffixes (7.2), how to lay out a single test (7.3–7.4), where shared data lives (7.5), test independence (7.6), the role coverage plays (7.7), and the mock policy (7.8). None of these are lint-enforced at this layer: the actual test runner config and any runner-specific lint rules belong in the consumer repo's overlay (e.g., `vitest` + testcontainers for a Node API).
 
 ### Required dependencies
 
-_None at the base level._ The runner (`vitest`, `jest`, etc.) and its eslint plugin are introduced per stack. The conventions in this Cat are runner-agnostic on purpose so they survive a future swap.
+_None at this layer._ The runner (`vitest`, `jest`, etc.) and its eslint plugin are wired in the consumer repo. The conventions in this Cat are runner-agnostic on purpose so they survive a future swap.
 
 ### 7.1 — Test files live under `tests/`, never co-located with source
 
@@ -1280,7 +1280,7 @@ Two suffixes are enough: the folder distinguishes unit from integration (so they
 
 #### Convention: `*.test.ts` everywhere except e2e, which uses `*.e2e.ts`
 
-**Why.** A single `.test.ts` suffix for unit and integration matches the per-stack runner's `include` glob without forcing a third pattern; the folder ([sub-block 7.1](#71--test-files-live-under-tests-never-co-located-with-source)) already disambiguates them. `.e2e.ts` is intentionally distinct so a separate command (`pnpm test:e2e`) can target it without listing folders, and so the unit runner does not accidentally pick up a Playwright spec and try to execute it as a vitest test.
+**Why.** A single `.test.ts` suffix for unit and integration matches the runner's `include` glob without forcing a third pattern; the folder ([sub-block 7.1](#71--test-files-live-under-tests-never-co-located-with-source)) already disambiguates them. `.e2e.ts` is intentionally distinct so a separate command (`pnpm test:e2e`) can target it without listing folders, and so the unit runner does not accidentally pick up a Playwright spec and try to execute it as a vitest test.
 
 **✓ Example.**
 
@@ -1298,7 +1298,7 @@ tests/integration/checkout.test.ts
 tests/e2e/purchase-flow.test.ts     // e2e indistinguishable from unit
 ```
 
-**Exceptions.** _None._ Stacks that need a third suffix (e.g., `.bench.ts` for benchmark suites) add it on top of these two without repurposing them.
+**Exceptions.** _None._ Projects that need a third suffix (e.g., `.bench.ts` for benchmark suites) add it in their overlay without repurposing these two.
 
 ### 7.3 — Make AAA visible only when it helps reading
 
@@ -1436,7 +1436,7 @@ Order-dependent tests are a class of bug that surfaces only when the test list i
 
 #### Convention: every test sets up its own state and tears it down; no `it` reads from another `it`
 
-**Why.** Test isolation is the property that makes failures bisectable. When test 5 fails, the reader needs to be able to re-run test 5 alone and reproduce the failure — which is impossible if test 5 secretly depends on test 3 having mutated a shared global. Per-stack runners (vitest, jest) provide `beforeEach`/`afterEach` hooks for the cleanup; the convention is to _use_ them, not to chain state through module-level `let` bindings.
+**Why.** Test isolation is the property that makes failures bisectable. When test 5 fails, the reader needs to be able to re-run test 5 alone and reproduce the failure — which is impossible if test 5 secretly depends on test 3 having mutated a shared global. Runners like vitest and jest provide `beforeEach`/`afterEach` hooks for the cleanup; the convention is to _use_ them, not to chain state through module-level `let` bindings.
 
 **✓ Example.**
 
@@ -1473,7 +1473,7 @@ describe('OrderRepo', () => {
 })
 ```
 
-**Exceptions.** _None._ Per-stack Cat 7 may add lint rules (e.g., `vitest/no-focused-tests`, `vitest/no-disabled-tests`) to keep `.only` and `.skip` out of the suite, since those are the most common ways isolation gets accidentally violated in CI.
+**Exceptions.** _None._ Consumer repos may add runner-specific lint rules in their overlay (e.g., `vitest/no-focused-tests`, `vitest/no-disabled-tests`) to keep `.only` and `.skip` out of the suite, since those are the most common ways isolation gets accidentally violated in CI.
 
 ### 7.7 — Coverage is a diagnostic, never a CI gate
 
@@ -1483,7 +1483,7 @@ Coverage tells you which lines the suite touched. It does not tell you whether t
 
 **Why.** Coverage gates create the wrong incentive: a developer chasing the threshold writes whichever tests are easiest to add (constructor exercises, getter calls, dead-code probes) instead of the tests that matter (branching error paths, race conditions, integration boundaries). The real gate is review of test _quality_ — a reviewer asks "does this test express the contract?" rather than "does this test bump the percentage?". Coverage as a local report still earns its keep: it surfaces files the suite never touches at all, which is a different signal than "this file is 70% covered".
 
-**✓ Example (per-stack vitest config snippet).**
+**✓ Example (vitest config snippet from a consumer repo).**
 
 ```ts
 test: {
@@ -1506,15 +1506,15 @@ test: {
 }
 ```
 
-**Exceptions.** _None._ Stacks with a regulatory coverage requirement (rare) document the threshold inside their own Cat 7 with the regulation cited; otherwise the no-threshold default holds.
+**Exceptions.** _None._ Projects with a regulatory coverage requirement (rare) document the threshold in their consumer overlay with the regulation cited; otherwise the no-threshold default holds.
 
 ### 7.8 — Mock policy: never the database, only external boundaries
 
 Mocking the database is the most common way to ship tests that pass in CI and break in production: the mock returns whatever the test author imagined the SQL would return, the real query disagrees, and the bug only shows up after deploy. The same logic applies inverted at external boundaries: a paid third-party API is too costly to call in CI, so a faithful mock is the right trade.
 
-#### Convention: real database (per-stack — see future `node` Cat 7 for testcontainers); mock only paid or remote-only third-party boundaries
+#### Convention: real database (consumer repos wire the runner — e.g., testcontainers in a Node API); mock only paid or remote-only third-party boundaries
 
-**Why.** A mocked database guarantees the test exercises the _idea_ of the query, not the query itself — the schema migration that nobody ran, the JSONB cast that silently fails, the index missing that the query planner now scans sequentially: none of these surface against a mock. Real database tests (introduced concretely in the `node` stack's Cat 7 via testcontainers) cost a few hundred milliseconds of startup per file and remove the entire class of mock-vs-prod divergence. For external services that are remote-only or paid (Stripe API, SendGrid, OpenAI), the trade reverses: the round-trip is too expensive and too flaky to run on every PR, so a faithful mock at the HTTP boundary is the right tool. Internal modules are never mocked — if a module is hard to test without mocks, the answer is to refactor the module, not to mock around it.
+**Why.** A mocked database guarantees the test exercises the _idea_ of the query, not the query itself — the schema migration that nobody ran, the JSONB cast that silently fails, the index missing that the query planner now scans sequentially: none of these surface against a mock. Real database tests (wired by the consumer repo, typically via testcontainers) cost a few hundred milliseconds of startup per file and remove the entire class of mock-vs-prod divergence. For external services that are remote-only or paid (Stripe API, SendGrid, OpenAI), the trade reverses: the round-trip is too expensive and too flaky to run on every PR, so a faithful mock at the HTTP boundary is the right tool. Internal modules are never mocked — if a module is hard to test without mocks, the answer is to refactor the module, not to mock around it.
 
 **✓ Example (real DB, mocked external).**
 
