@@ -36,6 +36,8 @@ The repo does **not** version its templates. Instead, it uses GitHub Releases as
 
 3. **Breaking release.** When a change invalidates an existing consumer's copy (a config option removed, a banned package change, a rule reversal), the maintainer cuts a GitHub Release tagged `YYYY-MM-DD-BREAKING-<stack>`. The body lists the migration steps explicitly. The corresponding commit uses Conventional Commits with `!:` and a `BREAKING CHANGE:` footer.
 
+When more than one release is cut on the same calendar day, the second and subsequent tags append `.N` to the date: `YYYY-MM-DD.2`, `YYYY-MM-DD.3`, …. The first release of the day omits the suffix (`.1` is never used) — this keeps the common case clean and only spends naming bytes when a day actually needs them. The same rule applies to breaking releases: `YYYY-MM-DD.2-BREAKING-<stack>`. Lexical sort across same-day tags then matches the cut order (`2026-05-12` < `2026-05-12.2` < `2026-05-12.3`).
+
 Consumers stay current through one of three mechanisms, all surfaced in the root `README.md`:
 
 - **Watch the repo** with "Releases only" — GitHub notifications then cover both notable and breaking tiers.
