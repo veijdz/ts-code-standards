@@ -21,18 +21,18 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 
 ### Merge settings
 
-- **Rule.** Squash merge is the only allowed merge method. Merge commits and rebase merges are disabled. The squash commit subject is the PR title; the body is the PR description.
-  - **Why.** Long-lived branches stay linear; each PR is exactly one auditable commit on `staging` and on `main`. See [Git conventions — Merge strategy](git.md). Pinning the commit title format to `PR_TITLE` is what makes the PR-title-is-Conventional-Commits rule in `git.md` actually take effect — without it, GitHub defaults to a generated `Merge #NN` subject and the parseable history is lost.
+- **Rule.** Merge commit is the only allowed merge method. Squash and rebase merges are disabled. The merge commit subject is the PR title; the body is the PR description.
+  - **Why.** Every PR's individual commits survive on both `staging` and `main`, so `git log` answers any audit window directly and `git log --first-parent` collapses to PR-and-release granularity on demand. See [Git conventions — Merge strategy](git.md). Pinning the title format to `PR_TITLE` keeps the merge commit subject Conventional-Commits-compliant — without it, GitHub defaults to a generated `Merge pull request #NN` subject and the parseable history is lost.
   - **How.** Apply via `gh api`:
 
     ```bash
     gh api repos/:owner/:repo \
       --method PATCH \
-      -F allow_squash_merge=true \
-      -F allow_merge_commit=false \
+      -F allow_squash_merge=false \
+      -F allow_merge_commit=true \
       -F allow_rebase_merge=false \
-      -F squash_merge_commit_title=PR_TITLE \
-      -F squash_merge_commit_message=PR_BODY
+      -F merge_commit_title=PR_TITLE \
+      -F merge_commit_message=PR_BODY
     ```
 
 - **Rule.** Branches are automatically deleted after their PR merges.
@@ -61,9 +61,6 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 - **Rule.** Zero approvals are required (this repo is currently maintained by one person), but the PR requirement still holds.
   - **Why.** GitHub forbids a user from approving their own PR. Setting required approvals ≥ 1 on a solo project blocks the maintainer from ever merging. The PR requirement alone is enough to enforce the workflow; the approval count rises when a second human gains merge rights.
 
-- **Rule.** Linear history is required — no merge commits on `main`. Applies prospectively: pre-existing merge commits on `main` (the bootstrap and early releases) are not retroactively rejected and are preserved as-is. From the moment the protection is in place, new merges into `main` must be fast-forward or squash.
-  - **Why.** Aligns with the squash-only merge policy. `git bisect` and `git log --oneline` stay readable. Granularity per release lives in the corresponding GitHub Release body (see [ADR 0002](../adr/0002-release-policy.md)) and in `staging`'s per-PR history.
-
 - **Rule.** Force pushes and branch deletion are blocked, even for admins.
   - **Why.** Force push to `main` rewrites consumers' history. Deletion strands every consumer that points `degit` at the default branch.
 
@@ -88,7 +85,7 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
       "require_code_owner_reviews": false
     },
     "restrictions": null,
-    "required_linear_history": true,
+    "required_linear_history": false,
     "allow_force_pushes": false,
     "allow_deletions": false,
     "block_creations": false,
@@ -117,8 +114,8 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 
     Every break-glass use should leave a trail: a commit message explaining the override, a PR comment, or a short note on the release that follows. Future tooling (audit log query, scheduled check) is welcome but not required by this convention.
 
-- **Rule.** Audit consumers (per [ADR 0002](../adr/0002-release-policy.md)) pick the source by audit window: `staging` for "what's been merged since the last release", a release-tag range on `main` (or the corresponding GitHub Releases entries) for any window that crosses a release boundary.
-  - **Why.** Squash-only at the release boundary collapses every feature PR into a single commit on `main` — so on `main`, per-PR detail only exists inside a release-squash commit, not as separate commits. Between releases, `staging` accumulates one commit per merged PR; that history is the canonical answer to "what's been merged since the last release". After each release, `staging` is reset to `main` (see the [`Branch protection on staging`](#branch-protection-on-staging) section below), which means `staging` does **not** answer windows that cross a release tag. For those, the consumer walks release tags on `main` plus the corresponding [GitHub Releases](https://github.com/veijdz/ts-code-standards/releases) bodies (which name every PR included in each release).
+- **Rule.** Audit consumers (per [ADR 0002](../adr/0002-release-policy.md)) target `main` with `git log <range> -- stacks/<stack>/`. Use `--first-parent` to collapse to PR-and-release boundaries; omit it to see every individual commit (review fixes, lint adjustments, WIP).
+  - **Why.** Merge commit at every merge point puts each PR's individual commits on `main` plus a marker merge commit. `git log` already answers any window the consumer cares about; `--first-parent` filters to the merge-commit boundaries when summary-level granularity is preferable. `staging` and `main` share identical history, so the choice of branch is irrelevant for audit purposes — `main` is canonical because it carries the release tags.
 
 ### Branch protection on `staging`
 
@@ -148,20 +145,6 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
     }
     JSON
     ```
-
-- **Rule.** After every release merges to `main`, `staging` is force-reset to `main`.
-  - **Why.** Without the reset, `staging` accumulates per-PR commits whose tree content has already been collapsed into a single release-squash on `main`. The result is a permanent divergence (`staging` ahead of `main` with identical tree), which obscures whether the branches are in sync and grows monotonically with each release. Resetting at the release boundary zeroes the divergence: `git log main..staging` then has a clean meaning — "what's been merged since the last release" — and `git diff main staging` stays a reliable correctness check between cuts. `allow_force_pushes: true` on `staging` (above) exists precisely to make this operation supported, not exceptional.
-  - **How.** Right after the release PR is merged on GitHub:
-
-    ```bash
-    main_sha=$(gh api repos/:owner/:repo/git/refs/heads/main --jq .object.sha)
-    gh api repos/:owner/:repo/git/refs/heads/staging \
-      --method PATCH \
-      -f sha="$main_sha" \
-      -F force=true
-    ```
-
-    A local equivalent works too (`git fetch origin main && git push --force origin origin/main:staging`) — pick whichever fits the release script. The reset is the last step of the release flow; the next feature PR opens from a `staging` that is byte-for-byte `main`.
 
 ### Security baseline
 
