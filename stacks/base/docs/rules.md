@@ -608,7 +608,7 @@ A short denylist for libraries the platform now obsoletes. The error message poi
 
 #### Rule: `lodash`, `lodash-es`, `moment`, `querystring`, `node:querystring` are forbidden
 
-**Why.** Each entry has a native or modern replacement that is smaller, faster, and already present in the runtime: `lodash` and `lodash-es` are obsoleted by ES2019+ array/object methods, `structuredClone`, and `Object.entries` / `Object.fromEntries`; `moment` is obsoleted by `Temporal`, `date-fns`, or `dayjs` (and is itself in maintenance mode); `querystring` is a deprecated Node built-in obsoleted by `URLSearchParams`. Reaching for the legacy library wastes bundle size and ties new code to an aging ecosystem.
+**Why.** Each entry has a native or modern replacement that is smaller, faster, and already present in the runtime: `lodash` and `lodash-es` are obsoleted by ES2019+ array/object methods, `structuredClone`, and `Object.entries` / `Object.fromEntries`; `moment` is obsoleted by the native `Date` + `Intl` for most needs and `date-fns` or `dayjs` when arithmetic helpers are required (and is itself in maintenance mode); `querystring` is a deprecated Node built-in obsoleted by `URLSearchParams`. Reaching for the legacy library wastes bundle size and ties new code to an aging ecosystem.
 
 **✗ Example.**
 
@@ -622,7 +622,7 @@ import qs from 'querystring'
 
 ```ts
 const unique = [...new Set(items)]
-const now = Temporal.Now.plainDateTimeISO()
+const now = new Date().toISOString()
 const params = new URLSearchParams({ q: 'search' })
 ```
 
