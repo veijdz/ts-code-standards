@@ -11,7 +11,7 @@ last-reviewed: 2026-05-12
 
 ## Scope
 
-Applies to this repo and to any project that adopts the `base` stack and hosts on GitHub. Covers: repository merge settings, branch protection on the release branch and on the working branch, and the security baseline (Dependabot, CODEOWNERS, SECURITY.md). Does **not** cover branch naming, commit format, or PR shape — those live in [Git conventions](git.md).
+Applies to this repo and to any project that adopts this baseline and hosts on GitHub. Covers: repository merge settings, branch protection on the release branch and on the working branch, and the security baseline (Dependabot, CODEOWNERS, SECURITY.md). Does **not** cover branch naming, commit format, or PR shape — those live in [Git conventions](git.md).
 
 Each rule below ships a `gh api` snippet that consumers run after cloning. Clicking through the GitHub UI is documented as a fallback, but the CLI snippet is the source of truth — the UI changes, REST endpoints do not.
 
@@ -114,7 +114,7 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 
     Every break-glass use should leave a trail: a commit message explaining the override, a PR comment, or a short note on the release that follows. Future tooling (audit log query, scheduled check) is welcome but not required by this convention.
 
-- **Rule.** Audit consumers (per [ADR 0002](../adr/0002-release-policy.md)) target `main` with `git log <range> -- stacks/<stack>/`. Use `--first-parent` to collapse to PR-and-release boundaries; omit it to see every individual commit (review fixes, lint adjustments, WIP).
+- **Rule.** Audit consumers (per [ADR 0002](../adr/0002-release-policy.md)) target `main` with `git log <range> -- config/ docs/rules.md`. Use `--first-parent` to collapse to PR-and-release boundaries; omit it to see every individual commit (review fixes, lint adjustments, WIP).
   - **Why.** Merge commit at every merge point puts each PR's individual commits on `main` plus a marker merge commit. `git log` already answers any window the consumer cares about; `--first-parent` filters to the merge-commit boundaries when summary-level granularity is preferable. `staging` and `main` share identical history, so the choice of branch is irrelevant for audit purposes — `main` is canonical because it carries the release tags.
 
 ### Branch protection on `staging`
@@ -149,7 +149,7 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 ### Security baseline
 
 - **Rule.** Dependabot is not enabled.
-  - **Why.** This repo ships templates, not packages. The pinned versions in `stacks/base/README.md` are tested as a set; bumping one without re-running the dogfood risks breaking consumers silently. Consumers who copy templates take ownership of their own dependency hygiene.
+  - **Why.** This repo ships templates, not packages. The pinned versions in the root [`README.md`](../../README.md) (Required dev dependencies) are tested as a set; bumping one without re-running the dogfood risks breaking consumers silently. Consumers who copy templates take ownership of their own dependency hygiene.
   - **Revisit when.** The repo starts publishing a runtime artifact (npm package, Docker image, etc.).
 
 - **Rule.** `CODEOWNERS` is not used.
@@ -158,7 +158,7 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 
 - **Rule.** `SECURITY.md` is not provided. No formal disclosure channel beyond GitHub's default issue tracker is configured.
   - **Why.** This repo distributes documentation and copyable templates; it has no runtime, no live endpoint, and no credential surface. A security report would, in practice, be a bug report against a documented dependency version, which the public issue tracker handles fine.
-  - **For consumer repos.** Projects that adopt the `base` stack and host code with a runtime should enable GitHub's [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/configuring-private-vulnerability-reporting-for-a-repository) via `gh api repos/:owner/:repo/private-vulnerability-reporting --method PUT` and add a `SECURITY.md` pointing reports there. This convention does not enable it on the templates repo because there is nothing to disclose against.
+  - **For consumer repos.** Projects that adopt this baseline and host code with a runtime should enable GitHub's [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/configuring-private-vulnerability-reporting-for-a-repository) via `gh api repos/:owner/:repo/private-vulnerability-reporting --method PUT` and add a `SECURITY.md` pointing reports there. This convention does not enable it on the templates repo because there is nothing to disclose against.
   - **Revisit when.** The repo starts shipping executable code that runs in consumers' projects beyond what they explicitly import.
 
 ## Rationale
@@ -177,7 +177,7 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 - **PR body enforcement.** `.github/pull_request_template.md` is a default body, not a hard requirement. `gh pr create --body "anything"` bypasses it. Mechanical enforcement (e.g., a check that fails on PRs without `## Summary` and `## Test plan` sections) belongs with the CI workflow.
 - **Branch naming, commit format, PR title format.** Covered in [Git conventions](git.md).
 - **Release tagging and the date-tag scheme.** Covered in [ADR 0002 — Release policy](../adr/0002-release-policy.md).
-- **Per-stack rules (`base`, `node`, `nestjs`, …).** Live in each stack's own `rules.md`.
+- **Framework-specific rules (Nest, Expo, TanStack Start, etc.).** Overlay in the consumer project that derives from this baseline.
 
 ## References
 

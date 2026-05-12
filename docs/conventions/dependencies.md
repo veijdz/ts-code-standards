@@ -11,7 +11,7 @@ last-reviewed: 2026-05-10
 
 ## Scope
 
-Applies to every package listed in `package.json` (runtime, dev, peer, optional) across all stacks in this repo. Covers what to add, what is banned outright, how to keep the dependency tree current, and how to detect dead weight. Does **not** cover internal workspace packages — those are governed by stack-specific rules.
+Applies to every package listed in `package.json` (runtime, dev, peer, optional) in this repo and in any project that adopts this baseline. Covers what to add, what is banned outright, how to keep the dependency tree current, and how to detect dead weight. Does **not** cover internal workspace packages — those are governed by the consumer project's own rules.
 
 ## Rules
 
@@ -58,7 +58,7 @@ The following are not allowed anywhere in the dependency tree. CI must fail when
 
 - **Rule.** `pnpm-lock.yaml` is checked in, always. Generated lockfiles from other package managers are not.
   - **Why.** Reproducible installs across machines, CI, and time. The lockfile is the contract; without it, `npm install` is non-deterministic.
-  - **How.** `pnpm` is the project package manager (pinned in `packageManager`). Other managers must error out — see the stack's `package.json` for the exact pin.
+  - **How.** `pnpm` is the project package manager (pinned in `packageManager`). Other managers must error out — see this repo's `package.json` for the exact pin.
 
 - **Rule.** A PR that changes the lockfile without changing `package.json` requires an explanation.
   - **Why.** Catches accidental dedupe churn, malicious replacements, and silent transitive bumps.
@@ -68,7 +68,7 @@ The following are not allowed anywhere in the dependency tree. CI must fail when
 
 - **Rule.** Patch updates auto-merge after CI passes. Minor dev-dependency updates are grouped weekly and auto-merge. Minor runtime-dependency updates are grouped weekly and require human approval. Major updates always require human approval.
   - **Why.** Patches are almost always safe; majors almost never are. The asymmetry should be reflected in automation.
-  - **How.** Configure Renovate (or Dependabot) with the matching grouping rules. The exact config file is delivered with each stack's CI setup.
+  - **How.** Configure Renovate (or Dependabot) with the matching grouping rules. A reference config will ship alongside the baseline's CI setup.
 
 - **Rule.** Group dev dependencies by ecosystem (e.g., "TypeScript toolchain", "linting", "testing").
   - **Why.** A single Renovate PR upgrading `vitest` + `@vitest/coverage-v8` is one review; two PRs is two reviews and a higher merge-order risk.
@@ -81,17 +81,17 @@ The following are not allowed anywhere in the dependency tree. CI must fail when
 
 - **Rule.** `knip` runs in CI in `--strict` mode. Unused dependencies, unused files, and dead exports fail the build.
   - **Why.** Dead code is debt that compounds — easier to delete the moment it goes unused than after three more refactors orbit it.
-  - **How.** `knip.config.ts` lives in `stacks/base/config/`; consumers copy and adapt.
+  - **How.** `knip.config.ts` lives in `config/`; consumers copy and adapt.
 
 ### Peer dependencies (libraries only)
 
 - **Rule.** A library published from a project that adopts these standards declares its framework couplings as peer dependencies, never runtime ones, and marks each in `peerDependenciesMeta` with the appropriate `optional` flag.
   - **Why.** Prevents version-duplication blowups in consumers (two copies of React, two copies of NestJS) and signals which couplings the library actually requires versus tolerates.
-  - **How.** See the publishing rules in the `node` stack (lands in M2) for the exact `package.json` shape.
+  - **How.** Concrete `package.json` `exports` map shapes will land in M2 (Node runtime, Cat 8–14) alongside the publishing rules.
 
 - **Rule.** A library published from a project that adopts these standards ships ESM, either ESM-only or dual (ESM + CJS). Pure-CJS publishing is unsupported.
-  - **Why.** The repo is ESM-first across every stack. Pure-CJS output forces consumers into the runtime/bundler divergence the standards exist to remove.
-  - **How.** See [ADR 0003 — ESM-first as the default module system](../adr/0003-esm-first.md). Concrete `package.json` `exports` map shapes will land with the `node` stack publishing rules in M2.
+  - **Why.** The repo is ESM-first. Pure-CJS output forces consumers into the runtime/bundler divergence the standards exist to remove.
+  - **How.** See [ADR 0003 — ESM-first as the default module system](../adr/0003-esm-first.md). Concrete `package.json` `exports` map shapes will land with M2 (Node runtime, Cat 8–14).
 
 ## Rationale
 
@@ -101,8 +101,8 @@ The following are not allowed anywhere in the dependency tree. CI must fail when
 
 ## Out of scope
 
-- Stack-specific deps (NestJS modules, Expo plugins, etc.) — those live in the stack's `rules.md`.
-- Build-time tool selection (bundler, transpiler) — handled in stack-specific rules.
+- Framework-specific deps (NestJS modules, Expo plugins, etc.) — overlay in the consumer project's own `package.json`.
+- Build-time tool selection (bundler, transpiler) — handled by the consumer project.
 - License auditing — separate convention; not yet defined.
 
 ## References

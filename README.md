@@ -1,10 +1,10 @@
 # ts-code-standards
 
-Documentation and copyable templates to standardize Node/TypeScript projects.
+A single, framework-agnostic baseline for Node/TypeScript projects — strict TypeScript rules plus Node 22 LTS runtime conventions, packaged as documentation and copyable configs.
 
-This is **not** an npm package — consumers copy the templates via `npx degit` and own their own dependencies.
+This is **not** an npm package — consumers copy the templates via `npx degit` and own their own dependencies. Teams that need framework-specific opinions (Nest, Expo, TanStack Start, etc.) derive their own repo from this baseline and overlay rules on top.
 
-## How to use
+## Quickstart
 
 Copy the configs straight into your project:
 
@@ -20,19 +20,9 @@ Templates are not versioned — once copied, they belong to your repo. To find o
 
 - **Watch this repo** with "Releases only" — notable and breaking changes are cut as [GitHub Releases](https://github.com/veijdz/ts-code-standards/releases).
 - Or subscribe to the [Atom feed](https://github.com/veijdz/ts-code-standards/releases.atom).
-- Or audit explicitly: `git log -- stacks/<stack>/` against your last `degit` date.
+- Or audit explicitly: `git log -- config/ docs/rules.md` against your last `degit` date.
 
 Breaking changes use a `YYYY-MM-DD-BREAKING-<stack>` tag and list the migration steps in the release body. See [ADR 0002 — Release policy](docs/adr/0002-release-policy.md) for the full rationale.
-
-## Stacks
-
-| Stack                  | Extends | Status                  |
-| ---------------------- | ------- | ----------------------- |
-| [`base`](stacks/base/) | —       | under construction (M1) |
-| `node`                 | `base`  | M2                      |
-| `nestjs`               | `node`  | M3                      |
-| `expo`                 | `base`  | M4                      |
-| `tanstack-start`       | `base`  | M5                      |
 
 ## Wiring
 
@@ -224,7 +214,7 @@ git commit --allow-empty -m "chore: verify hook" # should pass
 
 Every doc under `docs/` is built from one of those templates. New docs must reference the template they extend immediately after the frontmatter.
 
-> Stacks beyond `base` have not started. See the [Stacks table](#stacks) above for per-stack status.
+> The seven TypeScript rule categories (Cat 1–7) are landed; Node runtime categories (Cat 8–14) are the M2 roadmap. The `docs/adr/` directory records the strategic decisions, including [ADR 0004 — Single-baseline scope](docs/adr/0004-single-baseline.md).
 
 ## For AI agents
 
