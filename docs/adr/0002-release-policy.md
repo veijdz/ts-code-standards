@@ -32,17 +32,17 @@ The repo does **not** version its templates. Instead, it uses GitHub Releases as
 
 1. **No release.** The default. Routine doc cleanups, typo fixes, internal refactors, and additions that are purely opt-in (a new section the consumer can choose to import) ship via merged PRs and are visible only through `git log`.
 
-2. **Notable release.** When a change is worth a consumer's attention but does not break existing copies, the maintainer cuts a GitHub Release. The tag name uses the date in `YYYY-MM-DD` form (`2026-05-10`); the release body lists the affected stack(s) and a one-line description per change. Notable changes include: a new convention being added, a stack reaching M2/M3/etc., a rule being clarified in a way that changes interpretation.
+2. **Notable release.** When a change is worth a consumer's attention but does not break existing copies, the maintainer cuts a GitHub Release. The tag name uses the date in `YYYY-MM-DD` form (`2026-05-10`); the release body lists a one-line description per change. Notable changes include: a new convention being added, the baseline reaching M2/M3/etc., a rule being clarified in a way that changes interpretation.
 
-3. **Breaking release.** When a change invalidates an existing consumer's copy (a config option removed, a banned package change, a rule reversal), the maintainer cuts a GitHub Release tagged `YYYY-MM-DD-BREAKING-<stack>`. The body lists the migration steps explicitly. The corresponding commit uses Conventional Commits with `!:` and a `BREAKING CHANGE:` footer.
+3. **Breaking release.** When a change invalidates an existing consumer's copy (a config option removed, a banned package change, a rule reversal), the maintainer cuts a GitHub Release tagged `YYYY-MM-DD-BREAKING`. The body lists the migration steps explicitly. The corresponding commit uses Conventional Commits with `!:` and a `BREAKING CHANGE:` footer.
 
-When more than one release is cut on the same calendar day, the second and subsequent tags append `.N` to the date: `YYYY-MM-DD.2`, `YYYY-MM-DD.3`, …. The first release of the day omits the suffix (`.1` is never used) — this keeps the common case clean and only spends naming bytes when a day actually needs them. The same rule applies to breaking releases: `YYYY-MM-DD.2-BREAKING-<stack>`. Lexical sort across same-day tags then matches the cut order (`2026-05-12` < `2026-05-12.2` < `2026-05-12.3`).
+When more than one release is cut on the same calendar day, the second and subsequent tags append `.N` to the date: `YYYY-MM-DD.2`, `YYYY-MM-DD.3`, …. The first release of the day omits the suffix (`.1` is never used) — this keeps the common case clean and only spends naming bytes when a day actually needs them. The same rule applies to breaking releases: `YYYY-MM-DD.2-BREAKING`. Lexical sort across same-day tags then matches the cut order (`2026-05-12` < `2026-05-12.2` < `2026-05-12.3`).
 
 Consumers stay current through one of three mechanisms, all surfaced in the root `README.md`:
 
 - **Watch the repo** with "Releases only" — GitHub notifications then cover both notable and breaking tiers.
 - **Subscribe to the RSS feed** (`/releases.atom`) for the same coverage without GitHub notifications.
-- **Run `git log -- stacks/<stack>/`** in this repo against the consumer's last `degit` date — appropriate when the consumer wants to audit explicitly rather than be pinged.
+- **Run `git log -- config/ docs/rules.md`** in this repo against the consumer's last `degit` date — appropriate when the consumer wants to audit explicitly rather than be pinged.
 
 There is no machine-readable version on the consumer side. The "version" is the commit SHA the consumer copied from, which the consumer is free to record (e.g., in a top-of-file comment) but is not required to.
 
