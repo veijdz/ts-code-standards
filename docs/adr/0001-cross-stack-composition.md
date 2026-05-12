@@ -1,14 +1,16 @@
 ---
 title: Cross-stack composition
-status: accepted
+status: superseded
 date: 2026-05-10
 supersedes:
-superseded-by:
+superseded-by: 0004-single-baseline
 ---
 
 <!-- Based on docs/_templates/adr.md -->
 
 # ADR 0001 — Cross-stack composition
+
+> **Superseded by [ADR 0004](./0004-single-baseline.md) on 2026-05-12.** This ADR's decisions no longer apply — the repo no longer ships multiple stacks, so the composition strategies described below have nothing to compose. Kept for historical reference.
 
 ## Context
 
