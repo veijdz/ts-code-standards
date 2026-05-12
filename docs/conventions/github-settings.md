@@ -77,7 +77,10 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
     --method PUT \
     --input - <<'JSON'
   {
-    "required_status_checks": null,
+    "required_status_checks": {
+      "strict": true,
+      "contexts": ["ci"]
+    },
     "enforce_admins": true,
     "required_pull_request_reviews": {
       "required_approving_review_count": 0,
@@ -94,11 +97,12 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
   JSON
   ```
 
-  `required_status_checks: null` is intentional — CI is added separately (see [Out of scope](#out-of-scope)). When the CI workflow lands, this field becomes:
+- **Rule.** `required_status_checks.contexts: ["ci"]` requires the `ci` summary job from [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) to pass before any PR can merge to `main`.
+  - **Why.** The `ci` job is a summary that aggregates a matrix of `typecheck`, `lint`, `format:check`, and `knip`. Wiring protection to the single summary name (rather than the four matrix entries) keeps the protection rule stable as the matrix evolves — adding or removing a task does not require an API call to update `contexts`.
 
-  ```json
-  "required_status_checks": { "strict": true, "contexts": ["<workflow job name>"] }
-  ```
+- **Rule.** `required_status_checks.strict: true` requires the PR branch to be up to date with `main` before merge.
+  - **Why.** The CI result then reflects the post-merge state of `main`, not the pre-merge state of the PR branch in isolation. The cost is one extra "Update branch" click per PR when another change has landed since the PR opened — small for serialized solo work, larger when several contributors merge in parallel.
+  - **Revisit when.** The "Update branch" friction becomes the bottleneck — typically once `≥ 2` humans land PRs in the same day. The change is a one-field PATCH (`required_status_checks.strict: false`); the CI rule itself stays.
 
 - **Rule.** `staging` is not protected.
   - **Why.** `staging` is the working branch. Forcing PRs at this layer too would double the ceremony per change for no additional safety, since `main` (the actually-published artifact) is gated.
@@ -146,7 +150,7 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 
 ## Out of scope
 
-- **CI workflow.** The `required_status_checks` field above is intentionally `null` and is wired up separately when the GitHub Actions workflow lands.
+- **CI workflow file contents.** This convention pins the contract (the `ci` summary check name and `strict: true`); the workflow definition itself — matrix tasks, runner image, action versions — lives in [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) and changes without touching this doc.
 - **PR body enforcement.** `.github/pull_request_template.md` is a default body, not a hard requirement. `gh pr create --body "anything"` bypasses it. Mechanical enforcement (e.g., a check that fails on PRs without `## Summary` and `## Test plan` sections) belongs with the CI workflow.
 - **Branch naming, commit format, PR title format.** Covered in [Git conventions](git.md).
 - **Release tagging and the date-tag scheme.** Covered in [ADR 0002 — Release policy](../adr/0002-release-policy.md).
