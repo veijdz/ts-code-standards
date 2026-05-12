@@ -99,7 +99,7 @@ Applies to every test file in any project that adopts these standards, regardles
 
 ## Out of scope
 
-- The choice of test runner (Vitest, Node test runner, Jest) — that is stack-specific; the `base` choice will live in `stacks/base/docs/rules.md` (Cat 7).
+- The choice of test runner (Vitest, Node test runner, Jest) — that is stack-specific; the `base` choice lives in [`stacks/base/docs/rules.md`](../../stacks/base/docs/rules.md) (Cat 7).
 - Snapshot testing policy — separate convention, not yet defined.
 - Performance / load testing — separate concern, lives outside this convention.
 
