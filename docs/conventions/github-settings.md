@@ -117,8 +117,8 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 
     Every break-glass use should leave a trail: a commit message explaining the override, a PR comment, or a short note on the release that follows. Future tooling (audit log query, scheduled check) is welcome but not required by this convention.
 
-- **Rule.** Audit consumers running `git log -- stacks/<stack>/` (per [ADR 0002](../adr/0002-release-policy.md)) target `staging`, not `main`.
-  - **Why.** Squash-only at the release boundary collapses every feature PR between two release tags into a single commit on `main`. The per-PR granularity ADR 0002's audit recommendation depends on lives on `staging`, which preserves one commit per merged PR. `main` remains the canonical answer to "what's the latest release"; `staging` is the canonical answer to "what changed and when". The two roles are complementary, but they are not interchangeable for `git log` purposes.
+- **Rule.** Audit consumers (per [ADR 0002](../adr/0002-release-policy.md)) pick the source by audit window: `staging` for "what's been merged since the last release", a release-tag range on `main` (or the corresponding GitHub Releases entries) for any window that crosses a release boundary.
+  - **Why.** Squash-only at the release boundary collapses every feature PR into a single commit on `main` — so on `main`, per-PR detail only exists inside a release-squash commit, not as separate commits. Between releases, `staging` accumulates one commit per merged PR; that history is the canonical answer to "what's been merged since the last release". After each release, `staging` is reset to `main` (see the [`Branch protection on staging`](#branch-protection-on-staging) section below), which means `staging` does **not** answer windows that cross a release tag. For those, the consumer walks release tags on `main` plus the corresponding [GitHub Releases](https://github.com/veijdz/ts-code-standards/releases) bodies (which name every PR included in each release).
 
 ### Branch protection on `staging`
 
@@ -148,6 +148,20 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
     }
     JSON
     ```
+
+- **Rule.** After every release merges to `main`, `staging` is force-reset to `main`.
+  - **Why.** Without the reset, `staging` accumulates per-PR commits whose tree content has already been collapsed into a single release-squash on `main`. The result is a permanent divergence (`staging` ahead of `main` with identical tree), which obscures whether the branches are in sync and grows monotonically with each release. Resetting at the release boundary zeroes the divergence: `git log main..staging` then has a clean meaning — "what's been merged since the last release" — and `git diff main staging` stays a reliable correctness check between cuts. `allow_force_pushes: true` on `staging` (above) exists precisely to make this operation supported, not exceptional.
+  - **How.** Right after the release PR is merged on GitHub:
+
+    ```bash
+    main_sha=$(gh api repos/:owner/:repo/git/refs/heads/main --jq .object.sha)
+    gh api repos/:owner/:repo/git/refs/heads/staging \
+      --method PATCH \
+      -f sha="$main_sha" \
+      -F force=true
+    ```
+
+    A local equivalent works too (`git fetch origin main && git push --force origin origin/main:staging`) — pick whichever fits the release script. The reset is the last step of the release flow; the next feature PR opens from a `staging` that is byte-for-byte `main`.
 
 ### Security baseline
 
