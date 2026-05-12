@@ -81,7 +81,7 @@ Applies to every commit, branch, and PR in this repo and in any project that ado
 
 - **Rule.** Squash merge is the default and only enabled option on GitHub.
   - **Why.** Keeps the long-lived branches linear and makes `git bisect` actually useful. Every PR is exactly one commit on `staging`/`main`.
-  - **How.** Repo settings disable merge commits and disable rebase merge. See `docs/conventions/github-settings.md` (not yet written).
+  - **How.** Repo settings disable merge commits and disable rebase merge. See [GitHub settings convention](github-settings.md).
 
 - **Rule.** Auto-delete head branch is enabled.
   - **Why.** Stale merged branches accumulate noise in lists and tab completion.
@@ -95,7 +95,7 @@ Applies to every commit, branch, and PR in this repo and in any project that ado
 ## Out of scope
 
 - Tagging and release process — covered in [ADR 0002 — Release policy](../adr/0002-release-policy.md).
-- GitHub repository-level settings (branch protection, required checks) — covered in [GitHub settings convention](github-settings.md) (not yet written).
+- GitHub repository-level settings (branch protection, required checks) — covered in [GitHub settings convention](github-settings.md).
 - Stack-specific commit policy (e.g., monorepo scope rules) — would live in the stack's `rules.md`.
 
 ## References
