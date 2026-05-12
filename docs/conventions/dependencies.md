@@ -89,6 +89,10 @@ The following are not allowed anywhere in the dependency tree. CI must fail when
   - **Why.** Prevents version-duplication blowups in consumers (two copies of React, two copies of NestJS) and signals which couplings the library actually requires versus tolerates.
   - **How.** See the publishing rules in the `node` stack (lands in M2) for the exact `package.json` shape.
 
+- **Rule.** A library published from a project that adopts these standards ships ESM, either ESM-only or dual (ESM + CJS). Pure-CJS publishing is unsupported.
+  - **Why.** The repo is ESM-first across every stack. Pure-CJS output forces consumers into the runtime/bundler divergence the standards exist to remove.
+  - **How.** See [ADR 0003 — ESM-first as the default module system](../adr/0003-esm-first.md). Concrete `package.json` `exports` map shapes will land with the `node` stack publishing rules in M2.
+
 ## Rationale
 
 - **Why ban `lodash` outright instead of a curated allowlist?** A blanket ban is enforceable in tooling and easy to reason about. A per-function allowlist invites endless edge-case debates and drifts in practice.
