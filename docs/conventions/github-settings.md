@@ -125,7 +125,7 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 `staging` is the working branch — every feature PR targets it, and the release PR (`staging` → `main`) carries its accumulated history into `main`. It is not gated like `main`, but it is not unprotected either: one narrow rule blocks deletion.
 
 - **Rule.** `staging` is protected against deletion only; merge requirements and approvals remain off.
-  - **Why.** `staging` is the working branch — forcing PRs at this layer too would double the ceremony per change for no additional safety, since `main` (the actually-published artifact) is gated. The deletion guard is a narrow exception, motivated below.
+  - **Why.** `staging` is the working branch — forcing PRs at this layer too would double the ceremony per change for no additional safety, since `main` (the actually-published artifact) is gated.
 
 - **Rule.** `staging` deletion is blocked via `allow_deletions: false`.
   - **Why.** `delete_branch_on_merge: true` from [Merge settings](#merge-settings) applies uniformly to every merged PR, including the release PR (`staging` → `main`) — which would silently delete `staging` itself after every release. The next feature PR opening against `staging` then fails with `base ref must be a branch`, and the contributor has to diagnose the disappearance from scratch. Pinning `allow_deletions: false` closes the trap without re-introducing PR ceremony on `staging`.
@@ -140,8 +140,11 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
       "enforce_admins": false,
       "required_pull_request_reviews": null,
       "restrictions": null,
+      "required_linear_history": false,
       "allow_force_pushes": true,
-      "allow_deletions": false
+      "allow_deletions": false,
+      "block_creations": false,
+      "required_conversation_resolution": false
     }
     JSON
     ```
