@@ -1,15 +1,19 @@
 ---
-title: <Stack> rules
-stack: <base | node | nestjs | expo | tanstack-start>
-category: <Cat N — Topic>
+title: <Doc title — e.g., "Rules">
 last-reviewed: YYYY-MM-DD
 ---
 
-# <Stack> — <Cat N — Topic>
+<!-- Based on docs/_templates/rules.md -->
 
-> Use this template for every `stacks/<stack>/docs/rules.md` section. One file per stack, with N sections (one per Cat).
+# <Doc title — e.g., "Rules">
 
-## Required dependencies
+> Use this template for `docs/rules.md`. The file is single — one `docs/rules.md` per repo — built progressively with one `## Cat N — <Topic>` section per category. Numbering is stable; do not renumber when adding.
+
+## Cat <N> — <Topic>
+
+<One paragraph framing what the category covers and how its sub-blocks relate. Reference adjacent Cats inline when relevant.>
+
+### Required dependencies
 
 The consumer must install these to apply the rules below. Versions are the **minimum supported**; newer compatible majors should keep working unless noted.
 
@@ -18,17 +22,13 @@ The consumer must install these to apply the rules below. Versions are the **min
 | `<plugin-or-runtime>` | `^X.Y.Z`    | <what it provides — e.g., "ESLint plugin enforcing rule X", "Test runner used by rules in this Cat"> |
 | `<another-package>`   | `^X.Y.Z`    | <role>                                                                                               |
 
-> If a Cat has no extra deps beyond the stack baseline, write: `_No additional dependencies beyond the stack baseline._`
+> If a Cat has no extra deps beyond the baseline, write: `_None at the baseline level._` and explain where the relevant tooling is wired (per project, etc.).
 
-## Sub-blocks
+### <N.M> — <Sub-block title>
 
-Group rules into sub-blocks that share a theme. Each sub-block has a short intro and a list of rules. Each **rule** follows the 5-block anatomy below.
+<One paragraph framing the sub-block. Prose, not bullets.>
 
-### <Sub-block name — e.g., "Type system">
-
-<One sentence framing the sub-block.>
-
-#### Rule: <short imperative phrase, e.g., "Disallow `any`">
+#### Rule: <short imperative phrase — e.g., "Disallow `any`">
 
 **Why.** <One paragraph. State the underlying principle or risk this guards against. Avoid restating the rule.>
 
@@ -37,7 +37,6 @@ Group rules into sub-blocks that share a theme. Each sub-block has a short intro
 ```ts
 // good
 function parse(input: unknown): User {
-  // narrow with a type guard
   if (!isUser(input)) throw new Error('invalid user')
   return input
 }
@@ -52,7 +51,7 @@ function parse(input: any): User {
 }
 ```
 
-**Exceptions.** <When (if ever) the rule may be relaxed, and what to use instead — e.g., `@ts-expect-error` with a description, narrowed `unknown`, etc. Write `_None._` if there are no legitimate exceptions.>
+**Exceptions.** <When (if ever) the rule may be relaxed, and what to use instead. Write `_None._` if there are no legitimate exceptions.>
 
 ---
 
@@ -60,7 +59,13 @@ function parse(input: any): User {
 
 …
 
+### <N.M+1> — <Next sub-block title>
+
+…
+
 ## Notes
 
-- Reference the canonical template at `docs/_templates/rules.md` immediately after the frontmatter (HTML comment is fine).
-- Keep the section order stable across stacks so consumers can diff easily.
+- Cross-references to principles use the form [Principle N — title](./principles.md).
+- Cross-references to sub-blocks within the same file use the heading anchor (e.g., `[sub-block 7.1](#71--test-files-live-under-tests-never-co-located-with-source)`).
+- `Rule:` and `Convention:` are interchangeable headings depending on whether the item is tool-enforceable; the inner anatomy (**Why** / **✓ Example** / **✗ Example** / **Exceptions**) is identical.
+- A worked example of one populated Cat section lives in [`docs/_templates/example-rules.md`](./example-rules.md).
