@@ -1,6 +1,5 @@
 ---
 title: Rules
-stack: base
 last-reviewed: 2026-05-11
 ---
 
