@@ -44,6 +44,6 @@ last-reviewed: 2026-05-10
 
 ## How to use this document
 
-- Every rule in a stack's `rules.md` should be traceable to at least one principle here.
+- Every rule in `rules.md` should be traceable to at least one principle here.
 - Every ADR should cite the principles it leans on, or explicitly state it overrides one.
 - Disagreements about a specific rule are resolved by going back to these principles, not by debating the rule in isolation.

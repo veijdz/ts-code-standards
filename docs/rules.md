@@ -1,6 +1,5 @@
 ---
 title: Rules
-stack: base
 last-reviewed: 2026-05-11
 ---
 
@@ -396,7 +395,7 @@ src/users/userService.ts
 src/users/user_service.ts
 ```
 
-**Exceptions.** Consumer repos with framework-specific routing may legitimately need different cases (e.g., `app/[id]/page.tsx`, file-router conventions). When that happens, the consumer overlay overrides this rule in its own ESLint block; the baseline rule remains kebab-case.
+**Exceptions.** Consumer repos with framework-specific routing may legitimately need different cases (e.g., `app/[id]/page.tsx`, file-router conventions). When that happens, the consumer repo overrides this rule in its own ESLint block; the baseline rule remains kebab-case.
 
 #### Rule: one concept per file
 
@@ -1298,7 +1297,7 @@ tests/integration/checkout.test.ts
 tests/e2e/purchase-flow.test.ts     // e2e indistinguishable from unit
 ```
 
-**Exceptions.** _None._ Projects that need a third suffix (e.g., `.bench.ts` for benchmark suites) add it in their overlay without repurposing these two.
+**Exceptions.** _None._ Consumer repos that need a third suffix (e.g., `.bench.ts` for benchmark suites) add it on top of the baseline without repurposing these two.
 
 ### 7.3 — Make AAA visible only when it helps reading
 
@@ -1473,7 +1472,7 @@ describe('OrderRepo', () => {
 })
 ```
 
-**Exceptions.** _None._ Consumer repos may add runner-specific lint rules in their overlay (e.g., `vitest/no-focused-tests`, `vitest/no-disabled-tests`) to keep `.only` and `.skip` out of the suite, since those are the most common ways isolation gets accidentally violated in CI.
+**Exceptions.** _None._ Consumer repos may add runner-specific lint rules on top of the baseline (e.g., `vitest/no-focused-tests`, `vitest/no-disabled-tests`) to keep `.only` and `.skip` out of the suite, since those are the most common ways isolation gets accidentally violated in CI.
 
 ### 7.7 — Coverage is a diagnostic, never a CI gate
 

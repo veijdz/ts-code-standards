@@ -11,7 +11,7 @@ last-reviewed: 2026-05-10
 
 ## Scope
 
-Applies to every commit, branch, and PR in this repo and in any project that adopts this baseline. Covers Conventional Commits format, the type enum, branch naming, and the merge strategy. Does **not** cover release tagging or changelog generation — those are handled in [ADR 0002 — Release policy](../adr/0002-release-policy.md).
+Applies to every commit, branch, and PR in this repo and in any consumer of this baseline. Covers Conventional Commits format, the type enum, branch naming, and the merge strategy. Does **not** cover release tagging or changelog generation — those are handled in [ADR 0002 — Release policy](../adr/0002-release-policy.md).
 
 ## Rules
 
@@ -96,7 +96,7 @@ Applies to every commit, branch, and PR in this repo and in any project that ado
 
 - Tagging and release process — covered in [ADR 0002 — Release policy](../adr/0002-release-policy.md).
 - GitHub repository-level settings (branch protection, required checks) — covered in [GitHub settings convention](github-settings.md).
-- Project-specific commit policy (e.g., monorepo scope rules) — overlay in the consumer project's own `commitlint.config.ts`.
+- Project-specific commit policy (e.g., monorepo scope rules) — overlay in the consumer repo's own `commitlint.config.ts`.
 
 ## References
 

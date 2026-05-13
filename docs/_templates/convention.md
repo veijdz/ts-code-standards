@@ -5,7 +5,7 @@ last-reviewed: YYYY-MM-DD
 
 # Conventions — <Topic>
 
-> Use this template for every file in `docs/conventions/`. Conventions apply across stacks; if a rule is stack-specific, it belongs in that stack's `rules.md` instead.
+> Use this template for every file in `docs/conventions/`. Conventions apply across the whole repo; runner-, library-, or framework-specific configuration belongs in `rules.md` instead.
 
 ## Scope
 

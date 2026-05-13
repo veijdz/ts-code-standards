@@ -26,7 +26,7 @@ The decision now is whether to keep the multi-stack scaffolding ADR 0001 describ
 This repo ships a single baseline. Scope:
 
 - **In:** TypeScript rules (Categories 1–7, already delivered in M1) and Node 22 LTS runtime rules (Categories 8–14, planned for M2). Both live in one `docs/rules.md`, addressed to any consumer running TypeScript on Node — no framework assumptions.
-- **Out:** framework-specific stacks (`nestjs`, `expo`, `tanstack-start`). The original `node` stack is folded into the baseline rather than kept as a separate layer. Teams using a specific framework derive their own repo from this baseline if they need framework-level opinions; this repo does not vendor them.
+- **Out:** framework-specific stacks (`nestjs`, `expo`, `tanstack-start`). The original `node` stack is folded into the baseline rather than kept as a separate layer. Consumers using a specific framework derive their own repo from this baseline if they need framework-level opinions; this repo does not vendor them.
 
 ADR 0001 (cross-stack composition) is marked `superseded` by this ADR — its format-by-format composition strategy no longer applies, because there are no longer multiple stacks to compose. The composition table, the `extends` chain, and the array-spread pattern in ADR 0001 remain as historical record only.
 
@@ -51,7 +51,7 @@ Splitting "language conventions" from "runtime conventions" sounds clean but doe
 
 **Negative.**
 
-- A team that needs framework-specific rules cannot extend this repo from the inside — they must vendor it (degit) and overlay their own rules in their own repo. There is no "drop in `nestjs` rules on top of `base`" path anymore.
+- A consumer that needs framework-specific rules cannot extend this repo from the inside — they must vendor it (degit) and overlay their own rules in their own repo. There is no "drop in `nestjs` rules on top of `base`" path anymore.
 - Until the follow-up PRs land, the repo is internally inconsistent at several concrete points: `stacks/base/docs/rules.md` anchors every Cat 1–7 rule to "the base stack"; `README.md` describes a five-stack catalog; `CLAUDE.md` lists `stacks/` in its layout block; six cross-references in `docs/principles.md` point at `stacks/base/docs/rules.md`. The supersession note on ADR 0001 covers the ADR layer, but the window between this ADR landing and the README / CLAUDE.md rewrite is a real cost, not a notional one.
 - ADR 0001's example artifacts (the live `node` stack `eslint.config.ts` and `tsconfig.json` it sketched) will never ship. Anyone reading 0001 expecting those examples to materialize needs the supersession note to redirect them here.
 

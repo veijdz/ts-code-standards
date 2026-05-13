@@ -2,7 +2,7 @@
 
 A single, framework-agnostic baseline for Node/TypeScript projects — strict TypeScript rules plus Node 22 LTS runtime conventions, packaged as documentation and copyable configs.
 
-This is **not** an npm package — consumers copy the templates via `npx degit` and own their own dependencies. Teams that need framework-specific opinions (Nest, Expo, TanStack Start, etc.) derive their own repo from this baseline and overlay rules on top.
+This is **not** an npm package — consumers copy the templates via `npx degit` and own their own dependencies. Those that need framework-specific opinions (Nest, Expo, TanStack Start, etc.) derive their own repo from this baseline and overlay rules on top.
 
 ## Quickstart
 
@@ -28,7 +28,7 @@ Breaking changes use a `YYYY-MM-DD-BREAKING` tag and list the migration steps in
 
 Documentation and configs for a plain Node/TypeScript project.
 
-- [`docs/rules.md`](docs/rules.md) — rule categories the stack enforces
+- [`docs/rules.md`](docs/rules.md) — rule categories the baseline enforces
 - [`config/`](config/) — copyable config files
 
 ### Copy the templates

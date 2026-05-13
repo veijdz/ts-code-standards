@@ -5,7 +5,7 @@ last-reviewed: YYYY-MM-DD
 
 # Foundational principles
 
-> Use this template for `docs/principles.md`. Principles are the **why** behind every rule and convention in this repo. They are intentionally few, short, and stable — when a principle changes, downstream rules must be revisited.
+> Use this template for `docs/principles.md`. Principles are the **why** behind every rule and convention in this repo. They are intentionally few, short, and stable — when a principle changes, downstream rules and ADRs must be revisited.
 
 Each principle is one short statement followed by one paragraph explaining what it implies in practice. Numbering is stable; do not renumber when adding.
 
@@ -19,6 +19,6 @@ Each principle is one short statement followed by one paragraph explaining what 
 
 ## How to use this document
 
-- Every rule in a stack's `rules.md` should be traceable to at least one principle here.
+- Every rule in `rules.md` should be traceable to at least one principle here.
 - Every ADR should cite the principles it leans on (or explicitly state it overrides one).
 - Disagreements about a specific rule are resolved by going back to these principles, not by debating the rule in isolation.
