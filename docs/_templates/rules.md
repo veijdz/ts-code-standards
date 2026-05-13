@@ -65,7 +65,7 @@ function parse(input: any): User {
 
 ## Notes
 
-- Cross-references to principles use the form [Principle N — title](./principles.md).
+- Cross-references to principles use the form [Principle N — title](./principles.md) (path is relative to `docs/rules.md`, where this template gets cloned to).
 - Cross-references to sub-blocks within the same file use the heading anchor (e.g., `[sub-block 7.1](#71--test-files-live-under-tests-never-co-located-with-source)`).
 - `Rule:` and `Convention:` are interchangeable headings depending on whether the item is tool-enforceable; the inner anatomy (**Why** / **✓ Example** / **✗ Example** / **Exceptions**) is identical.
 - A worked example of one populated Cat section lives in [`docs/_templates/example-rules.md`](./example-rules.md).
