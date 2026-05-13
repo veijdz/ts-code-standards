@@ -31,11 +31,9 @@ Mocking the database is the most common way to ship tests that pass in CI and br
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql'
 
 let container: StartedPostgreSqlContainer
-let db: Client
 
 beforeAll(async () => {
   container = await new PostgreSqlContainer().start()
-  db = createClient(container.getConnectionUri())
 })
 
 afterAll(async () => {
