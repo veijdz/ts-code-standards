@@ -1,71 +1,50 @@
 ---
-title: Base rules
-stack: base
-category: Cat 7 — Testing (shared)
-last-reviewed: 2026-05-10
+title: Rules — Cat 7 worked example
+last-reviewed: 2026-05-12
 ---
 
 <!-- Based on docs/_templates/rules.md -->
 
-# Base — Cat 7 — Testing (shared)
+# Rules — Cat 7 worked example
 
-> Fictional, filled example of a `rules.md` section. Demonstrates the anatomy of `docs/_templates/rules.md`. Real Cat 7 content lives at `stacks/base/docs/rules.md` once published.
+> Worked, fictional example of a single Cat section, populated to show the anatomy of [`docs/_templates/rules.md`](./rules.md). Read this file to see the template filled in; the **authoritative** Cat 7 content lives in [`docs/rules.md`](../rules.md) under `## Cat 7 — Testing`.
 
-## Required dependencies
+## Cat 7 — Testing
 
-The consumer must install these to apply the rules below. Versions are the **minimum supported**; newer compatible majors should keep working unless noted.
+This category sets the universal testing conventions every consumer inherits — folder layout, file suffixes, the mock policy (sub-block 7.8 below). These conventions hold regardless of which runner a project picks; the runner choice itself is wired per project.
 
-| Package                | Min version | Role in this Cat                                                                               |
-| ---------------------- | ----------- | ---------------------------------------------------------------------------------------------- |
-| `vitest`               | `^2.0.0`    | Test runner that the rules in this Cat target (file layout, naming, lifecycle).                |
-| `eslint-plugin-vitest` | `^0.5.0`    | Lints test code against the rules below (no focused tests, no skipped tests without a reason). |
-| `@vitest/coverage-v8`  | `^2.0.0`    | Coverage collection used as diagnostic by `pnpm test --coverage`; no threshold enforced.       |
+### Required dependencies
 
-## Sub-blocks
+_None at the baseline level._ The runner (`vitest`, `jest`, etc.) and its eslint plugin are wired per project. The conventions in this Cat are runner-agnostic on purpose so they survive a future swap.
 
-### Test layout
+### 7.8 — Mock policy: never the database, only external boundaries
 
-Tests live in a dedicated folder tree, never co-located next to source.
+Mocking the database is the most common way to ship tests that pass in CI and break in production: the mock returns whatever the test author imagined the SQL would return, the real query disagrees, and the bug only shows up after deploy. Real database tests via testcontainers cost a few hundred milliseconds of startup per file and remove the entire class of mock-vs-prod divergence.
 
-#### Rule: Place tests under `tests/<kind>/`
+#### Convention: real database via testcontainers; mock only paid or remote-only third-party boundaries
 
-**Why.** Co-located tests blur the boundary between shipped code and test fixtures and force every consumer to configure path filters for builds, bundlers, and coverage. A dedicated tree makes that boundary explicit and lets tooling stay default.
-
-**✓ Example.**
-
-```
-src/users/service.ts
-tests/unit/users/service.test.ts
-tests/integration/users/repository.test.ts
-```
-
-**✗ Example.**
-
-```
-src/users/service.ts
-src/users/service.test.ts
-```
-
-**Exceptions.** _None._ If a snippet truly belongs next to the code (e.g., doctest-style examples), put it in JSDoc instead of a test file.
-
----
-
-### Test isolation
-
-Tests must not share mutable state.
-
-#### Rule: Do not mock the database — use testcontainers
-
-**Why.** Mocks of database clients hide schema drift and query-shape bugs that only fail in production. A real database started per test run keeps the contract honest and surfaces breakage at the cheapest possible time.
+**Why.** A mocked database guarantees the test exercises the _idea_ of the query, not the query itself — schema migrations that nobody ran, JSONB casts that silently fail, indexes missing that the query planner now scans sequentially: none of these surface against a mock. For external services that are remote-only or paid (Stripe, SendGrid, OpenAI), the trade reverses: the round-trip is too expensive and too flaky to run on every PR, so a faithful HTTP-boundary mock is the right tool.
 
 **✓ Example.**
 
 ```ts
-import { PostgreSqlContainer } from '@testcontainers/postgresql'
+import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql'
+
+let container: StartedPostgreSqlContainer
+let db: Client
 
 beforeAll(async () => {
   container = await new PostgreSqlContainer().start()
   db = createClient(container.getConnectionUri())
+})
+
+afterAll(async () => {
+  await container.stop()
+})
+
+it('persists the order', async () => {
+  await repo.insert(makeOrder({ id: 'a' }))
+  expect(await repo.findById('a')).toMatchObject({ id: 'a' })
 })
 ```
 
@@ -73,13 +52,18 @@ beforeAll(async () => {
 
 ```ts
 vi.mock('./db', () => ({
-  query: vi.fn().mockResolvedValue([{ id: 1 }]),
+  query: vi.fn().mockResolvedValue([{ id: 'a' }]),
 }))
+
+it('persists the order', async () => {
+  const result = await repo.insert(makeOrder({ id: 'a' }))
+  expect(result.id).toBe('a') // green even if the real query is broken
+})
 ```
 
-**Exceptions.** Unit tests that exercise pure logic with no DB dependency obviously do not need a container. Anything touching the data layer does.
+**Exceptions.** _None._ When a test genuinely needs to isolate one internal module from another, use dependency injection (pass the dependency in), never `vi.mock()` of a first-party module.
 
 ## Notes
 
-- This file is an example, not authoritative. The real Cat 7 file lives at `stacks/base/docs/rules.md` once published.
-- The line immediately after the frontmatter references the template that drives the structure (`<!-- Based on docs/_templates/rules.md -->`). Future stack rules should keep that reference.
+- This file is a worked example, not authoritative. The real Cat 7 lives in [`docs/rules.md`](../rules.md) under `## Cat 7 — Testing`.
+- The `<!-- Based on docs/_templates/rules.md -->` line right after the frontmatter mirrors the convention used by real docs derived from a template.
