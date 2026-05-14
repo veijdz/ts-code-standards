@@ -177,7 +177,7 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 - **PR body enforcement.** `.github/pull_request_template.md` is a default body, not a hard requirement. `gh pr create --body "anything"` bypasses it. Mechanical enforcement (e.g., a check that fails on PRs without `## Summary` and `## Test plan` sections) belongs with the CI workflow.
 - **Branch naming, commit format, PR title format.** Covered in [Git conventions](git.md).
 - **Release tagging and the date-tag scheme.** Covered in [ADR 0002 — Release policy](../adr/0002-release-policy.md).
-- **Framework-specific rules (Nest, Expo, TanStack Start, etc.).** Overlay in the consumer repo that derives from this baseline.
+- **Framework-specific rules.** Overlay in the consumer repo that derives from this baseline.
 
 ## References
 

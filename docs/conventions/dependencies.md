@@ -86,7 +86,7 @@ The following are not allowed anywhere in the dependency tree. CI must fail when
 ### Peer dependencies (libraries only)
 
 - **Rule.** A library published from a consumer of these standards declares its framework couplings as peer dependencies, never runtime ones, and marks each in `peerDependenciesMeta` with the appropriate `optional` flag.
-  - **Why.** Prevents version-duplication blowups in consumers (two copies of React, two copies of NestJS) and signals which couplings the library actually requires versus tolerates.
+  - **Why.** Prevents version-duplication blowups in consumers (two copies of React, two copies of a popular framework) and signals which couplings the library actually requires versus tolerates.
   - **How.** Concrete `package.json` `exports` map shapes will land in M2 (Node runtime, Cat 8–14) alongside the publishing rules.
 
 - **Rule.** A library published from a consumer of these standards ships ESM, either ESM-only or dual (ESM + CJS). Pure-CJS publishing is unsupported.
@@ -101,7 +101,7 @@ The following are not allowed anywhere in the dependency tree. CI must fail when
 
 ## Out of scope
 
-- Framework-specific deps (NestJS modules, Expo plugins, etc.) — overlay in the consumer repo's own `package.json`.
+- Framework-specific deps (e.g., backend framework modules, mobile bundler plugins) — overlay in the consumer repo's own `package.json`.
 - Build-time tool selection (bundler, transpiler) — handled by the consumer repo.
 - License auditing — separate convention; not yet defined.
 
