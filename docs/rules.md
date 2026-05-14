@@ -15,7 +15,7 @@ last-reviewed: 2026-05-11
 
 | Package             | Min version | Role in this Cat                                   |
 | ------------------- | ----------- | -------------------------------------------------- |
-| `typescript`        | `^5.0.0`    | Compiler that enforces the flags in sub-block 1.1. |
+| `typescript`        | `^6.0.0`    | Compiler that enforces the flags in sub-block 1.1. |
 | `typescript-eslint` | `^8.0.0`    | Provides the rules in sub-blocks 1.2 – 1.5.        |
 
 ### 1.1 — Compiler flags
