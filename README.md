@@ -54,28 +54,28 @@ The command above copies six files into `.standards/`:
 
 Pinned versions are what the templates are tested against. Floating ranges are likely to work but are not guaranteed by this repo.
 
-| Package                                           | Version  | Used by                                            |
-| ------------------------------------------------- | -------- | -------------------------------------------------- |
-| `typescript`                                      | `6.0.3`  | `tsconfig.json`                                    |
-| `@types/node`                                     | `25.6.2` | `tsconfig.json` (`types: ["node"]`)                |
-| `eslint`                                          | `10.3.0` | `eslint.config.ts`                                 |
-| `typescript-eslint`                               | `8.59.2` | `eslint.config.ts`                                 |
-| `eslint-plugin-import-x`                          | `4.16.2` | `eslint.config.ts` (Cat 3)                         |
-| `eslint-plugin-unicorn`                           | `64.0.0` | `eslint.config.ts` (Cat 2, 5)                      |
-| `@eslint-community/eslint-plugin-eslint-comments` | `4.7.1`  | `eslint.config.ts` (Cat 6)                         |
-| `jiti`                                            | `2.7.0`  | Lets ESLint and commitlint load `.ts` config files |
-| `prettier`                                        | `3.8.3`  | `.prettierrc.json`                                 |
-| `lefthook`                                        | `2.1.6`  | `lefthook.yml`                                     |
-| `@commitlint/cli`                                 | `21.0.0` | `commitlint.config.ts`                             |
-| `@commitlint/config-conventional`                 | `21.0.0` | `commitlint.config.ts`                             |
-| `@commitlint/types`                               | `21.0.0` | `commitlint.config.ts` (types only)                |
-| `knip`                                            | `6.12.2` | `knip.config.ts`                                   |
+| Package                                           | Version    | Used by                                            |
+| ------------------------------------------------- | ---------- | -------------------------------------------------- |
+| `typescript`                                      | `6.0.3`    | `tsconfig.json`                                    |
+| `@types/node`                                     | `22.19.19` | `tsconfig.json` (`types: ["node"]`)                |
+| `eslint`                                          | `10.3.0`   | `eslint.config.ts`                                 |
+| `typescript-eslint`                               | `8.59.2`   | `eslint.config.ts`                                 |
+| `eslint-plugin-import-x`                          | `4.16.2`   | `eslint.config.ts` (Cat 3)                         |
+| `eslint-plugin-unicorn`                           | `64.0.0`   | `eslint.config.ts` (Cat 2, 5)                      |
+| `@eslint-community/eslint-plugin-eslint-comments` | `4.7.1`    | `eslint.config.ts` (Cat 6)                         |
+| `jiti`                                            | `2.7.0`    | Lets ESLint and commitlint load `.ts` config files |
+| `prettier`                                        | `3.8.3`    | `.prettierrc.json`                                 |
+| `lefthook`                                        | `2.1.6`    | `lefthook.yml`                                     |
+| `@commitlint/cli`                                 | `21.0.0`   | `commitlint.config.ts`                             |
+| `@commitlint/config-conventional`                 | `21.0.0`   | `commitlint.config.ts`                             |
+| `@commitlint/types`                               | `21.0.0`   | `commitlint.config.ts` (types only)                |
+| `knip`                                            | `6.12.2`   | `knip.config.ts`                                   |
 
 Install them all at once:
 
 ```bash
 pnpm add -D \
-  typescript@6.0.3 @types/node@25.6.2 \
+  typescript@6.0.3 @types/node@22.19.19 \
   eslint@10.3.0 typescript-eslint@8.59.2 \
   eslint-plugin-import-x@4.16.2 eslint-plugin-unicorn@64.0.0 \
   @eslint-community/eslint-plugin-eslint-comments@4.7.1 \
