@@ -28,8 +28,6 @@ This repo ships a single, framework-agnostic baseline (TypeScript + Node 22 LTS)
 - **Node:** 22 LTS, ESM-first
 - **Conventional Commits 1.0** required
 - **Merge commit** as the GitHub default (no squash, no rebase)
-- **No `Co-Authored-By`** in commits or PRs (including any AI attribution)
-- **No "Generated with Claude Code"** footer (or similar) anywhere
 
 ## Execution rules for agents
 
@@ -38,7 +36,7 @@ This repo ships a single, framework-agnostic baseline (TypeScript + Node 22 LTS)
 - **Branch:** `<type>/<short-slug>`, where `<type>` matches the Conventional Commits type enum and `<short-slug>` is kebab-case (e.g., `docs/typescript-rules`, `chore/ci-min`, `feat/auth-magic-link`). Do not embed ticket IDs in the branch name.
 - **Branch base:** `staging` (not `main`). PRs also target `staging`.
 - **Commits:** Conventional Commits, lowercase subject, header ≤72 chars. No ticket references in commit subjects.
-- **PR body:** `## Summary` + `## Test plan`. No AI attribution footer.
+- **PR body:** `## Summary` + `## Test plan`.
 - **Respect dependencies:** do not start an issue while its prerequisites are still open.
 - **Repo language:** all committed content (docs, code, comments, commit messages, PRs) is written in English.
 

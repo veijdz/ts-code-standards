@@ -53,8 +53,6 @@ Applies to every commit, branch, and PR in this repo and in any consumer of this
 
 ### Forbidden patterns
 
-- **No** `Co-Authored-By` lines, ever.
-- **No** AI attribution footers ("🤖 Generated with Claude Code", "Co-Authored-By: Claude…", or any variant).
 - **No** WIP commits on a long-lived branch. WIP only on a private feature branch; clean up before opening the PR (interactive rebase, fixup commits) so the merge commit absorbs a coherent set.
 
 ### Branch naming
@@ -74,7 +72,6 @@ Applies to every commit, branch, and PR in this repo and in any consumer of this
 
 - **Rule.** The PR body has two sections: `## Summary` (bullets of what changed and why) and `## Test plan` (checklist of how the reviewer can verify).
   - **Why.** A reviewer should not have to read the diff to know what they are checking. The two sections answer "what" and "how do I trust it".
-  - **How.** No AI attribution footer, no "Generated with…" lines.
 
 ### Merge strategy
 
@@ -88,7 +85,6 @@ Applies to every commit, branch, and PR in this repo and in any consumer of this
 ## Rationale
 
 - **Why 72 characters and not 50?** Fifty is the older Git convention from a 80-column terminal era. Modern terminals and the GitHub UI both display 72 cleanly; tighter limits force unnatural abbreviation in subject lines.
-- **Why ban AI attribution footers?** The footer adds no information a reviewer can act on (you cannot ask the AI to fix a regression three months later), and it bloats every `git log` line in a way that is impossible to grep around.
 - **Why merge commit and not squash?** Squash collapses every PR into a single commit on the target branch, which keeps `git log --oneline` clean but loses per-PR detail — and in a two-tier setup (`staging` → `main`), means `main` and `staging` diverge in history (with identical tree) after every release, requiring an explicit reset to reconcile. Merge commit preserves the PR's individual commits and keeps both branches history-identical; intra-PR noise is the price.
 - **Why merge commit and not rebase?** Rebase replays each commit with a new SHA, breaking external references to commits inside the PR (PR comments, links). Merge commit preserves original SHAs and adds an explicit boundary commit where the PR landed, which `git log --first-parent` uses to collapse history to PR-level granularity on demand.
 
