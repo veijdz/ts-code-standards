@@ -101,7 +101,7 @@ The following are not allowed anywhere in the dependency tree. CI must fail when
 
 ## Out of scope
 
-- Framework-specific deps (NestJS modules, Expo plugins, etc.) — overlay in the consumer repo's own `package.json`.
+- Framework-specific deps (e.g., backend framework modules, mobile bundler plugins) — overlay in the consumer repo's own `package.json`.
 - Build-time tool selection (bundler, transpiler) — handled by the consumer repo.
 - License auditing — separate convention; not yet defined.
 
