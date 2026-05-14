@@ -15,7 +15,7 @@ last-reviewed: 2026-05-11
 
 | Package             | Min version | Role in this Cat                                   |
 | ------------------- | ----------- | -------------------------------------------------- |
-| `typescript`        | `^5.0.0`    | Compiler that enforces the flags in sub-block 1.1. |
+| `typescript`        | `^6.0.0`    | Compiler that enforces the flags in sub-block 1.1. |
 | `typescript-eslint` | `^8.0.0`    | Provides the rules in sub-blocks 1.2 – 1.5.        |
 
 ### 1.1 — Compiler flags
@@ -234,7 +234,7 @@ This category is the concrete enforcement of [Principle 11 — Clarity over brev
 
 | Package                 | Min version | Role in this Cat                                                                                                         |
 | ----------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `eslint-plugin-unicorn` | `^56.0.0`   | Provides `filename-case` (sub-block 2.4) and `prevent-abbreviations` (applies to identifier shape across the whole Cat). |
+| `eslint-plugin-unicorn` | `^64.0.0`   | Provides `filename-case` (sub-block 2.4) and `prevent-abbreviations` (applies to identifier shape across the whole Cat). |
 
 The `@typescript-eslint/naming-convention` rule from sub-blocks 2.1–2.3 is provided by `typescript-eslint` (already required by Cat 1).
 
@@ -636,7 +636,7 @@ This category enforces a single shape for failure: every thrown value is an `Err
 | Package                 | Min version | Role in this Cat                                                                                                                       |
 | ----------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `typescript-eslint`     | `^8.0.0`    | Provides `only-throw-error` (4.2), `no-floating-promises` (4.4), `return-await` (4.5). Already required by Cat 1.                      |
-| `eslint-plugin-unicorn` | `^56.0.0`   | Provides `error-message`, `throw-new-error`, `prefer-type-error` (4.2) and `custom-error-definition` (4.6). Already required by Cat 2. |
+| `eslint-plugin-unicorn` | `^64.0.0`   | Provides `error-message`, `throw-new-error`, `prefer-type-error` (4.2) and `custom-error-definition` (4.6). Already required by Cat 2. |
 
 `no-empty` (sub-block 4.1) is a core ESLint rule.
 
