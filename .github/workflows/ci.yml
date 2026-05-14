@@ -20,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      # Intentionally no `version:` input — pnpm/action-setup reads `packageManager`
+      # in package.json so the exact pnpm pin lives in one place (see Corepack spec).
       - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v6
