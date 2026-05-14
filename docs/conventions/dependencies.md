@@ -83,15 +83,17 @@ The following are not allowed anywhere in the dependency tree. CI must fail when
   - **Why.** Dead code is debt that compounds — easier to delete the moment it goes unused than after three more refactors orbit it.
   - **How.** `knip.config.ts` lives in `config/`; consumers copy and adapt.
 
-### Peer dependencies (libraries only)
+### Peer dependencies (libraries)
 
-- **Rule.** A library published from a consumer of these standards declares its framework couplings as peer dependencies, never runtime ones, and marks each in `peerDependenciesMeta` with the appropriate `optional` flag.
-  - **Why.** Prevents version-duplication blowups in consumers (two copies of React, two copies of a popular framework) and signals which couplings the library actually requires versus tolerates.
-  - **How.** Concrete `package.json` `exports` map shapes will land in M2 (Node runtime, Cat 8–14) alongside the publishing rules.
+This sub-section applies only to packages published as libraries. App-only consumers can skip it.
 
-- **Rule.** A library published from a consumer of these standards ships ESM, either ESM-only or dual (ESM + CJS). Pure-CJS publishing is unsupported.
-  - **Why.** The repo is ESM-first. Pure-CJS output forces consumers into the runtime/bundler divergence the standards exist to remove.
-  - **How.** See [ADR 0003 — ESM-first as the default module system](../adr/0003-esm-first.md). Concrete `package.json` `exports` map shapes will land with M2 (Node runtime, Cat 8–14).
+- **Rule.** A published library declares runtime couplings (peer libraries, host SDKs, framework adapters) as `peerDependencies`, never `dependencies`, and marks each entry in `peerDependenciesMeta` with the appropriate `optional` flag.
+  - **Why.** Prevents version-duplication blowups in consumer trees (two copies of a large peer, two copies of a framework runtime) and signals which couplings the library requires versus tolerates.
+  - **How.** Concrete `package.json` shapes — `exports` map, `peerDependenciesMeta`, dual-publish layout — land in Cat 13 (Library publishing) as part of M2.
+
+- **Rule.** A published library ships ESM, either ESM-only or dual (ESM + CJS). Pure-CJS publishing is unsupported.
+  - **Why.** The baseline is ESM-first. Pure-CJS output forces consumers into the runtime/bundler divergence the standards exist to remove.
+  - **How.** See [ADR 0003 — ESM-first as the default module system](../adr/0003-esm-first.md). Concrete shapes land in Cat 13 (M2).
 
 ## Rationale
 
