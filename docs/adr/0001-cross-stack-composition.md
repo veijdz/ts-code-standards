@@ -14,17 +14,17 @@ superseded-by: 0004-single-baseline
 
 ## Context
 
-This repo ships multiple stacks (`base`, `node`, `nestjs`, `expo`, `tanstack-start`) where each downstream stack extends the conventions and configs of one upstream stack. A consumer copies a single stack's `config/` directory via `npx degit` — there is no install step, no published package, and therefore no shared runtime to centralize logic in.
+This repo was originally designed to ship multiple stacks (`base`, `node`, `nestjs`, `expo`, `tanstack-start`) where each downstream stack would extend the conventions and configs of one upstream stack. A consumer would copy a single stack's `config/` directory via `npx degit` — with no install step, no published package, and therefore no shared runtime to centralize logic in.
 
-That raises a recurring question for every config file in every stack: **does a downstream stack reference the upstream, or does it carry a full copy?** Each of the six formats we ship (`eslint.config.ts`, `tsconfig.json`, `.prettierrc.json`, `lefthook.yml`, `commitlint.config.ts`, `knip.config.ts`) handles inheritance differently — some natively, some not at all. A single answer per format is needed so the repo stays predictable and the consumer can reason about their `.standards/` directory without surprises.
+That raised a recurring question for every config file in every stack: **did a downstream stack reference the upstream, or did it carry a full copy?** Each of the six formats the repo planned to ship (`eslint.config.ts`, `tsconfig.json`, `.prettierrc.json`, `lefthook.yml`, `commitlint.config.ts`, `knip.config.ts`) handled inheritance differently — some natively, some not at all. A single answer per format was needed so the repo would stay predictable and the consumer could reason about their `.standards/` directory without surprises.
 
-The constraints are:
+The constraints were:
 
-- The consumer copies, not imports. Anything referenced inside the templates must resolve from inside the consumer's project after `degit`, not from this repo.
-- Templates are stateless: there is no version on disk that lets a consumer "update".
-- Each stack's `config/` must be a valid baseline on its own, so a consumer can adopt `base` without ever touching `node`.
+- The consumer copied, not imported. Anything referenced inside the templates had to resolve from inside the consumer's project after `degit`, not from this repo.
+- Templates were stateless: no version on disk let a consumer "update".
+- Each stack's `config/` had to be a valid baseline on its own, so a consumer could adopt `base` without ever touching `node`.
 
-This ADR decides, format by format, how composition is expressed.
+This ADR decided, format by format, how composition was expressed. [ADR 0004](./0004-single-baseline.md) later collapsed the multi-stack model to a single baseline, retiring these decisions; the rest of this document is kept as historical record.
 
 ## Decision
 
