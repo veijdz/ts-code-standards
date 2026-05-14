@@ -22,7 +22,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "knip": "knip"
+    "knip": "knip --strict"
   },
   "devDependencies": {
     "@commitlint/cli": "21.0.0",
