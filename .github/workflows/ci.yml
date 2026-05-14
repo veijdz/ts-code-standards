@@ -1,5 +1,9 @@
 name: ci
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
   push:
@@ -20,17 +24,22 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      # Intentionally no `version:` input — pnpm/action-setup reads `packageManager`
+      # in package.json so the exact pnpm pin lives in one place (see Corepack spec).
       - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 22.22.3
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm ${{ matrix.task }}
 
+  # The job name 'ci' is the branch-protection contract — `required_status_checks.contexts`
+  # in docs/conventions/github-settings.md pins this exact name. Renaming the job silently
+  # breaks branch protection on `main` and `staging`; update the protection rule first.
   ci:
     name: ci
     needs: check
