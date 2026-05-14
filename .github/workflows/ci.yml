@@ -31,6 +31,9 @@ jobs:
 
       - run: pnpm ${{ matrix.task }}
 
+  # The job name 'ci' is the branch-protection contract — `required_status_checks.contexts`
+  # in docs/conventions/github-settings.md pins this exact name. Renaming the job silently
+  # breaks branch protection on `main` and `staging`; update the protection rule first.
   ci:
     name: ci
     needs: check
