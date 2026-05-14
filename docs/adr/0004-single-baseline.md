@@ -52,8 +52,8 @@ Splitting "language conventions" from "runtime conventions" sounds clean but doe
 **Negative.**
 
 - A consumer that needs framework-specific rules cannot extend this repo from the inside — they must vendor it (degit) and overlay their own rules in their own repo. There is no "drop in `nestjs` rules on top of `base`" path anymore.
-- Until the follow-up PRs land, the repo is internally inconsistent at several concrete points: `stacks/base/docs/rules.md` anchors every Cat 1–7 rule to "the base stack"; `README.md` describes a five-stack catalog; `CLAUDE.md` lists `stacks/` in its layout block; six cross-references in `docs/principles.md` point at `stacks/base/docs/rules.md`. The supersession note on ADR 0001 covers the ADR layer, but the window between this ADR landing and the README / CLAUDE.md rewrite is a real cost, not a notional one. **Resolved 2026-05-13: post-flatten rewrites landed across PRs #41–#57; the four references now point at the single-baseline layout (`docs/rules.md`, `README.md`, `CLAUDE.md`, and `docs/principles.md` cross-refs).**
-- ADR 0001's example artifacts (the live `node` stack `eslint.config.ts` and `tsconfig.json` it sketched) will never ship. Anyone reading 0001 expecting those examples to materialize needs the supersession note to redirect them here.
+- Until the follow-up PRs land, the repo is internally inconsistent at several concrete points: `stacks/base/docs/rules.md` anchors every Cat 1–7 rule to "the base stack"; `README.md` describes a five-stack catalog; `CLAUDE.md` lists `stacks/` in its layout block; six cross-references in `docs/principles.md` point at `stacks/base/docs/rules.md`. The supersession note on ADR 0001 covers the ADR layer, but the window between this ADR landing and the README / CLAUDE.md rewrite is a real cost, not a notional one.
+- ADR 0001's example artifacts (the live `node` stack `eslint.config.ts` and `tsconfig.json` it sketched) never shipped. Anyone reading 0001 expecting those examples to materialize needs the supersession note to redirect them here.
 
 **Neutral.**
 
