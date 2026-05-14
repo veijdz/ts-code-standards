@@ -167,18 +167,16 @@ export default config
 
 The `prettier` field is required: Prettier only looks for config in the same directory tree as the files it formats, so it does not auto-discover `.standards/.prettierrc.json` for files at the root. Pointing the field at it makes the base config the single source of truth.
 
-#### Root files not provided by degit
+#### Root files to set up after degit
 
-Two more files belong at the project root and are not part of the degit copy because their content is consumer-specific:
-
-**`.prettierignore`** — without this, `pnpm-lock.yaml` is reported as a Prettier violation:
+**`.prettierignore`** — shipped in `config/` via degit, but Prettier only reads `.prettierignore` from the working directory it runs in. Copy it from the degit checkout to the project root:
 
 ```
 node_modules
 pnpm-lock.yaml
 ```
 
-**`pnpm-workspace.yaml`** — `pnpm` 11+ requires explicit approval to run install scripts. Without this, the `lefthook` postinstall (which installs the git hooks) is silently skipped:
+**`pnpm-workspace.yaml`** — not part of the degit copy because its content is consumer-specific. `pnpm` 11+ requires explicit approval to run install scripts; without this, the `lefthook` postinstall (which installs the git hooks) is silently skipped:
 
 ```yaml
 allowBuilds:
