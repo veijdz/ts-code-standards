@@ -151,7 +151,7 @@ export default config
 {
   "type": "module",
   "engines": { "node": ">=22.22.2" },
-  "packageManager": "pnpm@11.0.8",
+  "packageManager": "pnpm@11.1.2",
   "prettier": "./.standards/.prettierrc.json",
   "scripts": {
     "prepare": "lefthook install",
