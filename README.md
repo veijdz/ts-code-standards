@@ -150,7 +150,7 @@ export default config
 ```jsonc
 {
   "type": "module",
-  "engines": { "node": ">=22.22.2" },
+  "engines": { "node": ">=22.22.3" },
   "packageManager": "pnpm@11.1.2",
   "prettier": "./.standards/.prettierrc.json",
   "scripts": {
