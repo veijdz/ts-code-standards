@@ -68,9 +68,9 @@ There is no machine-readable version on the consumer side. The "version" is the 
 
 1. **Per-stack semver (`base-v1.0.0`).** Rejected: forces the maintainer to decide what a "breaking change for documentation" even means, encourages numerical inflation (every doc tweak becomes `v1.0.1`), and reintroduces the coupling the no-package stance was designed to drop.
 
-2. **Single repo semver.** Same problem as per-stack semver, plus the cross-stack confusion of "did `2.0.0` break `base` or `expo`?". Rejected.
+2. **Single repo semver.** Same problem as per-stack semver: there is no installable package, so no public API surface a version number could meaningfully track. Rejected.
 
-3. **CHANGELOG file in each stack.** A file-based changelog requires every PR to remember to update it — a chore that decays the moment review attention slips. GitHub Releases give the same information with maintainer intent rather than per-PR ritual. Rejected as the primary channel; not forbidden as a future supplement.
+3. **CHANGELOG file in this repo.** A file-based changelog requires every PR to remember to update it — a chore that decays the moment review attention slips. GitHub Releases give the same information with maintainer intent rather than per-PR ritual. Rejected as the primary channel; not forbidden as a future supplement.
 
 4. **No signaling at all (consumer monitors `git log`).** Rejected as the sole mechanism: the friction is high enough that real consumers will simply never check, and a breaking change will then propagate as a surprise debug session. The "consumer-monitors-`git log`" path is preserved as one of three options, just not the only one.
 
