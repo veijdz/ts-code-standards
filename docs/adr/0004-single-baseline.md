@@ -14,10 +14,10 @@ superseded-by:
 
 The repo was originally designed to ship five stacks composed in a chain: a `base` stack carrying language-level conventions, a `node` stack on top of it carrying runtime conventions, and three framework stacks (`nestjs`, `expo`, `tanstack-start`) on top of `node` or `base`. ADR 0001 codified how those stacks were supposed to compose — `extends` in `tsconfig.json`, array spread in `eslint.config.ts`, full copies of `.prettierrc.json`, and base-only files for `lefthook` / `commitlint` / `knip`.
 
-After M1 landed (the seven TypeScript categories in `base`), two things became visible that the original design did not account for:
+After the seven TypeScript categories in `base` landed, two things became visible that the original design did not account for:
 
 - **Framework rules age quickly, while the baseline does not.** NestJS, Expo, and TanStack Start each move on their own release cadence; their idiomatic patterns shift every few minor versions. A rule set committed to this repo for any of them would either run perpetually behind the framework or force this repo into the framework's release cycle. The maintenance cost is real; the value is small relative to the maintenance, because teams adopting those frameworks already carry strong opinions about how to use them.
-- **The `node` stack is not actually a separate stack.** Its planned categories (8–14: runtime patterns, Node-specific APIs, error semantics on Node, async idioms, etc.) are not framework opinions — they are continuations of the same TypeScript baseline that M1 delivered. The split between "base" and "node" was a packaging decision, not a content one. Once that became clear, the `extends` chain ADR 0001 documents was a layer of indirection without a payoff.
+- **The `node` stack is not actually a separate stack.** Its planned categories (8–14: runtime patterns, Node-specific APIs, error semantics on Node, async idioms, etc.) are not framework opinions — they are continuations of the same TypeScript baseline the seven categories delivered. The split between "base" and "node" was a packaging decision, not a content one. Once that became clear, the `extends` chain ADR 0001 documents was a layer of indirection without a payoff.
 
 The decision now is whether to keep the multi-stack scaffolding ADR 0001 describes (and pay the maintenance cost of the framework stacks that motivated it) or collapse the repo to the work that has demonstrated value: a single, framework-agnostic TS + Node 22 LTS baseline.
 
@@ -25,7 +25,7 @@ The decision now is whether to keep the multi-stack scaffolding ADR 0001 describ
 
 This repo ships a single baseline. Scope:
 
-- **In:** TypeScript rules (Categories 1–7, already delivered in M1) and Node 22 LTS runtime rules (Categories 8–14, planned for M2). Both live in one `docs/rules.md`, addressed to any consumer running TypeScript on Node — no framework assumptions.
+- **In:** TypeScript rules (Categories 1–7, already delivered) and Node 22 LTS runtime rules (Categories 8–14, planned next). Both live in one `docs/rules.md`, addressed to any consumer running TypeScript on Node — no framework assumptions.
 - **Out:** framework-specific stacks (`nestjs`, `expo`, `tanstack-start`). The original `node` stack is folded into the baseline rather than kept as a separate layer. Consumers using a specific framework derive their own repo from this baseline if they need framework-level opinions; this repo does not vendor them.
 
 ADR 0001 (cross-stack composition) is marked `superseded` by this ADR — its format-by-format composition strategy no longer applies, because there are no longer multiple stacks to compose. The composition table, the `extends` chain, and the array-spread pattern in ADR 0001 remain as historical record only.
@@ -58,8 +58,8 @@ Splitting "language conventions" from "runtime conventions" sounds clean but doe
 **Neutral.**
 
 - Numbering of ADRs is preserved. ADR 0001 stays at 0001, marked `superseded`; the supersession note + frontmatter point readers to this ADR. No history is rewritten.
-- Categories 1–7 keep their numbering and content; Cat 8–14 (Node runtime, M2) carry the content that would have lived in the old `node` stack, but addressed to the single baseline rather than to a stack-on-stack composition.
-- Milestone M2 is rescoped to "Base extension: Node runtime (Cat 8–14)"; M3–M5 (NestJS, Expo, TanStack Start) are cancelled.
+- Categories 1–7 keep their numbering and content; Cat 8–14 (Node runtime) carry the content that would have lived in the old `node` stack, but addressed to the single baseline rather than to a stack-on-stack composition.
+- The next rule chapter is rescoped to "Base extension: Node runtime (Cat 8–14)"; the framework chapters that would have followed (NestJS, Expo, TanStack Start) are cancelled.
 - ADR 0002's release-tag format `YYYY-MM-DD-BREAKING-<stack>` and its per-stack `git log -- stacks/<stack>/` audit query inherit an open question — with a single baseline, `<stack>` is either vestigial or always the same value. This ADR does not decide what to do; the first breaking change after the follow-up PRs land is the natural forcing function for an amendment or supersession of ADR 0002. **Resolved 2026-05-12: ADR 0002 amended in-place to drop the `<stack>` segment — see PR #46.**
 
 ## Alternatives considered

@@ -32,7 +32,7 @@ The repo does **not** version its templates. Instead, it uses GitHub Releases as
 
 1. **No release.** The default. Routine doc cleanups, typo fixes, internal refactors, and additions that are purely opt-in (a new section the consumer can choose to import) ship via merged PRs and are visible only through `git log`.
 
-2. **Notable release.** When a change is worth a consumer's attention but does not break existing copies, the maintainer cuts a GitHub Release. The tag name uses the date in `YYYY-MM-DD` form (`2026-05-10`); the release body lists a one-line description per change. Notable changes include: a new convention being added, the baseline reaching M2/M3/etc., a rule being clarified in a way that changes interpretation.
+2. **Notable release.** When a change is worth a consumer's attention but does not break existing copies, the maintainer cuts a GitHub Release. The tag name uses the date in `YYYY-MM-DD` form (`2026-05-10`); the release body lists a one-line description per change. Notable changes include: a new convention being added, the baseline gaining a new rule chapter (e.g., the Node runtime categories), a rule being clarified in a way that changes interpretation.
 
 3. **Breaking release.** When a change invalidates an existing consumer's copy (a config option removed, a banned package change, a rule reversal), the maintainer cuts a GitHub Release tagged `YYYY-MM-DD-BREAKING`. The body lists the migration steps explicitly. The corresponding commit uses Conventional Commits with `!:` and a `BREAKING CHANGE:` footer.
 

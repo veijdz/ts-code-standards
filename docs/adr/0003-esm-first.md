@@ -12,7 +12,7 @@ superseded-by:
 
 ## Context
 
-This baseline targets Node 22 LTS and assumes the templates run in a project that uses ECMAScript Modules (ESM). The assumption is already woven through the M1 deliverables, but it has never been written down as a decision a consumer can read:
+This baseline targets Node 22 LTS and assumes the templates run in a project that uses ECMAScript Modules (ESM). The assumption is already woven through the delivered TypeScript rule chapter, but it has never been written down as a decision a consumer can read:
 
 - `config/tsconfig.json` sets `"module": "NodeNext"` — Node's ESM resolver, not CJS.
 - `config/eslint.config.ts`, `commitlint.config.ts`, and the rest of the `.ts` configs run as ESM and are loaded by tooling (ESLint, commitlint, Vitest) that itself runs in ESM mode.
@@ -52,7 +52,7 @@ A consumer who copies these templates into a fresh project must ensure their `pa
 **Negative.**
 
 - Source `.ts` imports must carry the `.js` extension that NodeNext resolution expects (`import { foo } from './bar.js'`). This trips reviewers familiar with the older "no extension" TS style; the root `README.md` explains it but the friction is real.
-- `__dirname` and `require` are not available at runtime. Code that needs them uses the ESM equivalents (`fileURLToPath(import.meta.url)`, `createRequire(import.meta.url)`); concrete patterns will land with the [M2 milestone (Node runtime, Cat 8–14)](./0004-single-baseline.md), which is scoped in ADR 0004 but not yet authored at the time of this ADR.
+- `__dirname` and `require` are not available at runtime. Code that needs them uses the ESM equivalents (`fileURLToPath(import.meta.url)`, `createRequire(import.meta.url)`); concrete patterns will land with the [Node runtime rule chapter (Cat 8–14)](./0004-single-baseline.md), which is scoped in ADR 0004 but not yet authored at the time of this ADR.
 - A CJS-only dependency cannot be tree-shaken and cannot be top-level awaited; the dep must be consumed via Node's interop or replaced. The dependencies convention's native-first stance reduces how often this matters in practice, but real cases will still appear.
 - Pure-CJS publishing is unsupported. A consumer that later needs to publish CJS-only must amend this ADR rather than work around the templates.
 

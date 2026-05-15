@@ -89,11 +89,11 @@ This sub-section applies only to packages published as libraries. App-only consu
 
 - **Rule.** A published library declares runtime couplings (peer libraries, host SDKs, framework adapters) as `peerDependencies`, never `dependencies`, and marks each entry in `peerDependenciesMeta` with the appropriate `optional` flag.
   - **Why.** Prevents version-duplication blowups in consumer trees (two copies of a large peer, two copies of a framework runtime) and signals which couplings the library requires versus tolerates.
-  - **How.** Concrete `package.json` shapes — `exports` map, `peerDependenciesMeta`, dual-publish layout — land in Cat 13 (Library publishing) as part of M2.
+  - **How.** Concrete `package.json` shapes — `exports` map, `peerDependenciesMeta`, dual-publish layout — land in Cat 13 (Library publishing).
 
 - **Rule.** A published library ships ESM, either ESM-only or dual (ESM + CJS). Pure-CJS publishing is unsupported.
   - **Why.** The baseline is ESM-first. Pure-CJS output forces consumers into the runtime/bundler divergence the baseline exists to remove.
-  - **How.** See [ADR 0003 — ESM-first as the default module system](../adr/0003-esm-first.md). Concrete shapes land in Cat 13 (M2).
+  - **How.** See [ADR 0003 — ESM-first as the default module system](../adr/0003-esm-first.md). Concrete shapes land in Cat 13.
 
 ## Rationale
 

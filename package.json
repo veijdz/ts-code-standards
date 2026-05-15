@@ -4,6 +4,11 @@
   "type": "module",
   "description": "Documentation and copyable templates for Node/TypeScript projects",
   "license": "MIT",
+  "homepage": "https://github.com/veijdz/ts-code-standards#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/veijdz/ts-code-standards.git"
+  },
   "engines": {
     "node": ">=22.22.3"
   },
