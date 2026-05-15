@@ -3,8 +3,8 @@ import importX from 'eslint-plugin-import-x'
 import unicorn from 'eslint-plugin-unicorn'
 import tseslint from 'typescript-eslint'
 
-// Each rule category (Cat 1–7) appends its own config block here as it is written.
-// Rule rationale and exceptions are documented in docs/rules.md.
+// One config block per rule category (Cat 1–7). Rule rationale, exceptions,
+// and examples are documented in docs/rules.md.
 
 const nativeEsReplacementMessage =
   'Use native ES (Array.prototype, structuredClone, Object.entries, etc.).'
@@ -151,15 +151,9 @@ export default tseslint.config(
     },
   },
   // === Cat 3 — Imports / Exports ===
-  // Sub-blocks 3.3 / 3.4 (`consistent-type-imports`) are intentionally layered on
-  // top of Cat 1.1's `verbatimModuleSyntax`. The compiler enforces that elidable
-  // imports use `import type` but does not auto-fix and does not split mixed
-  // `import { foo, type Foo }` statements; the ESLint rule does both. The two
-  // can produce overlapping errors in narrow edge cases (decorator metadata,
-  // `--isolatedDeclarations`); the auto-fix ergonomics are worth that cost.
-  // See `docs/rules.md` sub-block 3.3 for the documented trade-off.
-  // This rule is scoped to TypeScript files only — the broader import-x block
-  // below also runs on plain JS.
+  // `consistent-type-imports` is layered on top of `verbatimModuleSyntax` (Cat 1.1)
+  // deliberately — see docs/rules.md sub-block 3.3 for the trade-off. TS-only;
+  // the broader import-x block below also runs on plain JS.
   {
     files: ['**/*.{ts,tsx,cts,mts}'],
     rules: {
@@ -185,13 +179,16 @@ export default tseslint.config(
           alphabetize: { order: 'asc', caseInsensitive: true },
         },
       ],
-      'import-x/no-cycle': ['error', { maxDepth: Infinity, ignoreExternal: true }],
+      // `maxDepth` defaults to Infinity in eslint-plugin-import-x; we keep the
+      // default explicit-by-omission rather than spelling it out.
+      'import-x/no-cycle': ['error', { ignoreExternal: true }],
       'no-restricted-imports': [
         'error',
         {
           paths: [
             { name: 'lodash', message: nativeEsReplacementMessage },
             { name: 'lodash-es', message: nativeEsReplacementMessage },
+            { name: 'underscore', message: nativeEsReplacementMessage },
             { name: 'moment', message: 'Use Temporal, date-fns, or dayjs.' },
             { name: 'querystring', message: 'Use URLSearchParams.' },
             { name: 'node:querystring', message: 'Use URLSearchParams.' },
@@ -265,11 +262,17 @@ export default tseslint.config(
       ],
     },
   },
-  // Default exports are required by most config files (vite, next, playwright, etc.).
+  // Config files (vite, next, playwright, etc.) need a default export — they
+  // are invoked as `import('./tool.config').then((m) => m.default)` and have
+  // no way to consume a named export. The size caps are also lifted here:
+  // a production-grade `vite.config.ts` or `eslint.config.ts` legitimately
+  // exceeds the 30/300 limits the body rules enforce.
   {
     files: ['**/*.config.{ts,mts,cts,js,mjs,cjs}'],
     rules: {
       'import-x/no-default-export': 'off',
+      'max-lines': ['error', 500],
+      'max-lines-per-function': ['error', { max: 100, skipBlankLines: true, skipComments: true }],
     },
   },
   // `interface` is required for module augmentation, so allow it inside `.d.ts`.

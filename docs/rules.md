@@ -369,6 +369,51 @@ const user: User[] = await fetchAllUsers() // plural collection, singular name
 
 **Exceptions.** _Not lint-enforced._ This is reviewer guidance — the false-positive rate of a verb-detector lint rule is too high to be worth running.
 
+#### Rule: abbreviations are limited to a documented allowlist
+
+**Why.** Most abbreviations cost the reader a translation step (`u`, `usr`, `ctx2`) while saving the writer two characters. `unicorn/prevent-abbreviations` enforces a short allowlist of established shorthands the ecosystem already reads at sight; everything else expands.
+
+**Allowlist.** The canonical set lives in `config/eslint.config.ts` under `unicorn/prevent-abbreviations.allowList` (source of truth). At the time of writing it covers:
+
+| Allowed        | Common context                      |
+| -------------- | ----------------------------------- |
+| `req`, `res`   | HTTP request / response             |
+| `params`       | route or function parameters        |
+| `props`        | component props                     |
+| `args`         | function arguments                  |
+| `env`          | environment variables               |
+| `dev`, `prod`  | environment names                   |
+| `db`           | database client                     |
+| `ctx`          | execution context                   |
+| `acc`          | reducer accumulator                 |
+| `prev`, `curr` | previous / current iteration values |
+| `fn`, `cb`     | function / callback                 |
+| `lib`, `pkg`   | library / package                   |
+| `mod`          | module                              |
+| `src`, `dist`  | source / distribution directories   |
+
+**✓ Example.**
+
+```ts
+function handler(req: Request, res: Response) {
+  /* … */
+}
+const env = process.env.NODE_ENV
+const total = items.reduce((acc, curr) => acc + curr, 0)
+```
+
+**✗ Example.**
+
+```ts
+function handler(rq: Request, rs: Response) {
+  /* `rq`/`rs` are not on the allowlist */
+}
+const usr = await fetchUser() // `usr` expands to `user`
+const cnt = items.length // `cnt` expands to `count`
+```
+
+**Exceptions.** Extend the allowlist in `config/eslint.config.ts` (and add a row to the table above) when a new abbreviation appears repeatedly enough to read at sight. One-off additions for a single PR are rejected.
+
 ### 2.3 — Generic type parameters
 
 The rule lives in [Cat 1.4 — Generic type parameters](#14--generic-type-parameters). Type parameters are PascalCase with the `T` prefix (`T`, `TKey`, `TValue`).
@@ -595,7 +640,7 @@ import { fetchUser, type User } from './user-service'
 
 Two modules importing each other is almost always an accident. When it is intentional, the design is wrong: the shared piece should be extracted into a third module. Cycles also defeat tree-shaking and produce undefined-at-import-time bugs that only fire on the first call.
 
-#### Rule: `import-x/no-cycle` is enabled (`maxDepth: Infinity`, `ignoreExternal: true`)
+#### Rule: `import-x/no-cycle` is enabled with `ignoreExternal: true`
 
 **Why.** A cycle through `n` modules turns into a `null` reference for the side that is loaded second — because the other side has not finished initializing when the first reference is taken. The bug is invisible until the import order changes (a new module is added, the bundler re-orders), at which point a previously-fine call site throws `TypeError: x is not a function`. The rule catches the cycle at lint time, before the runtime even loads. `ignoreExternal: true` skips cycles that pass through `node_modules` — those are the library author's problem and produce noisy false positives in apps.
 
@@ -607,9 +652,9 @@ Two modules importing each other is almost always an accident. When it is intent
 
 A short denylist for libraries the platform now obsoletes. The error message points at the modern replacement so the fix is one search away.
 
-#### Rule: `lodash`, `lodash-es`, `moment`, `querystring`, `node:querystring` are forbidden
+#### Rule: `lodash`, `lodash-es`, `underscore`, `moment`, `querystring`, `node:querystring` are forbidden
 
-**Why.** Each entry has a native or modern replacement that is smaller, faster, and already present in the runtime: `lodash` and `lodash-es` are obsoleted by ES2019+ array/object methods, `structuredClone`, and `Object.entries` / `Object.fromEntries`; `moment` is obsoleted by the native `Date` + `Intl` for most needs and `date-fns` or `dayjs` when arithmetic helpers are required (and is itself in maintenance mode); `querystring` is a deprecated Node built-in obsoleted by `URLSearchParams`. Reaching for the legacy library wastes bundle size and ties new code to an aging ecosystem.
+**Why.** Each entry has a native or modern replacement that is smaller, faster, and already present in the runtime: `lodash`, `lodash-es`, and `underscore` are obsoleted by ES2019+ array/object methods, `structuredClone`, and `Object.entries` / `Object.fromEntries`; `moment` is obsoleted by the native `Date` + `Intl` for most needs and `date-fns` or `dayjs` when arithmetic helpers are required (and is itself in maintenance mode); `querystring` is a deprecated Node built-in obsoleted by `URLSearchParams`. Reaching for the legacy library wastes bundle size and ties new code to an aging ecosystem.
 
 **✗ Example.**
 
@@ -881,7 +926,7 @@ function applyDiscount(order: Order, code: string): Order {
 }
 ```
 
-**Exceptions.** Test files (`**/*.{test,spec}.{ts,tsx,cts,mts}`) raise the cap to 100. The `describe(name, () => { ... })` callback aggregates cohesive scenarios that read better as one suite than as fragmented sibling files; the 100-line ceiling still flags suites that should split into nested describes.
+**Exceptions.** Test files (`**/*.{test,spec}.{ts,tsx,cts,mts}`) and config files (`**/*.config.{ts,mts,cts,js,mjs,cjs}`) raise the cap to 100. Test `describe(name, () => { ... })` callbacks aggregate cohesive scenarios that read better as one suite than as fragmented sibling files; config files often export a single `defineConfig(() => ({ ... }))` callback whose body is naturally long. The 100-line ceiling still flags units that should split.
 
 ### 5.2 — Functions take three parameters or fewer
 
@@ -1005,7 +1050,7 @@ A file is a working-set boundary: everything in it loads into the reader's head 
 
 **Why.** 300 is not about file load time — it is about cognitive load. Beyond 300 lines, IDE "jump to symbol" becomes faster than scrolling, which means the file has stopped being a unit. The rule fires during writing, not after the 800-line monolith already exists; that is when the split decision is cheap. Paired with sub-block 5.1, a healthy file holds roughly 5–10 functions plus their types and a small amount of module-scope setup — the natural density of one cohesive concept.
 
-**Exceptions.** Test files (`**/*.{test,spec}.{ts,tsx,cts,mts}`) raise the cap to 500. Integration suites benefit from grouping many scenarios in one file (shared fixtures, shared setup, shared narrative); the 500 ceiling still flags suites that should split by feature or scenario family.
+**Exceptions.** Test files (`**/*.{test,spec}.{ts,tsx,cts,mts}`) and config files (`**/*.config.{ts,mts,cts,js,mjs,cjs}`) raise the cap to 500. Integration suites benefit from grouping many scenarios in one file (shared fixtures, shared setup, shared narrative); production-grade tool configs (`vite.config.ts`, `eslint.config.ts`) routinely exceed 300 lines when plugins, overrides, and environment branches are all expressed in one place. The 500 ceiling still flags files that should split.
 
 ### 5.6 — Module-level functions are declarations
 
