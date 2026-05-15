@@ -20,14 +20,22 @@ Use these terms consistently in docs, ADRs, commit messages, and PR descriptions
 
 ```
 .
-├── config/                # tsconfig, eslint, prettier, lefthook, commitlint, knip
-└── docs/
-    ├── _templates/        # canonical anatomy for each doc in the repo
-    ├── adr/               # numbered architectural decision records
-    ├── conventions/       # dependencies, git, testing, github-settings
-    ├── principles.md      # foundational principles
-    └── rules.md           # rule categories enforced by the baseline (built progressively, one Cat per issue)
+├── config/                # canonical templates: tsconfig, eslint, prettier, lefthook, commitlint, knip
+├── docs/
+│   ├── _templates/        # canonical anatomy for each doc in the repo
+│   ├── adr/               # numbered architectural decision records
+│   ├── conventions/       # dependencies, git, testing, github-settings
+│   ├── principles.md      # foundational principles
+│   └── rules.md           # rule categories enforced by the baseline (built progressively, one Cat per issue)
+├── eslint.config.ts       # dogfood: re-exports config/eslint.config.ts
+├── tsconfig.json          # dogfood: extends config/tsconfig.json
+├── commitlint.config.ts   # dogfood: re-exports config/commitlint.config.ts
+├── lefthook.yml           # dogfood: extends config/lefthook.yml
+├── knip.config.ts         # repo-specific (entry = config/*.ts); mirrors the rules of config/knip.config.ts
+└── package.json           # references ./config/.prettierrc.json via the `prettier` field
 ```
+
+`config/` is the source of truth for every template the repo ships. The root-level config files exist to dogfood those templates against this repo's own toolchain — most are thin proxies; `knip.config.ts` is the one specialized case because it has to point Knip at this repo's actual entry layout.
 
 This repo ships a single, framework-agnostic baseline (TypeScript + Node 22 LTS). Consumers that need framework-specific opinions derive their own repo from this baseline and overlay rules on top — see [ADR 0004](docs/adr/0004-single-baseline.md).
 

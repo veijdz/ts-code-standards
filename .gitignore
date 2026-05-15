@@ -29,14 +29,17 @@ lerna-debug.log*
 .DS_Store
 Thumbs.db
 
-# Editors — keep .vscode tracked, but ignore everything else inside
+# Editors
 .idea/
 *.swp
 *.swo
+
+# .vscode: ignore everything under it by default, then opt-in (whitelist)
+# the two files we want tracked for shared editor defaults.
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
 
 # Misc tooling caches
-.turbo/
 .cache/
+.eslintcache
