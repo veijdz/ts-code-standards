@@ -212,7 +212,7 @@ git commit --allow-empty -m "chore: verify hook" # should pass
 
 Every doc under `docs/` is built from one of those templates. New docs must reference the template they extend immediately after the frontmatter.
 
-> The seven TypeScript rule categories (Cat 1–7) are landed; Node runtime categories (Cat 8–14) are the M2 roadmap. The `docs/adr/` directory records the strategic decisions: [ADR 0002 — Release policy](docs/adr/0002-release-policy.md) (how this repo signals change), [ADR 0003 — ESM-first](docs/adr/0003-esm-first.md) (module-system contract), and [ADR 0004 — Single-baseline scope](docs/adr/0004-single-baseline.md) (why there is no per-framework stack).
+> The seven TypeScript rule categories (Cat 1–7) are landed; Node runtime categories (Cat 8–14) are planned next. The `docs/adr/` directory records the strategic decisions: [ADR 0002 — Release policy](docs/adr/0002-release-policy.md) (how this repo signals change), [ADR 0003 — ESM-first](docs/adr/0003-esm-first.md) (module-system contract), and [ADR 0004 — Single-baseline scope](docs/adr/0004-single-baseline.md) (why there is no per-framework stack).
 
 ## For AI agents
 
