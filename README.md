@@ -22,7 +22,7 @@ Templates are not versioned — once copied, they belong to your repo. To find o
 - Or subscribe to the [Atom feed](https://github.com/veijdz/ts-code-standards/releases.atom).
 - Or audit explicitly: `git log -- config/ docs/rules.md` against your last `degit` date.
 
-Breaking changes use a `YYYY-MM-DD-BREAKING` tag and list the migration steps in the release body. See [ADR 0002 — Release policy](docs/adr/0002-release-policy.md) for the full rationale.
+Breaking changes use a `YYYY-MM-DD-BREAKING` tag and list the migration steps in the release body. Multiple releases on the same day append `.2`, `.3`, … to the date (`2026-05-12.2`, `2026-05-12.2-BREAKING`); the first release of the day has no suffix. See [ADR 0002 — Release policy](docs/adr/0002-release-policy.md) for the full rationale.
 
 ## Wiring
 
@@ -41,14 +41,14 @@ pnpm dlx degit veijdz/ts-code-standards/config .standards
 
 The command above copies six files into `.standards/`:
 
-| File                   | Role                                                                                |
-| ---------------------- | ----------------------------------------------------------------------------------- |
-| `tsconfig.json`        | Strict compiler flags (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, …) |
-| `eslint.config.ts`     | Flat config with the rule categories from [`docs/rules.md`](docs/rules.md)          |
-| `.prettierrc.json`     | `semi: false`, `singleQuote: true`, `trailingComma: 'all'`, `printWidth: 100`       |
-| `lefthook.yml`         | `pre-commit` (eslint + prettier + tsc) and `commit-msg` (commitlint) hooks          |
-| `commitlint.config.ts` | Conventional Commits 1.0 with a fixed `type-enum` and `header-max-length: 72`       |
-| `knip.config.ts`       | Knip baseline (the consumer overrides this — see [Setup](#setup))                   |
+| File                   | Role                                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------------------- |
+| `tsconfig.json`        | Strict compiler flags (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, …)         |
+| `eslint.config.ts`     | Flat config with the rule categories from [`docs/rules.md`](docs/rules.md)                  |
+| `.prettierrc.json`     | `semi: false`, `singleQuote: true`, `trailingComma: 'all'`, `printWidth: 100`               |
+| `lefthook.yml`         | `pre-commit` (eslint + prettier + tsc) and `commit-msg` (commitlint) hooks                  |
+| `commitlint.config.ts` | Conventional Commits 1.0 with a fixed `type-enum` and `header-max-length: 72`               |
+| `knip.config.ts`       | Reference Knip rules — the consumer writes its own root config (see [Setup](#knipconfigts)) |
 
 ### Required dev dependencies
 
@@ -212,7 +212,7 @@ git commit --allow-empty -m "chore: verify hook" # should pass
 
 Every doc under `docs/` is built from one of those templates. New docs must reference the template they extend immediately after the frontmatter.
 
-> The seven TypeScript rule categories (Cat 1–7) are landed; Node runtime categories (Cat 8–14) are the M2 roadmap. The `docs/adr/` directory records the strategic decisions, including [ADR 0004 — Single-baseline scope](docs/adr/0004-single-baseline.md).
+> The seven TypeScript rule categories (Cat 1–7) are landed; Node runtime categories (Cat 8–14) are the M2 roadmap. The `docs/adr/` directory records the strategic decisions: [ADR 0002 — Release policy](docs/adr/0002-release-policy.md) (how this repo signals change), [ADR 0003 — ESM-first](docs/adr/0003-esm-first.md) (module-system contract), and [ADR 0004 — Single-baseline scope](docs/adr/0004-single-baseline.md) (why there is no per-framework stack).
 
 ## For AI agents
 

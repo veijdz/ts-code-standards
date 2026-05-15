@@ -13,7 +13,7 @@ last-reviewed: 2026-05-10
    TypeScript only earns its place if its guarantees actually hold. `any`, casual `as` casts, and silent `@ts-ignore` turn the compiler off exactly where the bug is most likely to live. The escape hatch is `@ts-expect-error` with a short written reason — the comment forces an explanation, and the directive itself surfaces as a failure if the underlying issue ever goes away. Concrete rules live in [Cat 1 — TypeScript](./rules.md). _Exception:_ third-party types that are demonstrably wrong may be narrowed with a localized `as` plus a comment pointing at the upstream issue.
 
 2. **Explicit over implicit.**
-   Code is read more than it is written, and most reading happens out of context. Default exports, inferred return types on exported surfaces, and clever metaprogramming push that missing context onto the reader. Named exports, explicit return types on public functions, and direct imports give the reader everything they need at the call site. Concrete rules live in [Cat 3 — Imports/Exports](./rules.md) and Cat 1 (TypeScript).
+   Code is read more than it is written, and most reading happens out of context. Default exports, inferred return types on exported surfaces, and clever metaprogramming push that missing context onto the reader. Named exports, explicit return types on public functions, and direct imports give the reader everything they need at the call site. Concrete rules live in [Cat 3 — Imports / Exports](./rules.md#cat-3--imports--exports) and [Cat 1 — TypeScript / Type system](./rules.md#cat-1--typescript--type-system).
 
 3. **Validate at boundaries, trust within.**
    Every untrusted input — HTTP request body, database row, env var, file contents, third-party API response — must be parsed through a schema at the boundary that produces a typed value. Internal code then trusts that type and does not re-validate. The result is two clearly separated zones: a thin, paranoid edge and a calm interior. _Exception:_ defensive checks that encode an invariant (e.g., an `assert` immediately after a narrowing operation) are documentation, not validation, and are fine.
@@ -40,7 +40,7 @@ last-reviewed: 2026-05-10
     Conventional Commits, branch naming, and PR shape are enforced at the `commit-msg` and `pre-push` hooks, plus repo-level branch protection. A message that does not fit the contract is rejected at the point of writing, not in review. The reason is changelog automation: a release tool reads the commit history, not the PR titles. Concrete rules live in [conventions/git.md](conventions/git.md).
 
 11. **Clarity over brevity.**
-    `userPaymentMethod` reads in one second; `upm` requires the reader to either already know the abbreviation or pause to look it up. Save the brevity for loop counters and one-line lambdas. The same applies to comments: explain _why_ (a constraint, a workaround, a non-obvious tradeoff) — never _what_, because the code already says that. Concrete rules live in [Cat 2 — Naming](./rules.md) and Cat 6 (Comments & Documentation).
+    `userPaymentMethod` reads in one second; `upm` requires the reader to either already know the abbreviation or pause to look it up. Save the brevity for loop counters and one-line lambdas. The same applies to comments: explain _why_ (a constraint, a workaround, a non-obvious tradeoff) — never _what_, because the code already says that. Concrete rules live in [Cat 2 — Naming](./rules.md#cat-2--naming) and [Cat 6 — Comments & Documentation](./rules.md#cat-6--comments--documentation).
 
 ## How to use this document
 
