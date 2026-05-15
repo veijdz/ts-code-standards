@@ -7,11 +7,11 @@ last-reviewed: 2026-05-10
 
 # Conventions — Dependencies
 
-> Criteria for adding, replacing, and auditing dependencies in any consumer of these standards. Derives from [Principle 8 — Dependencies are debt](../principles.md).
+> Criteria for adding, replacing, and auditing dependencies in any consumer repo. Derives from [Principle 8 — Dependencies are debt](../principles.md).
 
 ## Scope
 
-Applies to every package listed in `package.json` (runtime, dev, peer, optional) in this repo and in any consumer of this baseline. Covers what to add, what is banned outright, how to keep the dependency tree current, and how to detect dead weight. Does **not** cover internal workspace packages — those are governed by the consumer's own rules.
+Applies to every package listed in `package.json` (runtime, dev, peer, optional) in this repo and in any consumer repo. Covers what to add, what is banned outright, how to keep the dependency tree current, and how to detect dead weight. Does **not** cover internal workspace packages — those are governed by the consumer's own rules.
 
 ## Rules
 
@@ -92,7 +92,7 @@ This sub-section applies only to packages published as libraries. App-only consu
   - **How.** Concrete `package.json` shapes — `exports` map, `peerDependenciesMeta`, dual-publish layout — land in Cat 13 (Library publishing) as part of M2.
 
 - **Rule.** A published library ships ESM, either ESM-only or dual (ESM + CJS). Pure-CJS publishing is unsupported.
-  - **Why.** The baseline is ESM-first. Pure-CJS output forces consumers into the runtime/bundler divergence the standards exist to remove.
+  - **Why.** The baseline is ESM-first. Pure-CJS output forces consumers into the runtime/bundler divergence the baseline exists to remove.
   - **How.** See [ADR 0003 — ESM-first as the default module system](../adr/0003-esm-first.md). Concrete shapes land in Cat 13 (M2).
 
 ## Rationale

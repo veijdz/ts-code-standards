@@ -11,7 +11,7 @@ last-reviewed: 2026-05-10
 
 ## Scope
 
-Applies to every commit, branch, and PR in this repo and in any consumer of this baseline. Covers Conventional Commits format, the type enum, branch naming, and the merge strategy. Does **not** cover release tagging or changelog generation — those are handled in [ADR 0002 — Release policy](../adr/0002-release-policy.md).
+Applies to every commit, branch, and PR in this repo and in any consumer repo. Covers Conventional Commits format, the type enum, branch naming, and the merge strategy. Does **not** cover release tagging or changelog generation — those are handled in [ADR 0002 — Release policy](../adr/0002-release-policy.md).
 
 ## Rules
 

@@ -11,7 +11,7 @@ last-reviewed: 2026-05-12
 
 ## Scope
 
-Applies to this repo and to any consumer of this baseline that hosts on GitHub. Covers: repository merge settings, branch protection on the release branch and on the working branch, and the security baseline (Dependabot, CODEOWNERS, SECURITY.md). Does **not** cover branch naming, commit format, or PR shape — those live in [Git conventions](git.md).
+Applies to this repo and to any consumer repo that hosts on GitHub. Covers: repository merge settings, branch protection on the release branch and on the working branch, and the security baseline (Dependabot, CODEOWNERS, SECURITY.md). Does **not** cover branch naming, commit format, or PR shape — those live in [Git conventions](git.md).
 
 Each rule below ships a `gh api` snippet that consumers run after cloning. Clicking through the GitHub UI is documented as a fallback, but the CLI snippet is the source of truth — the UI changes, REST endpoints do not.
 
@@ -158,7 +158,7 @@ The snippets use `:owner/:repo` as a placeholder. The `gh` CLI auto-resolves thi
 
 - **Rule.** `SECURITY.md` is not provided. No formal disclosure channel beyond GitHub's default issue tracker is configured.
   - **Why.** This repo distributes documentation and copyable templates; it has no runtime, no live endpoint, and no credential surface. A security report would, in practice, be a bug report against a documented dependency version, which the public issue tracker handles fine.
-  - **For consumer repos.** Consumers of this baseline that host code with a runtime should enable GitHub's [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/configuring-private-vulnerability-reporting-for-a-repository) via `gh api repos/:owner/:repo/private-vulnerability-reporting --method PUT` and add a `SECURITY.md` pointing reports there. This convention does not enable it on the templates repo because there is nothing to disclose against.
+  - **For consumer repos.** Consumer repos that host code with a runtime should enable GitHub's [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/configuring-private-vulnerability-reporting-for-a-repository) via `gh api repos/:owner/:repo/private-vulnerability-reporting --method PUT` and add a `SECURITY.md` pointing reports there. This convention does not enable it on the templates repo because there is nothing to disclose against.
   - **Revisit when.** The repo starts shipping executable code that runs in consumers' projects beyond what they explicitly import.
 
 ## Rationale
