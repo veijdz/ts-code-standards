@@ -6,6 +6,16 @@ Guidance for AI agents working on this repository.
 
 `ts-code-standards` is a repository of **documentation + copyable templates** to standardize Node/TypeScript projects. It is **not** an npm package. Consumers copy the templates via `npx degit` and own their own dependencies.
 
+## Terminology
+
+Use these terms consistently in docs, ADRs, commit messages, and PR descriptions:
+
+- **the baseline** — the product: the rules, conventions, principles, and configs this repo defines. Use this when referring to the abstract set of standards (e.g., "the baseline targets Node 22 LTS"). Do not use "the standards" or "these standards" as a synonym in prose; `ts-code-standards` is the repository name, not a count noun.
+- **this repo** — the physical artifact at `github.com/veijdz/ts-code-standards`. Use only when literally referring to the repository as an entity (e.g., "this repo does not vendor framework rules").
+- **templates** — the copyable anatomies under `docs/_templates/` (rules, ADR, convention, principles).
+- **configs** — the copyable tooling under `config/` (tsconfig, eslint, prettier, lefthook, commitlint, knip).
+- **consumer repo** — a project that adopts the baseline. Use this exact term; avoid "downstream", "adopting project", or "consumer of this baseline".
+
 ## Layout
 
 ```
