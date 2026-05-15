@@ -17,8 +17,7 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: true,
-        // String at runtime (Node ≥20.11); cast satisfies type-aware lint when no @types/node is loaded.
-        tsconfigRootDir: import.meta.dirname as string,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
   },

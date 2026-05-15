@@ -1,2 +1,4 @@
+# Dogfood shim: defers to the canonical hook config under config/. Edit
+# config/lefthook.yml — not this file — when changing hook behavior.
 extends:
   - ./config/lefthook.yml
