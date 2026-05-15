@@ -10,6 +10,21 @@ const config: KnipConfig = {
   // Knip's lefthook plugin does not follow `extends:` into config/lefthook.yml,
   // so commitlint (invoked from the extended commit-msg hook) reads as unused.
   ignoreDependencies: ['@commitlint/cli'],
+  rules: {
+    files: 'error',
+    dependencies: 'error',
+    devDependencies: 'error',
+    optionalPeerDependencies: 'off',
+    unlisted: 'error',
+    binaries: 'error',
+    unresolved: 'error',
+    exports: 'error',
+    types: 'error',
+    nsExports: 'error',
+    nsTypes: 'error',
+    enumMembers: 'warn',
+    duplicates: 'warn',
+  },
 }
 
 export default config

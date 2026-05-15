@@ -37,20 +37,73 @@ jobs:
 
       - run: pnpm ${{ matrix.task }}
 
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm audit --audit-level=high
+
+  commits:
+    name: commits
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Skip merge commits: their subjects are PR titles with `(#NN)` / `(VEI-NNN)`
+      # suffixes that violate `subject-case: lower-case`. Authored commits are still
+      # validated individually. `commitlint` lacks a native merge filter, so iterate.
+      - name: Lint commit messages
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            range="${{ github.event.pull_request.base.sha }}..HEAD"
+          else
+            range="HEAD~1..HEAD"
+          fi
+          status=0
+          while read -r sha; do
+            git log -1 --format=%B "$sha" | pnpm exec commitlint || status=1
+          done < <(git log --no-merges --format=%H "$range")
+          exit $status
+
   # The job name 'ci' is the branch-protection contract — `required_status_checks.contexts`
   # in docs/conventions/github-settings.md pins this exact name. Renaming the job silently
   # breaks branch protection on `main` and `staging`; update the protection rule first.
   ci:
     name: ci
-    needs: check
+    needs: [check, audit, commits]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     if: always()
     steps:
       - name: Verify all checks passed
         run: |
-          if [ "${{ needs.check.result }}" != "success" ]; then
-            echo "One or more checks failed (check job result: ${{ needs.check.result }})"
+          if [ "${{ needs.check.result }}" != "success" ] || [ "${{ needs.audit.result }}" != "success" ] || [ "${{ needs.commits.result }}" != "success" ]; then
+            echo "One or more checks failed (check: ${{ needs.check.result }}, audit: ${{ needs.audit.result }}, commits: ${{ needs.commits.result }})"
             exit 1
           fi
           echo "All checks passed"
