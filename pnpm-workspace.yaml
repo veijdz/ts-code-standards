@@ -1,6 +1,0 @@
-# This repo is not a pnpm workspace. The file exists only because pnpm reads
-# its global settings (allowBuilds / onlyBuiltDependencies) from here in v11+.
-# No `packages:` section — there is nothing to glob.
-allowBuilds:
-  lefthook: true
-  unrs-resolver: true
