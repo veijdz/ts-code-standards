@@ -41,14 +41,14 @@ pnpm dlx degit veijdz/ts-code-standards/config .standards
 
 The command above copies six files into `.standards/`:
 
-| File                   | Role                                                                                |
-| ---------------------- | ----------------------------------------------------------------------------------- |
-| `tsconfig.json`        | Strict compiler flags (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, …) |
-| `eslint.config.ts`     | Flat config with the rule categories from [`docs/rules.md`](docs/rules.md)          |
-| `.prettierrc.json`     | `semi: false`, `singleQuote: true`, `trailingComma: 'all'`, `printWidth: 100`       |
-| `lefthook.yml`         | `pre-commit` (eslint + prettier + tsc) and `commit-msg` (commitlint) hooks          |
-| `commitlint.config.ts` | Conventional Commits 1.0 with a fixed `type-enum` and `header-max-length: 72`       |
-| `knip.config.ts`       | Reference Knip rules — the consumer writes its own root config (see [Setup](#knipconfigts))  |
+| File                   | Role                                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------------------- |
+| `tsconfig.json`        | Strict compiler flags (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, …)         |
+| `eslint.config.ts`     | Flat config with the rule categories from [`docs/rules.md`](docs/rules.md)                  |
+| `.prettierrc.json`     | `semi: false`, `singleQuote: true`, `trailingComma: 'all'`, `printWidth: 100`               |
+| `lefthook.yml`         | `pre-commit` (eslint + prettier + tsc) and `commit-msg` (commitlint) hooks                  |
+| `commitlint.config.ts` | Conventional Commits 1.0 with a fixed `type-enum` and `header-max-length: 72`               |
+| `knip.config.ts`       | Reference Knip rules — the consumer writes its own root config (see [Setup](#knipconfigts)) |
 
 ### Required dev dependencies
 
