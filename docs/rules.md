@@ -7,7 +7,9 @@ last-reviewed: 2026-05-11
 
 # Rules
 
-> Catalog of enforceable rules for the baseline (TypeScript + Node 22 LTS, framework-agnostic). Built progressively, one category per issue. See [`docs/principles.md`](./principles.md) for the why behind every rule and [`config/`](../config) for the tools that enforce them.
+> Catalog of enforceable rules for the baseline (TypeScript + Node 22 LTS, framework-agnostic). See [`docs/principles.md`](./principles.md) for the why behind every rule and [`config/`](../config) for the tools that enforce them.
+
+A **category** (abbreviated **Cat N** below) is a numbered group of related rules — one topic per category, addressed end-to-end with rules, exceptions, and the configs that enforce them. Sub-blocks within a category are numbered `N.M` (e.g., Cat 1.1, Cat 1.2). Numbering is stable: categories are never renumbered, even when rules inside are added, dropped, or moved.
 
 ## Cat 1 — TypeScript / Type system
 
@@ -369,7 +371,7 @@ const user: User[] = await fetchAllUsers() // plural collection, singular name
 
 ### 2.3 — Generic type parameters
 
-The rule lives in [Cat 1.4 — Generic type parameters](#14--generic-type-parameters); this sub-block is preserved for parity with the issue numbering. Type parameters are PascalCase with the `T` prefix (`T`, `TKey`, `TValue`).
+The rule lives in [Cat 1.4 — Generic type parameters](#14--generic-type-parameters). Type parameters are PascalCase with the `T` prefix (`T`, `TKey`, `TValue`).
 
 ### 2.4 — File names
 

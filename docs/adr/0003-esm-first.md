@@ -25,12 +25,12 @@ There is no half-step the templates support: they are not "CJS-friendly with ESM
 
 This baseline assumes ESM as the default module system.
 
-- **Applications** built from these standards are ESM. Their `package.json` declares `"type": "module"`. They use ESM imports, `import.meta.url`, top-level await, and the Node ESM resolver.
-- **Libraries** built from these standards publish either ESM-only or dual (ESM + CJS) outputs. ESM-only is preferred; dual is acceptable when the library targets ecosystems still anchored to CJS. Pure-CJS publishing is out of scope of these standards.
+- **Applications** built on the baseline are ESM. Their `package.json` declares `"type": "module"`. They use ESM imports, `import.meta.url`, top-level await, and the Node ESM resolver.
+- **Libraries** built on the baseline publish either ESM-only or dual (ESM + CJS) outputs. ESM-only is preferred; dual is acceptable when the library targets ecosystems still anchored to CJS. Pure-CJS publishing is out of scope of the baseline.
 - **Tooling configs** in this baseline are written as ESM (`.ts` loaded via the toolchain's ESM loader, or `.mjs` when a tool requires it). CJS configs (`.cjs`, `module.exports = ...`) are not added.
 - **Loaders and shims** that exist primarily to wrap CJS-only behavior (e.g., the `esm` package) are not added; if a runtime dependency is CJS-only, it is consumed via Node's CJS interop, not via a wrapper.
 
-The decision is the contract for any consumer of this baseline. To deviate, a consumer must amend or supersede this ADR.
+The decision is the contract for any consumer repo. To deviate, a consumer repo must amend or supersede this ADR.
 
 ### Why this lives in the baseline, not per project
 
@@ -58,14 +58,14 @@ A consumer who copies these templates into a fresh project must ensure their `pa
 
 **Neutral.**
 
-- Any consumer of this baseline must explicitly state if and where it deviates from ESM-first. The default is "no deviation".
+- Any consumer repo must explicitly state if and where it deviates from ESM-first. The default is "no deviation".
 - Tooling that does not yet support `.ts` in ESM mode is consumed via `.mts` when needed; the `.mts/.cts` extensions are covered by the baseline's lint and Prettier globs.
 
 ## Alternatives considered
 
-- **CJS as the default.** Familiar, no `.js`-extension friction in TS sources, no `__dirname` polyfill. Rejected because the broader ecosystem (Node itself, every modern bundler, every modern framework's own configs) is moving the other way; locking the standards to CJS would mean re-deciding every time a tool drops CJS support, and every consumer would inherit a model the tool authors are no longer optimizing for.
-- **Dual support with no opinion.** Let each project pick. Rejected because "no opinion" pushes the cost onto the consumer — they would need to know the runtime behavior of every config file they copy. The whole point of the standards is to absorb that cost upstream.
-- **ESM-first for apps, CJS-first for libraries.** Splits the contract along publishing intent. Rejected because it forces every library author to maintain two source trees or run a transpile step the standards do not document; the simpler rule (ESM-only or dual, never CJS-only) is enforceable in tooling and easier to reason about.
+- **CJS as the default.** Familiar, no `.js`-extension friction in TS sources, no `__dirname` polyfill. Rejected because the broader ecosystem (Node itself, every modern bundler, every modern framework's own configs) is moving the other way; locking the baseline to CJS would mean re-deciding every time a tool drops CJS support, and every consumer repo would inherit a model the tool authors are no longer optimizing for.
+- **Dual support with no opinion.** Let each project pick. Rejected because "no opinion" pushes the cost onto the consumer repo — it would need to know the runtime behavior of every config file it copies. The whole point of the baseline is to absorb that cost upstream.
+- **ESM-first for apps, CJS-first for libraries.** Splits the contract along publishing intent. Rejected because it forces every library author to maintain two source trees or run a transpile step the baseline does not document; the simpler rule (ESM-only or dual, never CJS-only) is enforceable in tooling and easier to reason about.
 
 ## References
 

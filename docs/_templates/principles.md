@@ -5,7 +5,7 @@ last-reviewed: YYYY-MM-DD
 
 # Foundational principles
 
-> Use this template for `docs/principles.md`. Principles are the **why** behind every rule and convention in this repo. They are intentionally few, short, and stable — when a principle changes, downstream rules and ADRs must be revisited.
+> Use this template for `docs/principles.md`. Principles are the **why** behind every rule and convention in this repo. They are intentionally few, short, and stable — when a principle changes, the rules and ADRs that derive from it must be revisited.
 
 Each principle is one short statement followed by one paragraph explaining what it implies in practice. Numbering is stable; do not renumber when adding.
 

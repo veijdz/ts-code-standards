@@ -58,7 +58,7 @@ There is no machine-readable version on the consumer side. The "version" is the 
 
 - The consumer has no automated "I am out of date" signal. Drift is detectable only by checking the repo.
 - Notable vs. routine is a maintainer judgment call. Two reasonable people may disagree, and there is no rule to fall back on.
-- No machine-readable changelog. Downstream tooling that wants to diff template changes has to parse `git log`, which is feasible but not zero-cost.
+- No machine-readable changelog. Tooling in consumer repos that wants to diff template changes has to parse `git log`, which is feasible but not zero-cost.
 
 ### Neutral
 

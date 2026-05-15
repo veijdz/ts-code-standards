@@ -11,7 +11,7 @@ last-reviewed: 2026-05-10
 
 ## Scope
 
-Applies to every test file in any consumer of these standards, regardless of test runner. Covers the three test kinds, where they live on disk, naming, the mock policy, and what coverage signals are used for. Does **not** cover the runner config or assertion library — those belong in [`rules.md` — Cat 7](../rules.md).
+Applies to every test file in any consumer repo, regardless of test runner. Covers the three test kinds, where they live on disk, naming, the mock policy, and what coverage signals are used for. Does **not** cover the runner config or assertion library — those belong in [`rules.md` — Cat 7](../rules.md).
 
 ## Rules
 
@@ -36,7 +36,7 @@ Applies to every test file in any consumer of these standards, regardless of tes
 ### Test location
 
 - **Rule.** Tests live under `tests/`, partitioned by kind: `tests/unit/`, `tests/integration/`, `tests/e2e/`. Co-locating tests next to source files is forbidden.
-  - **Why.** A dedicated tree keeps the boundary between shipped code and test fixtures explicit; bundlers, coverage, and `tsc` then need zero special path filters. Co-location forces every consumer of these standards to reconfigure their build.
+  - **Why.** A dedicated tree keeps the boundary between shipped code and test fixtures explicit; bundlers, coverage, and `tsc` then need zero special path filters. Co-location forces every consumer repo to reconfigure their build.
   - **How.** Mirror the source structure inside each kind. Example: `src/users/service.ts` → `tests/unit/users/service.test.ts`.
 
 - **Rule.** Test files use the suffix `.test.ts` for unit and integration, and `.e2e.ts` for end-to-end.
